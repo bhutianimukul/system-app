@@ -1,0 +1,368 @@
+# DESIGN LOCKED — 2026-07-28
+
+**The design phase is closed.** 39 screens, 7 classes, four published artifacts. Everything
+below is a decision of record. Changing any of it is a new decision that needs its own reasoning, not a
+preference to be applied silently.
+
+**Four shareable artifacts, all cleaned of AI-tell prose on 2026-07-28:**
+
+| artifact | what it is | link |
+|---|---|---|
+| Full App Design | 39 screens + feature spec + this decision record, 4 pages | `7a66e316-7246-464f-a701-06d58ad1346f` |
+| Feature Spec | every mechanic, its Android verifier, why it survives | `8fa0df80-201f-4380-88dc-cb8f3c98ffb3` |
+| Rank Ceremony | one composition, five classes, one CSS variable | `fe312f0c-032a-42d3-bb9e-6ed251cdc82a` |
+| Decision Record | this document plus the complete instruction log, text only | `24eb4bab-8b84-4895-994d-5a91339d56e3` |
+
+**Repo:** `github.com/bhutianimukul/system-app` (private). `CLAUDE.md` there is the feature spec and build
+rules, auto-loaded by Claude Code, so a session opened in that repo inherits the whole spec. Third-party
+reference art is gitignored: the publisher images are copyrighted and the rejected generations have the
+Solo Leveling title baked in, both of which contradict §15.
+
+**Also on anyartifact** (public HTML host, no login needed to read):
+- Feature spec — `anyartifact-production.up.railway.app/0XY02nXT3S84`
+- Decision record — `anyartifact-production.up.railway.app/a4qyXBjaKuZ8`
+
+anyartifact caps content at **500 KB** and requires a full document with `<!DOCTYPE>` and
+`<meta charset=utf-8>`, otherwise Chrome falls back to windows-1252 and every em dash and `·` mojibakes.
+The 39-screen design (2.6 MB) and the ceremony (663 KB) exceed that cap and stay on claude.ai. Gzip does
+not rescue them the way it did the LCNC dashboard, because the payload is base64 JPEG rather than text.
+
+**Prose standard for anything added later.** A self-audit found the writing, not the design, read as
+machine-generated. Two habits caused it and both are now capped:
+
+- **Em dash as an all-purpose connector.** It was doing the work of a colon, a full stop and "because"
+  at once, at 17.6 per 1,000 words in the decision prose and 18.4 in the feature spec. Now under 5.
+- **Balanced negation as the default sentence shape** — "*craft is the gate, not the idea*". 31 instances
+  in the feature spec, 21 in the decision prose. Cut by two thirds; what remains is where the contrast
+  genuinely *is* the claim, such as "30 days, not twelve months".
+
+The product copy was already clean at 4 em dashes per 1,000 words, and the visual design showed none of
+the usual generated-design markers. Keep both as they are.
+
+**Still outstanding, and the only things blocking the build:**
+
+- Art from Gemini: Envoy full-body crops, full-body crops for all 7 classes for the profile screen, flat
+  small-size rank emblems (the ornate set is verified mush at 48px), a Tanker regenerated on pure black.
+- Kotlin phase 01: the aura and rank engine as pure functions, plus one test file. Nothing written yet.
+
+---
+
+# Design decisions — locked
+
+Every decision Mukul made in the design session, with the reasoning that produced it.
+Where a decision reversed an earlier recommendation, both are recorded — the reversal is the decision.
+
+---
+
+## 1. Product thesis
+
+**Your phone is the dungeon.** The app is about attention, avoidance and isolation — not fitness.
+
+- Health apps own the body. Nobody instruments **attention, avoidance, isolation**. That gap is the wedge.
+- Body metrics stay in as *free garnish* (Health Connect is a day's integration), never as the subject.
+- The six original problem buckets collapse to: **root** = attention capture, **amplifier** = isolation,
+  **hinge** = sleep, **downstream** = fitness/food, **outcome** = stress.
+- **Stress is never a feature.** It is the outcome the app is judged by. It became `CONDITION`.
+
+**Positioning stat:** Gen Z averages 7h 43m screen time a day, rising 4.8% YoY. Teens above 4h are
+2× as likely to report anxiety or depression symptoms.
+
+## 2. Platform
+
+**Android only.** Not a preference — a requirement.
+
+- `UsageStats` gives real app names and durations. iOS Screen Time returns **opaque tokens**, so a
+  screen-time leaderboard is impossible on iOS and possible on Android.
+- Audience (15–30, anime-adjacent, India/SEA/LATAM skew) is overwhelmingly Android.
+- **Native Kotlin, not Flutter/React Native.** Health Connect, UsageStats, foreground services and
+  Glance widgets are all platform APIs — cross-platform saves nothing when most of the app *is* the platform.
+
+## 3. The core mechanic — catch, don't block
+
+**Detection over prevention.** The System never stops you failing; it records and charges you.
+
+- Blocking is defeated by a determined user in ~15 seconds. Detection cannot be un-done — you cannot un-scroll.
+- Also more faithful: the System never once prevented failure in the source material.
+- **Query history, don't watch live.** `UsageStats` is retroactive, so settle on app open + widget refresh
+  + a 15-minute `WorkManager` job. Animate from last known state so it *feels* live with no persistent service.
+  This is what keeps the app alive against OEM battery managers.
+- **Speed bump, not a wall** — a dismissible overlay during focus sessions only, on `SYSTEM_ALERT_WINDOW`.
+  Tapping through is logged. Converts a reflex into a deliberate choice.
+
+**Containment** (real blocking) is **earned, not default**:
+- Trigger: scroll target missed 3 days running, or 5 in 7
+- **Permission requested at the trigger, never at onboarding** — the accessibility dialog would kill
+  installs shown to a stranger on day one, but lands fine on someone who has already failed four times
+- Duration until target cleared 2 days running, max 7. Emergency unlock costs 500 aura, logged.
+- Revoking is permitted, recorded, and carries a rank penalty.
+
+**Uninstall prevention is impossible and would be a Play removal.** Instead make leaving *pointless*:
+server-side progress, absence counted as failure, guild visibility, no amnesty on return.
+
+## 4. The aura economy
+
+Mukul's design, and the strongest mechanical work in the app.
+
+| | |
+|---|---|
+| **Threshold** | daily minimum. Miss it → penalty zone |
+| **Cap** | daily maximum that counts toward **Rank** |
+| **Bonus** | one per day, spawned at random; raises today's ceiling by 120–450 |
+| **Overflow** | above the cap builds **Level**, never Rank |
+
+- The band is the design: you must land *inside* it. "More is better" stops being the strategy;
+  showing up every day starts being it.
+- The cap solves four problems at once: absorbs balance drift in generated quests, caps cheat damage,
+  kills grinding as a strategy, and puts a **hard ceiling on how much the app can reward in one day** —
+  a stronger safety property than any clamp.
+- **Exactly one bonus per day, drawn at random, spawned at a time the user does not pick.** It arrives as a
+  push notification and a popup — not a menu you visit and not a list you choose from. **It can only be
+  started within 1 hour of spawning**; after that it is gone until tomorrow. Letting it expire costs
+  nothing — no penalty, you simply do not get the extra ceiling.
+  **Why:** a menu of bonuses is a shop, and a shop gets optimised. A single unpredictable offer with a
+  short fuse is an event — it rewards being available rather than being efficient, and it cannot be
+  farmed because there is nothing to compare and nothing to pick.
+- **Aura ceiling by provability:** sensor-proven = full · app-initiated = medium · declared = low.
+  Honest players climb; nobody reaches S-rank without doing things that can be checked.
+- **The System assigns aura. The player never does.**
+
+## 5. Progression
+
+- **Level** — private, only rises, the reward. **Rank** — public E→S, rises *and falls*, the stakes.
+- **Rank is the adaptive difficulty engine, done in arithmetic** — the thing competitors ship an opaque AI to do.
+- **Three tiers per rank** (E-III → E-II → E-I → D-III). 18 promotion moments instead of 6.
+- Rank titles: **Awakened · Sentinel · Vanguard · Ascendant · Sovereign · Unbound.**
+  Top rank means freedom from compulsion — the thesis as a reward. **"Monarch" avoided** (distinctive coinage).
+- **Shields** — 7 consecutive days = 1 shield, max 3. A missed day consumes one instead.
+  **Penalty scales with league, never with streak length** — a long streak buys *insurance*, not exposure.
+  The intuitive version (lose more the longer your streak) produces fear then uninstall.
+
+## 6. Punishment
+
+**Punish hard, but escalate in sequence, never in parallel.**
+
+```
+day 1  streak broken        day 3  aura −200
+day 5  demotion warning     day 7  demotion · containment authorised
+```
+
+- Simultaneity is the failure mode, not severity. Five penalties at once are illegible — the player
+  learns nothing and feels only noise. A countdown frightens; an avalanche numbs.
+- **Every penalty screen shows the road back.** Punishment stops producing effort and starts producing
+  *exit* precisely when recovery stops looking achievable. `"3 consecutive days restores D-rank."`
+- **No penalty anywhere demands additional physical effort.**
+
+## 7. The private track — REVERSED
+
+Originally specced with **no penalties** (reasoning: a penalty on a compulsion is shame with a number
+attached, and lands hardest on the youngest users).
+
+**Mukul's decision: strict penalty. Overruled, and correctly** — the no-consequence version made it a toy.
+A streak counter with no stakes creates no commitment.
+
+**Final design:**
+- Relapse → **streak to zero, shadow progress forfeited, aura −300, daily bonus stops. Rank unaffected.**
+- **Silence counts as a break.** Miss the 17:00 check-in and the day logs as broken. Not answering is answering.
+- **Daily yes/no check-in per item** — HELD / BROKE, explicit, one tap each.
+- **Nothing is auto-detected** except app-mediated vices (gambling, delivery). Everything else is
+  self-reported and the screen says so outright.
+- **Fingerprint or face required** every time the track opens.
+- **Notification never names anything**: *"Check-in pending. One confirmation. Nothing else."* — because
+  anyone can read a lock screen. Time configurable, default 17:00.
+- **Still never shared** — no guild notification, no leaderboard, no went-dark flag. This is the one line held:
+  the penalty is real and it is invisible to everyone else.
+- The seeded examples span private compulsions, substances, small self-defeating habits and app categories
+  the phone can already see, plus a free-text *"something else, you name it"*. The specific list is in the
+  app, not in this repo, because this repo is public and the list reads as a confession when it is not one.
+
+## 8. AI
+
+- **Schema-constrained generation, not free text.** The model fills a verifier grammar it cannot escape:
+  a verifier from a closed set of 8, plus numeric params. **It never touches the aura value** —
+  `aura = base[verifier] × difficulty(params) × condition_modifier`, a formula we own.
+- Free-text quests can't be tiered, so the ladder dies. That's where all eight competitors landed.
+- **The prompt is a hint; the validator is the guarantee.** Describing the verifier catalogue raises the
+  hit rate. It does not stop a 400-minute focus session. Validate on return, discard failures to the static bank.
+- **Clamps live in code, after generation, never in the prompt.** A prompt is a request; a clamp is a guarantee.
+  `minutes ≤ 180 · steps ≤ 12000 · distance ≤ 5km`, no fasting verifier exists, no exercise-as-penalty
+  verifier exists, `CONDITION: FATIGUED` drops all ceilings 40%.
+- **Build-time AI is free forever.** Generate the System's whole voice offline and ship it in the APK.
+  Runtime inference is reserved for what can't be pre-computed.
+- **Runtime uses:** daily quest generation · weekly post-mortem · onboarding intent→weights ·
+  **first three actions derived from the user's own sentence** · mood-aware load · custom standing
+  directives · gate naming.
+- **BYOK (Gemini).** Removes the only real unit-economics risk. Must be an *unlock, never a requirement* —
+  the app is complete without it. Key in Keystore, never logged, never leaves the device.
+  **Free-tier Google AI traffic may train their models** — disclosed explicitly before the chat is used.
+- **The AI conversation is switchable between text and voice, with push-to-talk as the voice mode** — a
+  single centre circle, hold to talk, release to send, tap once for hands-free. Speech is recognised
+  **on the device** (Android `SpeechRecognizer`); the **audio never leaves the phone** — only the
+  transcript goes to the user's own AI key, and the reply is read back with TTS.
+  **Why:** the thing this app is for is often easier to say than to type, and typing a confession into a
+  text field at 1am is a higher bar than speaking it. On-device recognition is what makes that
+  defensible — a product that ships voice recordings of people's worst days to a server should not exist.
+- **Chat rate-limited to 10/day**, with guardrails: no medical advice, no calorie or weight targets,
+  no exercise as punishment, crisis language routes to real resources not the System's voice.
+- **Never:** AI verification, mood inference from text, unbounded generation, per-interaction inference.
+
+## 9. Social — the only real moat
+
+- **Guilds before global leaderboards.** Small groups solve cold start; a global ladder looks abandoned
+  until thousands are active. A guild of six works on launch day.
+- **Weekly leagues of ~30 inside your own rank.** Ranks *are* the divisions — one system, not two.
+  Competitive from the first thirty users and never stops working.
+- **Raid focus** — live session with a friend, mutual failure. **Base aura is never at risk; only the
+  raid bonus.** The one who broke it loses base as well. That single line is the difference between
+  accountability and resentment.
+- **Two classes of objective: proven and on-your-word.** Detectable ones (zero phone use, no social, study
+  session, steps, distance) settle themselves from usage history and pay full aura. **Non-confirmable ones —
+  meditation, a music session, just sitting with no screen, talking to your parents for 30 minutes, talking
+  to a friend, eating a meal with people — cannot be verified by any sensor, so they pay roughly a third**
+  (150–180 against 400–450), and when the clock runs out **The System asks once: did you actually do it?**
+  **Why:** these are the tasks that matter most and the phone can see none of them. Excluding them would
+  make the app only about what is measurable, which is how it becomes another screen-time tracker. Paying
+  them the same as proven work would make self-reporting the rational way to farm aura. Low pay plus a
+  single honest question is the only stable answer: the honest answer is what keeps it worth anything.
+- **Raid objectives are drawn at random from 18** — zero phone use, study session,
+  deep work, no social media, no browser, no shorts, walk it out, gym block, screen off and outside,
+  night hold, no delivery apps, reply-don't-scroll. Both partners get the same one.
+- **Raids are not only focus sessions.** A raid can be a meditation, a music session, idle sitting with no
+  phone and no screen at all, or a family conversation — including objectives nothing can confirm.
+- **The raid invite IS the install loop.** A link shared over the OS share sheet; if the recipient has no
+  app it sends them to Play and drops them into the same raid on first launch.
+  Dynamic Links is dead — **App Links + Play Install Referrer API**.
+- **The feed ends.** Twenty posts a day, then the System closes it. An infinite scroll inside an
+  anti-scroll app defeats the app. Guild-scoped only; global needs moderation, reporting, blocking, 16+ gate.
+
+## 10. The Pact
+
+Opt-in hard mode, separate from the humane default loop.
+
+- 21 / 45 / 75 days. **No carry-forward, no banking ahead, no shields. Fail once → reset to day 1.**
+- **The Pact is where the user grants powers their future self can't revoke without cost** —
+  containment on, thresholds up one band, shields suspended. Consented in advance by someone motivated,
+  applying to someone who won't be. Stronger than a technical lock precisely because it was chosen.
+- Difficulty comes from **consistency, never volume**. No pact quest exceeds standard param clamps.
+- One floor: `CONDITION: EXHAUSTED` waives a single day per pact.
+- **Completion screen** shows before/after on all four measures and the title earned.
+
+## 11. Titles
+
+Short, evocative, **with the earn condition and live progress** — that's what makes them chaseable.
+
+`Pacifist` · `Nightbound` · `Unbroken` · `Ascetic` · `Wayfarer` · `Silent` · `Hermit Broken` ·
+`Ironhanded` · `Void-Touched` · `Sovereign` · `Monarch's Equal`
+
+Locked titles show `18 / 30` with a progress bar, and ones above 50% render brighter so the two
+nearest surface themselves.
+
+## 12. Motivation
+
+- **The story only moves when you do.** Episodic narrative fragments gated on daily completion, in the
+  System's voice, citing real data. Curiosity beats achievement as a *daily* motivator, and it costs
+  writing rather than engineering — fragments pre-generate at build time.
+- **Polish scales with frequency, not ceremony.** The rank-up ceremony is seen ~6 times; the daily
+  completion moment 365. The ceremony drives *acquisition* (it gets screenshotted); completion drives *retention*.
+- **Never show a bare number.** Always distance to a named thing — `560 to D · II`, `Shadow in 3 days`.
+- **Variable reward on completion, never on opening.** Randomness attached to completing something real
+  reinforces the behaviour; randomness attached to opening the app builds the compulsion being treated.
+  No daily-login rewards, no timed chests.
+- **The System does not praise. It acknowledges.** *"Adequate." "Recorded." "No error noted."*
+  This audience is moved by respect earned from something hard to impress, not encouragement.
+
+## 13. Onboarding — 4 asks, everything else staged
+
+**Setup asks four questions and nothing more.** It was eleven screens with two contradictory step
+counters (`3 of 8` beside `3 of 7`); most of what it collected was not needed to issue quest one.
+
+**Only screens that ask for something are numbered.** A progress counter is a promise about how much
+work is left, so putting one on a reveal spends the goodwill the reveal just bought.
+
+**Minute one — the four asks (~90 seconds):**
+
+1. **Access** — usage, Health Connect, notifications, location. First, because everything downstream is
+   read from it. *(The accessibility permission is still requested at its trigger, never here — §3.)*
+2. **Intent** — free text, plus **15 quoted statements, pick at least five.** Sentences in the user's own
+   voice out-pull one-word chips.
+3. **Apps** — **five already selected from the user's own 30 days**, circular icons, not names. This is a
+   *confirm*, not a *choose*: the data to make the choice already exists, so asking the user to make it
+   from scratch is asking them to do the app's work. Auto-detection covers everything installed later, so
+   the list never needs maintaining.
+4. **Terms** — what the System may and may not do. The single accept gate; it issues the first quest.
+
+**Immediately after, with no input required:** Reality (`206 hours` in the **last 30 days** — not 12
+months, because at install the app can only read what Android retained, and an extrapolated figure would
+contradict the screen's whole power: *"the System did not compute this, your phone already had it"*) →
+Awakening (class, derived from intent) → Baseline and the first three quests, band set low for you.
+
+**Staged, in context, never in setup:**
+
+| when | what | why not in setup |
+|---|---|---|
+| Day 2 | **Self rating** — 1–5 on Focus, Sleep, Body, Scrolling, Mind, Company, each beside its measured number | The *gap* is the point, and the gap is more legible once a day of data exists |
+| Day 3 | **Private track** — optional, fingerprint and reminder inline | The heaviest, most sensitive ask in the app. Minute one has not earned it |
+| Day 7 | **Raise your band** — offered after seven clean days | Nobody can calibrate their own difficulty before trying once |
+| Any time | **Weighting** — derived from intent, adjustable in Settings | Derivable, so it is derived. Asking for it is asking twice |
+
+**Why:** the audience is 15–30 and installing on impulse. Eleven screens of forms before any payoff is
+where that impulse dies. Everything above still ships — it moved, it was not cut — and each piece now
+arrives at the moment it is legible instead of in a queue at minute one.
+
+**New-app detection runs at every app start, for the app's whole life** — not only at setup.
+A stored package list matched on device; no package list ever leaves the phone.
+
+## 14. Cut, and why
+
+| Cut | Reason |
+|---|---|
+| Public confessions | Anonymous UGC + minors + no moderation team = delisting. Survives as a *private* chat |
+| Calorie logging | Granularity kills it, not manual entry. Four booleans capture most of it |
+| Camera meditation tracking | Fakeable, spends a camera permission on nothing |
+| Call-log verification | Play-restricted permission. `READ_PHONE_STATE` gives duration without it |
+| Strava-style feed | You will not beat Strava at Strava |
+| Real money stakes | Payments + minors + regulation is a wall |
+| Native watch app | Health Connect already carries watch data |
+| One global leaderboard | Looks abandoned. Leagues of 30 work from user 30 |
+| Infinite feed | Defeats the app's own thesis |
+| Uninstall prevention | Impossible on a consumer install; attempting it is a Play *removal* |
+| Free-text AI quests | Untierable, so the ladder dies. Schema-constrained generation replaces it |
+
+## 15. IP
+
+- **Free:** gate, dungeon, hunter, awakening, raid, guild, rank E–S, shadow, penalty zone, mana —
+  genre vocabulary, most of it older than the series. **Real geography is free and better.**
+- **Not free:** character names, "Solo Leveling", "Shadow Monarch", named guilds, the specific System
+  window design.
+- **The risk scales with success.** Listings currently using the names openly are the ones nobody noticed.
+  It is a tax you only pay once it's working.
+- Original class roster instead of a borrowed one — you own the asset, and no notice can take it.
+
+## 16. Honest assessment
+
+- **There is no technical moat.** Every mechanic is rebuildable in a quarter.
+- What defends: **taste** (acquisition) · **switching cost** (progression compounds per user) ·
+  **the guild graph** (the only genuine network effect, defends both).
+- Moats are earned after launch, not designed before it. The pre-launch questions are wedge and retention.
+- **Craft is the gate, not the idea.** Eight Solo Leveling apps ship and none is beautiful. That's the
+  opening — and it means the real question is whether this one can be.
+- Lowest-ARPU segment in mobile. Retention mechanics are strong by design; monetisation is genuinely hard.
+- **Test the screenshot before writing the code.** The riskiest assumption is aesthetic, not functional.
+
+---
+
+## 17. Screen-off double-counting
+
+- **While a focus session or a raid is running, phone-down / screen-off credit pauses.** Turning the screen
+  off during a session is fine and encouraged — the session timer keeps running — but those minutes pay the
+  session, not the phone-down quest. The pause is shown on the Focus Active screen rather than left implicit.
+  **Why:** the two rewards overlap perfectly. Without the pause the optimal play is to start a focus session
+  and put the phone down, collecting twice for one behaviour, which quietly doubles the daily ceiling the
+  cap exists to hold.
+
+## Live artifacts
+
+- Feature spec / roadmap — https://claude.ai/code/artifact/8fa0df80-201f-4380-88dc-cb8f3c98ffb3
+- Full app design, 38 screens × 7 classes — https://claude.ai/code/artifact/7a66e316-7246-464f-a701-06d58ad1346f
+- Rank ceremony standalone — https://claude.ai/code/artifact/fe312f0c-032a-42d3-bb9e-6ed251cdc82a
+
+Assets: `assets/` (100 files) · `assets/MANIFEST.md` · `assets/PROMPTS.md`

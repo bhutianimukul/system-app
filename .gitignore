@@ -1,0 +1,18 @@
+.DS_Store
+*.tmp
+
+# Staging area for freshly generated art, before it is filed
+assets/_inbox/
+
+# Third-party reference material. Deliberately NOT committed:
+#  - solo-leveling-*.png are copyrighted publisher art, used only as private
+#    direction references
+#  - off-direction/* are rejected generations that have the Solo Leveling title
+#    baked into the image
+# Both categories contradict the IP rule in CLAUDE.md, so they stay local.
+assets/references/
+
+# The unabridged wording of the two generalised log entries. This repo is public
+# so the art can be served by URL; the original phrasing names specific private
+# habits and reads as a confession when it is not one.
+PRIVATE-NOTES.md
