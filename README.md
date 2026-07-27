@@ -18,12 +18,17 @@ Design phase closed 28 July 2026. **No application code exists yet.**
 
 ## Live design
 
+No login needed for any of these.
+
 | | link |
 |---|---|
-| Full app design — 39 screens, 4 pages | https://claude.ai/code/artifact/7a66e316-7246-464f-a701-06d58ad1346f |
+| Full app design — 39 screens, 7 classes | https://anyartifact-production.up.railway.app/t-U0VM42Wk1x |
 | Feature spec | https://anyartifact-production.up.railway.app/0XY02nXT3S84 |
-| Decision record and instruction log | https://anyartifact-production.up.railway.app/a4qyXBjaKuZ8 |
-| Rank ascension ceremony | https://claude.ai/code/artifact/fe312f0c-032a-42d3-bb9e-6ed251cdc82a |
+| Decision record and instruction log | https://anyartifact-production.up.railway.app/-xE8brb4PuOA |
+| Rank ascension ceremony | https://anyartifact-production.up.railway.app/Dq0Y8K2gCdoc |
+
+The design page loads its art from `web/` in this repo by URL rather than inlining it, which is what keeps
+it at 230 KB instead of 2.6 MB. That is also why this repo is public.
 
 ## The one-line thesis
 

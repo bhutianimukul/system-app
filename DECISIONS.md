@@ -4,28 +4,38 @@
 below is a decision of record. Changing any of it is a new decision that needs its own reasoning, not a
 preference to be applied silently.
 
-**Four shareable artifacts, all cleaned of AI-tell prose on 2026-07-28:**
+**All four live on anyartifact, public, no login to read.** Base
+`https://anyartifact-production.up.railway.app/`
 
-| artifact | what it is | link |
+| artifact | what it is | path |
 |---|---|---|
-| Full App Design | 39 screens + feature spec + this decision record, 4 pages | `7a66e316-7246-464f-a701-06d58ad1346f` |
-| Feature Spec | every mechanic, its Android verifier, why it survives | `8fa0df80-201f-4380-88dc-cb8f3c98ffb3` |
-| Rank Ceremony | one composition, five classes, one CSS variable | `fe312f0c-032a-42d3-bb9e-6ed251cdc82a` |
-| Decision Record | this document plus the complete instruction log, text only | `24eb4bab-8b84-4895-994d-5a91339d56e3` |
+| Full App Design | 39 screens, 7 classes, light and dark | `/t-U0VM42Wk1x` |
+| Feature Spec | every mechanic, its Android verifier, why it survives | `/0XY02nXT3S84` |
+| Decision Record | this document plus the instruction log | `/-xE8brb4PuOA` |
+| Rank Ceremony | one composition, five classes, one CSS variable | `/Dq0Y8K2gCdoc` |
 
-**Repo:** `github.com/bhutianimukul/system-app` (private). `CLAUDE.md` there is the feature spec and build
-rules, auto-loaded by Claude Code, so a session opened in that repo inherits the whole spec. Third-party
-reference art is gitignored: the publisher images are copyrighted and the rejected generations have the
-Solo Leveling title baked in, both of which contradict §15.
+Also on claude.ai, for anyone already signed in there:
+`claude.ai/code/artifact/7a66e316-7246-464f-a701-06d58ad1346f`
 
-**Also on anyartifact** (public HTML host, no login needed to read):
-- Feature spec — `anyartifact-production.up.railway.app/0XY02nXT3S84`
-- Decision record — `anyartifact-production.up.railway.app/a4qyXBjaKuZ8`
+**Repo:** `github.com/bhutianimukul/system-app`, **public**. `CLAUDE.md` there is the feature spec and
+build rules, auto-loaded by Claude Code, so a session opened in that repo inherits the whole spec.
 
-anyartifact caps content at **500 KB** and requires a full document with `<!DOCTYPE>` and
-`<meta charset=utf-8>`, otherwise Chrome falls back to windows-1252 and every em dash and `·` mojibakes.
-The 39-screen design (2.6 MB) and the ceremony (663 KB) exceed that cap and stay on claude.ai. Gzip does
-not rescue them the way it did the LCNC dashboard, because the payload is base64 JPEG rather than text.
+**Why the repo is public.** anyartifact sends no `Content-Security-Policy`, so a page hosted there can load
+images from a URL, which claude.ai artifacts forbid. That takes the design page from 2.6 MB of inlined
+base64 to 230 KB, which fits anyartifact's **500 KB cap** and keeps the art at full quality. The art has to
+be publicly readable for that to work, and GitHub Pages cannot serve from a private repo on a free plan, so
+the repo itself is public. Two log entries naming specific private habits were generalised before the flip,
+and the unabridged wording is in `PRIVATE-NOTES.md`, which is gitignored. Third-party reference art stays
+out for the same reason it always did: the publisher images are copyrighted and the rejected generations
+have the Solo Leveling title baked into the pixels, both of which contradict §15.
+
+**Two anyartifact traps.** Pages must be a full document with `<!DOCTYPE>` and `<meta charset=utf-8>`, or
+Chrome falls back to windows-1252 and every em dash and `·` mojibakes. And **`update_artifact` only works on
+the most recently published artifact for a given client** — publish anything else in between and the older
+one becomes permanently unreachable through MCP. The escape hatch is the REST API the owner page uses:
+`PUT /api/v1/artifacts/{id}/visibility?owner={token}` with `{"visibility":"private"}`, which still works on
+older artifacts. Content updates over REST need an `Authorization` header that the owner token does not
+satisfy, so an older page can be retired but not edited. **Keep every owner token.**
 
 **Prose standard for anything added later.** A self-audit found the writing, not the design, read as
 machine-generated. Two habits caused it and both are now capped:
