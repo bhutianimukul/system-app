@@ -261,3 +261,22 @@ each instruction changed. The synthesis of *why* lives in `DECISIONS.md`; this i
     artifact, 100 em dashes and 22 antitheses converted in the feature spec.
 82. *"looks good for now, lock it and move to anyartifact also / so that i can share"* — design locked as
     of 2026-07-28. All three artifacts cleaned and republished to their existing URLs.
+
+### 83–86 · Naming
+
+83. *"what cna we name this app?"* — candidates proposed across four strategies: the thesis, the currency
+    (noting that "aura farming" is live GenZ slang, so the currency name already carries recognition),
+    the rank ladder, and coined compounds.
+84. *"checkcompetitors name, and i think it should have solo leveling in name right"* — checked the seven
+    shipping competitors. Not one uses the exact phrase; all run near-misses, and one hides
+    `shadow.lord.solo.leveling` in its package id while shipping as *Shadow Lord: Legends Knight*. Netmarble
+    ships the licensed *Solo Leveling: Arise* in the same category, so the mark is actively commercialised
+    in our channel. Argued against putting it in the name and for putting it in the listing description,
+    where the discovery actually happens.
+85. *"Solo Leveller / is good?"* — that exact name is a live app, *Solo Leveller : The System*, carrying our
+    subtitle too. A deliberate misspelling is the textbook definition of *confusingly similar*, so it takes
+    all the exposure and none of the recognition.
+86. *"some korean word for the same anime"* → **"yes looks good"** — settled on **Gakseong** (각성,
+    *awakening*). Checked: no Play Store app of that name, `.app` and `.io` both unregistered. Rejected
+    *Honja* (혼자) for launching into a cluster of phonetically similar apps, and *Gatebound* for a taken
+    `.app`. Trademark clearance is still open and flagged as such.

@@ -1,7 +1,10 @@
-# The System
+# Gakseong · 각성
 
-An Android discipline game where every quest is proven by the phone itself. Solo-Leveling-flavoured,
-built for a 15–30 anime-adjacent audience.
+An Android discipline game where every quest is proven by the phone itself. Built for a 15–30
+anime-adjacent audience.
+
+*Gakseong* is Korean for **awakening** — the moment an ordinary person discovers they have a rank.
+**The System** is what the app calls itself when it speaks to you, and that never changes.
 
 Design phase closed 28 July 2026. **No application code exists yet.**
 

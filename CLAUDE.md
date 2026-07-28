@@ -1,4 +1,9 @@
-# The System — feature spec and build rules
+# Gakseong — feature spec and build rules
+
+**Gakseong** (각성, Korean for *awakening*) is the product name and store identity. **The System** is the
+in-app voice and never changes — it is what the app calls itself when it speaks to the user. Keep the two
+separate: every screen says "The System", the Play listing says Gakseong. That separation means the store
+identity can change without touching a single screen.
 
 Android app. Kotlin, Jetpack Compose, single module to start. A discipline game where **every quest is
 proven by the phone itself**. Audience is 15–30 and anime-adjacent.

@@ -27,7 +27,7 @@ be publicly readable for that to work, and GitHub Pages cannot serve from a priv
 the repo itself is public. Two log entries naming specific private habits were generalised before the flip,
 and the unabridged wording is in `PRIVATE-NOTES.md`, which is gitignored. Third-party reference art stays
 out for the same reason it always did: the publisher images are copyrighted and the rejected generations
-have the Solo Leveling title baked into the pixels, both of which contradict §15.
+have the Solo Leveling title baked into the pixels, both of which contradict §16.
 
 **Two anyartifact traps.** Pages must be a full document with `<!DOCTYPE>` and `<meta charset=utf-8>`, or
 Chrome falls back to windows-1252 and every em dash and `·` mojibakes. And **`update_artifact` only works on
@@ -321,7 +321,46 @@ arrives at the moment it is legible instead of in a queue at minute one.
 **New-app detection runs at every app start, for the app's whole life** — not only at setup.
 A stored package list matched on device; no package list ever leaves the phone.
 
-## 14. Cut, and why
+## 14. The name — Gakseong
+
+**The product is Gakseong (각성), Korean for *awakening*.** The in-app voice stays **The System**. Every
+screen says The System; the Play listing says Gakseong. Because the two are separate, the store identity can
+change later without touching a screen.
+
+**Why a Korean word.** The source material is Korean (나 혼자만 레벨업, *Na Honjaman Level Up*, "Only I Level
+Up"), so Korean vocabulary signals the genre authentically while staying an ordinary noun nobody can own.
+*Gakseong* names the exact moment the app is selling: an ordinary person finding out they have a rank.
+각성자 (*gakseongja*, "an Awakened") is the in-universe term, but 각성 itself is everyday Korean, which is
+what makes it registrable.
+
+**Why not "Solo Leveling" in the name.** Seven competitors ship and **not one uses the exact phrase** — they
+all run near-misses: *Solo Leveller : The System*, *Solo Level : System*, *Solo Mode*, *Solo Grinding*,
+*Solo X Player*, *ARISE SOLO*. One ships as *Shadow Lord: Legends Knight* while hiding
+`shadow.lord.solo.leveling` in its package id. The reason is that Netmarble ships **Solo Leveling: Arise**,
+an officially licensed game, in the same store and category, so the mark is actively commercialised in
+exactly the channel we would be using. A deliberate misspelling is not a loophole; *confusingly similar* is
+the legal standard for infringement, so a near-miss carries the exposure without the recognition. Per §17,
+a takedown at 200 installs costs nothing and one at 50,000 costs the listing, ranking, reviews and install
+base at once.
+
+**Where the discovery actually comes from.** Play indexes the long description, not only the title. The
+Solo Leveling reference goes there as nominative reference. Being the eighth "Solo Something" would also
+sort us in with seven apps we beat on craft, which is the only moat we have.
+
+**Availability, checked 2026-07-28.** No Play Store app named Gakseong. `gakseong.app` and `gakseong.io`
+both unregistered. `gakseong.com` was registered 2025-10-05 through a Korean host and serves nothing.
+Rejected alternatives: *Honja* (혼자, "alone" — clean, but launches into a cluster of phonetically similar
+apps: Hona, Huna, Honey Jar), *Gatebound* (`.app` taken), *Solo Leveller* (an existing live app, with our
+subtitle).
+
+**Title:** `Gakseong — Level Up IRL`, inside Play's 30-character limit.
+
+**Open, and do not skip it:** no authoritative trademark clearance yet. Justia blocks automated queries and
+USPTO search needs a session, so "nothing surfaced in general search" is a weak signal rather than
+clearance. Run USPTO properly, or pay for one, before spending on the icon and listing. Also worth a Korean
+speaker's ear on whether 각성 reads naturally or slightly clinical to a 20-year-old.
+
+## 15. Cut, and why
 
 | Cut | Reason |
 |---|---|
@@ -337,7 +376,7 @@ A stored package list matched on device; no package list ever leaves the phone.
 | Uninstall prevention | Impossible on a consumer install; attempting it is a Play *removal* |
 | Free-text AI quests | Untierable, so the ladder dies. Schema-constrained generation replaces it |
 
-## 15. IP
+## 16. IP
 
 - **Free:** gate, dungeon, hunter, awakening, raid, guild, rank E–S, shadow, penalty zone, mana —
   genre vocabulary, most of it older than the series. **Real geography is free and better.**
@@ -347,7 +386,7 @@ A stored package list matched on device; no package list ever leaves the phone.
   It is a tax you only pay once it's working.
 - Original class roster instead of a borrowed one — you own the asset, and no notice can take it.
 
-## 16. Honest assessment
+## 17. Honest assessment
 
 - **There is no technical moat.** Every mechanic is rebuildable in a quarter.
 - What defends: **taste** (acquisition) · **switching cost** (progression compounds per user) ·
@@ -360,7 +399,7 @@ A stored package list matched on device; no package list ever leaves the phone.
 
 ---
 
-## 17. Screen-off double-counting
+## 18. Screen-off double-counting
 
 - **While a focus session or a raid is running, phone-down / screen-off credit pauses.** Turning the screen
   off during a session is fine and encouraged — the session timer keeps running — but those minutes pay the
