@@ -1,6 +1,6 @@
 # DESIGN LOCKED — 2026-07-28
 
-**The design phase is closed.** 39 screens, 7 classes, four published artifacts. Everything
+**The design phase is closed.** 42 screens, 7 classes, four published artifacts. Everything
 below is a decision of record. Changing any of it is a new decision that needs its own reasoning, not a
 preference to be applied silently.
 
@@ -13,7 +13,7 @@ or art.
 
 | artifact | what it is | path |
 |---|---|---|
-| Full App Design | 39 screens, 7 classes, light and dark | `/t-U0VM42Wk1x` |
+| Full App Design | 42 screens, 7 classes, light and dark | `/MDmIt9DsjQw0` |
 | Feature Spec | every mechanic, its Android verifier, why it survives | `/0XY02nXT3S84` |
 | Decision Record | this document plus the instruction log | `/-xE8brb4PuOA` |
 | Rank Ceremony | one composition, five classes, one CSS variable | `/Dq0Y8K2gCdoc` |
@@ -415,6 +415,49 @@ speaker's ear on whether 각성 reads naturally or slightly clinical to a 20-yea
   **Why:** the two rewards overlap perfectly. Without the pause the optimal play is to start a focus session
   and put the phone down, collecting twice for one behaviour, which quietly doubles the daily ceiling the
   cap exists to hold.
+
+## 19. Cold start, growth and instrumentation
+
+Five additions Mukul specified on 2026-07-28, after the design lock.
+
+**Thin leagues are padded with shadow pacers, not fake people.** A division under thirty real hunters gets
+System-run shadows holding a fixed pace, each carrying a `◇` and the label `pacer`, with a card on the screen
+stating plainly that they are not people and are never counted as members. Every real hunter who joins
+replaces one.
+**Why:** the goal was that a new user should not feel alone, and fabricated usernames achieve that until
+someone notices the member who never posts in the guild feed. The ladder is the one thing in this app that
+has to be trustworthy, so the padding is labelled. It also fits the fiction, since shadows are already what
+this world is made of. *(Rejected: the original design already shipped unlabelled fake names in the league
+renderer. They were replaced.)*
+
+**A raid partner can be a shadow.** For when nobody is free. The shadow never breaks, so only the user can
+fail, and it pays **+180 against +450** for a person.
+**Why:** the raid bonus is paying for accountability, not for the timer. A partner who cannot be let down is
+worth less, and pricing it that way keeps the human raid the thing worth reaching for.
+
+**Referral: one rewarded summon a week, +600 aura, paid when the invitee clears day 3.**
+**Why day 3:** paying on install rewards installing the app twice. Paying on day 3 rewards bringing someone
+who stays. Same device, same person, or an uninstall-reinstall pays nothing.
+**Why aura and not Level:** I argued for Level-only so that social growth could never buy ladder position.
+**Mukul overruled it, and the daily cap already absorbs most of the risk** — referral aura sits under the
+same ceiling as everything else, so on a day already at cap it rolls into Level anyway.
+
+**Analytics: Firebase, on by default, switchable off.** Screen and feature counts, plus crash stack traces.
+Never a package name from the user's app list, never a duration, never screen contents.
+**The private track emits nothing at all** — not a screen view, not a count, not "a check-in happened" — and
+that exemption is unconditional rather than tied to the toggle.
+
+**Coming Soon with an email waitlist.** Four sealed gates — Cloud Sync, iOS, Guild Wars, Watch Face — each
+with a one-line reason, and an optional email field. One mail per launch.
+
+**Both of the above reverse §8's "no account, no email, no cloud".** Mukul confirmed the trade deliberately.
+The consequences are real and are not optional:
+- The Access screen no longer claims nothing leaves the device. It now names the three things that do: guild
+  identity, anonymous feature counts, crash traces.
+- A **privacy policy URL** and a **Play Data Safety declaration** become mandatory, because both are Play
+  requirements the moment anything leaves the device.
+- Collecting an email from an audience that includes 15-year-olds means the listing has to be honest about
+  it, and the field stays optional with skipping it costing nothing.
 
 ## Live artifacts
 

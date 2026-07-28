@@ -280,3 +280,20 @@ each instruction changed. The synthesis of *why* lives in `DECISIONS.md`; this i
     *awakening*). Checked: no Play Store app of that name, `.app` and `.io` both unregistered. Rejected
     *Honja* (혼자) for launching into a cluster of phonetically similar apps, and *Gatebound* for a taken
     `.app`. Trademark clearance is still open and flagged as such.
+
+### 87 · Five additions after the lock
+
+87. *"1. Leaderboard should have somemock up data (random), so that user dont feel alone / 2. THere should be
+    a co op raid against bot / 3. there should be invite feature, where if you ivite your friend you get
+    aura, limit aura referral per week (1 per week) / 4. Add google analytics as a feature enhance,emtn /
+    5. Add a coming soon feature with new features hint like CLoud Syncand other have a wait list which
+    takes the email"*
+    → Leaderboard padding built as **labelled shadow pacers** rather than fake people, after I argued that a
+    fabricated member who never posts gets noticed and the ladder is the one thing that must be trustworthy.
+    Shadow raid pays +180 against +450, because the bonus pays for accountability. Three new screens:
+    Shadow Raid, Summon, Coming Soon. 42 screens total.
+    → On analytics and the waitlist breaking "nothing leaves your device": **"this is fine"** — copy on the
+    Access screen rewritten to name the three things that leave, privacy policy and Data Safety flagged as
+    now mandatory, and the private track exempted from analytics unconditionally.
+    → On referral paying Level rather than Rank: **"no should increase aura"** — overruled, referral pays
+    ordinary aura under the daily cap.

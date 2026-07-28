@@ -41,7 +41,14 @@ Read these before writing code. Several look like style choices and are not.
    vocabulary (gate, dungeon, hunter, awakening, raid, guild, rank E–S, shadow) is free. Character names
    and the specific cosmology are not.
 9. **Private-track data never leaves the device and never reaches another human.** Biometric gate on every
-   open. No guild notification, no leaderboard entry, no "went dark" flag.
+   open. No guild notification, no leaderboard entry, no "went dark" flag. **It emits no analytics event of
+   any kind** — not a screen view, not a count, not "a check-in happened". The exemption is unconditional and
+   is not tied to the analytics toggle.
+10. **Three things leave the device, and nothing else:** guild identity when you join one, anonymous feature
+   counts, and crash stack traces. Never a package name from the user's app list, never a duration, never
+   anything from the private track. Analytics is Firebase (GA4 for apps), user-switchable in Settings, and
+   because it exists the app needs a **privacy policy URL and a Play Data Safety declaration** — both are
+   Play requirements the moment anything leaves the device.
 
 ---
 
@@ -127,6 +134,19 @@ short-video, browser, VPN, delivery and betting apps, matched on device. No pack
 
 - **Guilds before global leaderboards.** Weekly leagues of about thirty. A global ladder looks abandoned
   at low population.
+- **Thin divisions are filled with shadow pacers, never fake people.** A division below thirty real hunters
+  is padded with System-run shadows that hold a fixed pace. They carry a `◇` and the label `pacer`, are
+  stated on the screen to not be people, and are never counted as members. Each real hunter who joins
+  replaces one. **Never generate plausible human usernames to pad a ladder** — the ladder is the one thing
+  in this app that has to be trustworthy, and a fabricated member who never posts in the guild feed gets
+  noticed.
+- **A raid partner can be a shadow.** Shadow raids exist for when nobody is free: the shadow never breaks,
+  so only the user can fail. It pays **+180 against +450** for a human partner, because the bonus is paying
+  for accountability rather than for the timer.
+- **Referral: one rewarded summon per week, +600 aura**, paid when the invitee **clears day 3**, not on
+  install. Paying on install rewards installing the app twice. Referral aura is ordinary aura and sits under
+  the same daily cap, so anything above the ceiling rolls into Level. Same device, same person, or an
+  uninstall-reinstall pays nothing.
 - **Raids** are live co-op sessions with a shared objective drawn at random from eighteen. Base aura is
   never at risk; only the raid bonus. Whoever broke it loses base as well. That rule is the difference
   between accountability and resentment.
