@@ -1,6 +1,6 @@
 # DESIGN LOCKED — 2026-07-28
 
-**The design phase is closed.** 42 screens, 7 classes, four published artifacts. Everything
+**The design phase is closed.** 43 screens, 7 classes, four published artifacts. Everything
 below is a decision of record. Changing any of it is a new decision that needs its own reasoning, not a
 preference to be applied silently.
 
@@ -13,7 +13,7 @@ or art.
 
 | artifact | what it is | path |
 |---|---|---|
-| Full App Design | 42 screens, 7 classes, light and dark | `/Ia6B6U094McK` |
+| Full App Design | 43 screens, 7 classes, light and dark | `/BoXVo7CoUged` |
 | Feature Spec | every mechanic, its Android verifier, why it survives | `/0XY02nXT3S84` |
 | Decision Record | this document plus the instruction log | `/-xE8brb4PuOA` |
 | Rank Ceremony | one composition, five classes, one CSS variable | `/Dq0Y8K2gCdoc` |
@@ -454,6 +454,19 @@ same ceiling as everything else, so on a day already at cap it rolls into Level 
 Never a package name from the user's app list, never a duration, never screen contents.
 **The private track emits nothing at all** — not a screen view, not a count, not "a check-in happened" — and
 that exemption is unconditional rather than tied to the toggle.
+
+**Referral tracking needs no email and no phone.** The link carries an opaque code from the inviter's
+Anonymous Auth UID; the **Play Install Referrer API** hands the app that code once on first launch; the pair
+is a write-once Firestore doc keyed on the invitee's own anonymous UID. Three cleared thresholds inside
+fourteen days, not necessarily consecutive, releases the aura.
+**Why no identifier:** collecting a phone number for an audience that includes 15-year-olds, in an app with a
+private track, is a liability with almost no fraud benefit — free mailboxes and cheap SIMs are easier to get
+than three days of real threshold clears. **The day-3 gate is the anti-fraud mechanism**, not just a retention
+nicety: a fake account has to defeat the same `UsageStats` and Health Connect `dataOrigin` checks as real play,
+which costs more than 600 capped aura is worth. Residual hole stated plainly: anonymous UIDs rotate on
+reinstall, so someone with a spare device can farm roughly one a week. Hardening without PII is Firebase App
+Check plus a rate limit in security rules. Real verification would need one Cloud Function, which breaks §8's
+"no server code" — a trade to make if abuse appears, not upfront.
 
 **Coming Soon with an email waitlist.** Four sealed gates — Cloud Sync, iOS, Guild Wars, Watch Face — each
 with a one-line reason, and an optional email field. One mail per launch.

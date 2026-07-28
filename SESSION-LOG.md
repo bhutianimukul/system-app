@@ -297,3 +297,10 @@ each instruction changed. The synthesis of *why* lives in `DECISIONS.md`; this i
     now mandatory, and the private track exempted from analytics unconditionally.
     → On referral paying Level rather than Rank: **"no should increase aura"** — overruled, referral pays
     ordinary aura under the daily cap.
+
+88. *"raid should be nav bar"* — Raid became the centre tab, raised, across all 11 nav bars. League folded
+    into Guild (both are the social ladder) to stay at five tabs, with a D Division row on the Guild screen as
+    its entry point. Added a **Raid hub** as the tab's destination, since a tab needs somewhere to land.
+89. *"how will this be tracked?"* then *"we need to add email tracking then? email or mobile number
+    tracking"* — no. Play Install Referrer plus Anonymous Auth pairs the two users with no identifier at all.
+    Wrote the full chain and its forgeable edge into `CLAUDE.md`.

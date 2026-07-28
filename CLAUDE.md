@@ -145,8 +145,39 @@ short-video, browser, VPN, delivery and betting apps, matched on device. No pack
   for accountability rather than for the timer.
 - **Referral: one rewarded summon per week, +600 aura**, paid when the invitee **clears day 3**, not on
   install. Paying on install rewards installing the app twice. Referral aura is ordinary aura and sits under
-  the same daily cap, so anything above the ceiling rolls into Level. Same device, same person, or an
-  uninstall-reinstall pays nothing.
+  the same daily cap, so anything above the ceiling rolls into Level.
+
+### Referral tracking — no email, no phone, no account
+
+The whole chain runs on identifiers the platform already gives you. **Do not add email or phone collection
+for this**; it buys almost no fraud resistance and costs the entire no-account posture.
+
+1. **Link** carries an opaque code derived from the inviter's Firebase Anonymous Auth UID:
+   `gakseong.app/s/<code>`. Not a name, not an address.
+2. **Attribution** via the **Play Install Referrer API** (`InstallReferrerClient`). Play hands the app the
+   referrer string once, on first launch, for installs that went through the Store. This is why the design
+   already specifies App Links plus Install Referrer — a plain deep link cannot survive the Play round-trip,
+   and Firebase Dynamic Links is shut down. If the invitee already has the app, the App Link carries the code
+   directly instead.
+3. **Identity** is the invitee's own Anonymous Auth UID. No sign-up.
+4. **Pairing** is a Firestore doc `referrals/{inviteeUid} = {inviterUid, installedAt, state:pending}`, with a
+   security rule allowing **create only, never update**. One credit per invitee UID, ever.
+5. **Release condition:** the invitee clears the daily threshold on **three days inside a fourteen-day
+   window, not necessarily consecutive.** Consecutive would punish the inviter for the invitee's bad Tuesday.
+
+**Where this is forgeable, stated plainly.** Anonymous Auth UIDs rotate on reinstall, so a determined person
+with a spare device can farm it. The three-day gate is the actual defence rather than a retention nicety: the
+fake account has to clear three real thresholds, which means defeating the same `UsageStats` and Health
+Connect `dataOrigin` checks as normal play. That work costs more than 600 capped aura is worth, and the
+weekly limit caps the upside at roughly one per week regardless.
+
+**Cheap hardening, no PII:** add **Firebase App Check** so only genuine app instances can write, and rate-limit
+`referrals` creates per inviter in security rules.
+
+**If you want real verification, that needs one Cloud Function** — a Firestore trigger evaluating the day
+count server-side, because a client-reported "I cleared three days" is written by the very account you are
+trying to verify. That breaks the "no server code" line in §8, so it is a deliberate trade to make later if
+abuse actually shows up, not upfront.
 - **Raids** are live co-op sessions with a shared objective drawn at random from eighteen. Base aura is
   never at risk; only the raid bonus. Whoever broke it loses base as well. That rule is the difference
   between accountability and resentment.
