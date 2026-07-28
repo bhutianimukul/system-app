@@ -4,6 +4,10 @@
 below is a decision of record. Changing any of it is a new decision that needs its own reasoning, not a
 preference to be applied silently.
 
+**Name: Gakseong (각성) — final, confirmed 2026-07-28.** The in-app voice stays *The System*. Reasoning and
+the competitor and availability evidence are in §14. "Solo Leveling" never appears in the name, package id,
+or art.
+
 **All four live on anyartifact, public, no login to read.** Base
 `https://anyartifact-production.up.railway.app/`
 
@@ -54,6 +58,10 @@ the usual generated-design markers. Keep both as they are.
 - Art from Gemini: Envoy full-body crops, full-body crops for all 7 classes for the profile screen, flat
   small-size rank emblems (the ornate set is verified mush at 48px), a Tanker regenerated on pure black.
 - Kotlin phase 01: the aura and rank engine as pure functions, plus one test file. Nothing written yet.
+
+**Blocks launch, not the build:** a proper USPTO trademark search on *Gakseong*, and a Korean speaker's read
+on how 각성 sounds. Neither stops Kotlin work starting. Also grab `gakseong.app` — unregistered as of
+2026-07-28.
 
 ---
 
