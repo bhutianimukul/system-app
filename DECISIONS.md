@@ -13,7 +13,7 @@ or art.
 
 | artifact | what it is | path |
 |---|---|---|
-| Full App Design | 42 screens, 7 classes, light and dark | `/MDmIt9DsjQw0` |
+| Full App Design | 42 screens, 7 classes, light and dark | `/Ia6B6U094McK` |
 | Feature Spec | every mechanic, its Android verifier, why it survives | `/0XY02nXT3S84` |
 | Decision Record | this document plus the instruction log | `/-xE8brb4PuOA` |
 | Rank Ceremony | one composition, five classes, one CSS variable | `/Dq0Y8K2gCdoc` |
@@ -33,13 +33,21 @@ and the unabridged wording is in `PRIVATE-NOTES.md`, which is gitignored. Third-
 out for the same reason it always did: the publisher images are copyrighted and the rejected generations
 have the Solo Leveling title baked into the pixels, both of which contradict §16.
 
+**Canonical home for the text docs is this repo, not anyartifact.** `DECISIONS.md`, `CLAUDE.md` and
+`SESSION-LOG.md` render on GitHub, are always current, and have no size cap, so they never need
+republishing. The anyartifact pages are convenience copies of the *visual* work. When a doc and a design
+page both change, update the repo and republish only the design.
+
 **Two anyartifact traps.** Pages must be a full document with `<!DOCTYPE>` and `<meta charset=utf-8>`, or
 Chrome falls back to windows-1252 and every em dash and `·` mojibakes. And **`update_artifact` only works on
 the most recently published artifact for a given client** — publish anything else in between and the older
 one becomes permanently unreachable through MCP. The escape hatch is the REST API the owner page uses:
 `PUT /api/v1/artifacts/{id}/visibility?owner={token}` with `{"visibility":"private"}`, which still works on
 older artifacts. Content updates over REST need an `Authorization` header that the owner token does not
-satisfy, so an older page can be retired but not edited. **Keep every owner token.**
+satisfy, so an older page can be retired but not edited. **Keep every owner token.** In practice
+`update_artifact` refused even on the most recent publish, so treat updating as unreliable: expect to
+publish a new page and retire the old one, and batch changes so that happens once per cycle rather than
+three times.
 
 **Prose standard for anything added later.** A self-audit found the writing, not the design, read as
 machine-generated. Two habits caused it and both are now capped:

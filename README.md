@@ -25,7 +25,7 @@ No login needed for any of these.
 
 | | link |
 |---|---|
-| Full app design — 39 screens, 7 classes | https://anyartifact-production.up.railway.app/t-U0VM42Wk1x |
+| Full app design — 42 screens, 7 classes | https://anyartifact-production.up.railway.app/Ia6B6U094McK |
 | Feature spec | https://anyartifact-production.up.railway.app/0XY02nXT3S84 |
 | Decision record and instruction log | https://anyartifact-production.up.railway.app/-xE8brb4PuOA |
 | Rank ascension ceremony | https://anyartifact-production.up.railway.app/Dq0Y8K2gCdoc |
