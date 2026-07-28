@@ -1,6 +1,6 @@
 # DESIGN LOCKED — 2026-07-28
 
-**The design phase is closed.** 44 screens, 7 classes, four published artifacts. Everything
+**The design phase is closed.** 46 screens, 7 classes, four published artifacts. Everything
 below is a decision of record. Changing any of it is a new decision that needs its own reasoning, not a
 preference to be applied silently.
 
@@ -13,7 +13,7 @@ or art.
 
 | artifact | what it is | path |
 |---|---|---|
-| Full App Design | 44 screens, 7 classes, light and dark | `/Dz8hx3G5BQEW` |
+| Full App Design | 46 screens, 7 classes, light and dark | `/b3Bez8L0G4VW` |
 | Feature Spec | every mechanic, its Android verifier, why it survives | `/0XY02nXT3S84` |
 | Decision Record | this document plus the instruction log | `/-xE8brb4PuOA` |
 | Rank Ceremony | one composition, five classes, one CSS variable | `/Dq0Y8K2gCdoc` |
@@ -560,6 +560,76 @@ Shown on the Focus screen beside the screen-off pause, and governed by two Setti
 **Why add it at all:** the design catches rather than blocks, and DND fits that. It removes the interruption
 that causes the failure instead of preventing the user from acting. A notification is the most common reason a
 focus session dies, and silencing one is not the same as locking the phone.
+
+## 23. The voice and speech stack
+
+**ElevenLabs generates the System's spoken lines at build time**, shipped as audio in the APK. The System's
+script is fixed, so there is nothing to generate live: zero inference cost, zero latency, works offline, no
+key on the device. This is §8's build-time principle applied to audio rather than text.
+**Live AI replies are read by Android `TextToSpeech`** instead. A dynamic reply cannot be pre-rendered, and
+paying per chat message is the fastest way to break the unit economics the BYOK decision exists to protect.
+
+**Speech to text has two paths.** Android `SpeechRecognizer` on device by default. **Groq Whisper as an
+opt-in upgrade**, which uploads audio.
+**Why offer the upload at all:** the on-device recogniser handles Hinglish and Indian English badly, and this
+audience speaks both. That is a real quality gap rather than a nicety, and voice mode is worthless if the
+transcript is wrong.
+**Why it stays opt-in:** it reverses the "the recording never leaves your phone" line the voice screen used
+to carry, so the copy now names both engines and what each one does.
+
+**Two lines held:**
+- **Private-track voice never leaves the device**, whatever the accuracy setting says. Someone speaking a
+  relapse out loud at 1am must never have that audio uploaded to a third party. The routing is
+  unconditional, not a preference.
+- **ElevenLabs stays at build time.** A line that needs generating at runtime is a signal it should have been
+  in the script.
+
+## 24. Reading — the one quest that keeps you on the phone
+
+**`READ_SESSION`:** an in-app reader, N minutes foregrounded with scroll progress advancing.
+**App-initiated tier**, never sensor-proven, because the phone can only confirm the reader was open.
+
+**Why a screen-time quest belongs in an anti-screen-time app:** because **the passage ends and nothing loads
+beneath it.** Twenty minutes of something finite replaces twenty minutes of something that never stops. That
+is the same principle as the feed ending at twenty posts in §9. An infinite reader would defeat the app
+exactly as an infinite feed would, so the reader must never autoload.
+
+- **Content is public domain or originally generated. Never copyrighted excerpts** — the same rule as the art
+  in §16, and for the same reason.
+- The AI picks against the user's own record: a focus problem gets something on attention, a sleep problem
+  something on rest. Pre-generated at build time like every other AI-authored string.
+- Time in the reader counts as reading, not as screen time, in every threshold that measures screen time.
+- It also works as a raid objective, since two people can read the same passage.
+
+**Aura Exchange is in Coming Soon, cosmetics only.** Banked aura buys art, sigils, themes and shadow skins.
+**Nothing that touches a threshold, a shield or a rank.** Aura measures what the phone proved you did; the
+moment it can be spent on an advantage, the ladder stops meaning anything and every earlier decision about
+provability is wasted.
+
+## 25. The AI gate — lock the feature, never the app
+
+Five things need a key: generated quests, the weekly post-mortem, chat, reader passage selection, title
+generation. Each shows a **locked state in place**, with a blurred sample of the real output and one
+`Awaken it` action.
+
+**This is bounded by §8's line that AI is an unlock and never a requirement.** The daily quest never locks —
+it falls back to the static bank, which is exactly why the bank gets built regardless. A user with no key gets
+quests, thresholds, streaks, gates, raids, leagues, shadows, the private track and the entire ladder.
+**If any of those ever require a key, the build has gone wrong.**
+
+- **A locked state, not a nag.** No modal over the core loop, no countdown, no repeated prompting.
+  `Not now` is a real answer that costs nothing and does not re-ask on a schedule. An app that gates its
+  actual value behind a key it did not pay for has no standing to pester anyone.
+- **Framed as awakening the System, never as setup.** *"The System reads. It does not yet speak."* Pasting a
+  key reads as unlocking the real version; a form labelled "configure API access" reads as homework. This
+  audience already lists tech as an interest, so the paste itself is not the barrier — the framing is.
+- **Three steps and no card:** aistudio.google.com, create key, paste. Say plainly that it is free and needs
+  no billing, because most people assume otherwise and stop there.
+- **The free-tier warning comes before the paste.** Google may train on free-tier traffic and a paid key is
+  excluded, so the user decides with that in hand rather than discovering it later. The private track never
+  touches AI on either tier.
+- **The key lives in the Android keystore**, never logged, never in analytics, never sent anywhere but
+  Google's endpoint.
 
 ## Live artifacts
 

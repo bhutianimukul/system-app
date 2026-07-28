@@ -328,3 +328,25 @@ each instruction changed. The synthesis of *why* lives in `DECISIONS.md`; this i
     specifically because a condition-driven rule expires on its own if the app dies, where a manually set
     filter can strand someone in permanent silence. Calls always ring, which is not negotiable with
     fifteen-year-olds in the audience.
+
+94. *"we can use eleven labs for voice, then grok whisper, and other flows / also we can have a upcoming
+    feature where we can redeem our aura point add in coming soon / another sample task can be where we have
+    to read for x times, ai can suggest some stories to read or some snippets which can improve find
+    stableness"*
+    → **ElevenLabs at build time** for the System's fixed lines, Android TTS for dynamic replies, so per-message
+    inference cost never appears. **Groq Whisper opt-in** for speech, because on-device recognition handles
+    Hinglish badly — but private-track voice is routed on-device unconditionally, and the voice screen's
+    "recording never leaves your phone" line was rewritten to name both engines.
+    → **Aura Exchange** added to Coming Soon, **cosmetics only**: aura that can buy an advantage stops measuring
+    anything.
+    → **`READ_SESSION`** and a Reader screen. The justification for a screen-time quest inside an
+    anti-screen-time app is that the passage ends and nothing loads beneath it. Public domain or originally
+    generated content only. 45 screens.
+
+95. *"and soem prompt or popup that can tell user to use AI and use gemini ai key to enjoy ai features, can be
+    done on the screens which are ai driven, if not enabled restrict and ask to set it up"*
+    → New **AI Gate** screen plus a locked banner in situ on the Weekly Report. Restricts the five AI features
+    with a blurred preview of the real output and one action, bounded by §8's rule that AI is an unlock and
+    never a requirement: the daily quest falls back to the static bank and the whole ladder runs with no key at
+    all. Framed as awakening the System rather than as setup, three steps and no card, free-tier training
+    warning shown before the paste. 46 screens.

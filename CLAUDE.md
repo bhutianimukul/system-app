@@ -245,8 +245,62 @@ abuse actually shows up, not upfront.
 - AGSL `RuntimeShader` for effects on Android 13+, `RenderEffect.createBlurEffect` on 12+, degrade to
   static art below
 - `VibrationEffect` composition primitives. Haptics fire even on silent
-- AI is bring-your-own-key (Gemini). The app must be fully complete with zero AI configured. Build-time
-  generation for the System's voice, shipped in the APK, so there is no inference cost or latency
+- AI is bring-your-own-key (Gemini). The app must be fully complete with zero AI configured
+
+### The AI gate — lock the feature, never the app
+
+Five things need a key: generated quests, the weekly post-mortem, chat, reader passage selection, and title
+generation. Each shows a **locked state in place** rather than a modal that interrupts anything.
+
+- **The locked state previews the value.** A blurred sample of the real output plus one `Awaken it` action.
+  Never a nag, never a popup over the core loop, never a countdown or a repeated prompt.
+- **The daily quest never locks.** It falls back to the static bank, which is why §8 says the bank gets built
+  regardless. A user with no key gets quests, thresholds, streaks, gates, raids, leagues, shadows, the private
+  track and the whole ladder. **If any of those ever require a key, the build has gone wrong.**
+- **Framed as awakening the System, never as setup.** Pasting a key reads as unlocking the real version; a
+  form labelled "configure API access" reads as homework. Copy: *"The System reads. It does not yet speak."*
+- **Setup is three steps and no card:** aistudio.google.com → create key → paste. State plainly that it is
+  free and needs no billing, because most users assume otherwise and stop.
+- **The free-tier warning is shown before the paste, not after.** Google may train on free-tier traffic;
+  a paid key is excluded. The private track never touches AI on either tier.
+- **Store the key in the Android keystore** (`EncryptedSharedPreferences` or equivalent). Never log it, never
+  put it in analytics, never send it anywhere but Google's endpoint.
+- **`Not now` must be a real answer.** Dismissing it costs nothing and it does not re-ask on a schedule.
+
+### The voice and speech stack
+
+| job | engine | when it runs | why |
+|---|---|---|---|
+| The System's spoken lines | **ElevenLabs** | **build time**, shipped as audio in the APK | Zero inference cost, zero latency, works offline, no key on the device. The System's lines are a fixed script, so there is nothing to generate live |
+| Reading a live AI reply aloud | Android **TextToSpeech** | on device | Free and offline. A dynamic reply cannot be pre-rendered, and paying ElevenLabs per chat message is the fastest way to make the unit economics fail |
+| Speech to text, default | Android **`SpeechRecognizer`** | on device, `EXTRA_PREFER_OFFLINE` | Free, no upload, no liability |
+| Speech to text, opt-in | **Groq Whisper** | uploads audio | Materially better on Hinglish and Indian English, which the on-device recogniser handles badly. This is a real quality gap for this audience, not a nicety |
+
+**Rules that are not negotiable:**
+
+1. **Private-track voice never leaves the device**, whatever the accuracy setting says. Route it to the
+   on-device recogniser unconditionally. Someone speaking a relapse out loud at 1am must never have that audio
+   uploaded to a third party.
+2. **The Whisper path is opt-in with an explicit disclosure**, off by default, and reversible. The copy names
+   what is uploaded.
+3. **ElevenLabs stays at build time.** If a line needs to be generated at runtime, that is a signal the line
+   should have been in the script.
+4. TTS and STT both degrade to silence and typing rather than blocking anything. Voice is a mode, not a
+   dependency.
+
+### `READ_SESSION` — the one quest that keeps you on the phone
+
+An in-app reader. N minutes with the reader in the foreground and scroll progress advancing, so it is
+**app-initiated tier**, never sensor-proven.
+
+- **Content must be public domain (Project Gutenberg and similar) or originally generated.** Never serve
+  copyrighted excerpts. This is the same rule as the art in §16 and it is not optional.
+- The AI picks a passage against the user's own record — a focus problem gets something on attention, a sleep
+  problem gets something on rest — and it is pre-generated at build time like every other AI-authored string.
+- **The passage ends and nothing loads beneath it.** That is the whole justification for a screen-time quest
+  inside an anti-screen-time app: twenty minutes of something finite replacing twenty minutes of something
+  that never stops. An infinite reader would defeat the app exactly as an infinite feed would.
+- Time in the reader counts as reading, not as screen time, in every threshold that measures screen time.
 
 ---
 
