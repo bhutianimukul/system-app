@@ -304,3 +304,16 @@ each instruction changed. The synthesis of *why* lives in `DECISIONS.md`; this i
 89. *"how will this be tracked?"* then *"we need to add email tracking then? email or mobile number
     tracking"* — no. Play Install Referrer plus Anonymous Auth pairs the two users with no identifier at all.
     Wrote the full chain and its forgeable edge into `CLAUDE.md`.
+
+90. *"add to claud.md and decisions and home screen should tell the name and design a splash screen also
+    with animations"* — Home header now leads with the `각성 GAKSEONG` wordmark, with the Daily Quest eyebrow
+    moved below it; previously the app never said its own name anywhere. New animated splash screen: hangul
+    resolving out of a blur, expanding aura rings, a gate splitting to reveal Home. Documented the Android
+    12+ constraint that matters — use `androidx.core.splashscreen` rather than a custom Activity, or you ship
+    a double-splash. 44 screens.
+
+91. *"there should be some way to tell the user that u are assined a figher and its characterstics, or ranger
+    (on the basis of user onboarding"* — the Awakening screen proved *why* but never said what the class
+    **means**. Added a per-class "What a Fighter is" block: how it plays in one line, quest weighting as three
+    bars summing to 100, first shadow, a title to chase, and the trade each class makes. The trade line is the
+    load-bearing part — without it the class reads as flattery and the override means nothing.

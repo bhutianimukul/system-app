@@ -1,6 +1,6 @@
 # DESIGN LOCKED — 2026-07-28
 
-**The design phase is closed.** 43 screens, 7 classes, four published artifacts. Everything
+**The design phase is closed.** 44 screens, 7 classes, four published artifacts. Everything
 below is a decision of record. Changing any of it is a new decision that needs its own reasoning, not a
 preference to be applied silently.
 
@@ -13,7 +13,7 @@ or art.
 
 | artifact | what it is | path |
 |---|---|---|
-| Full App Design | 43 screens, 7 classes, light and dark | `/BoXVo7CoUged` |
+| Full App Design | 44 screens, 7 classes, light and dark | `/TymGg2Gkuufe` |
 | Feature Spec | every mechanic, its Android verifier, why it survives | `/0XY02nXT3S84` |
 | Decision Record | this document plus the instruction log | `/-xE8brb4PuOA` |
 | Rank Ceremony | one composition, five classes, one CSS variable | `/Dq0Y8K2gCdoc` |
@@ -479,6 +479,54 @@ The consequences are real and are not optional:
   requirements the moment anything leaves the device.
 - Collecting an email from an audience that includes 15-year-olds means the listing has to be honest about
   it, and the field stays optional with skipping it costing nothing.
+
+## 20. Branding in the app, and the splash
+
+**The name is visible in exactly two places:** the splash, and a small wordmark in the Home header —
+`각성` with `GAKSEONG` beneath it as a spaced-out sub-label. Everywhere else the app still speaks as
+**The System**.
+**Why so restrained:** §14 keeps the store identity and the in-app voice separate so either can change
+without touching the other. A wordmark is a mark, not a voice. The System never refers to itself as Gakseong
+in a sentence, because the fiction is that it is a system, not an app someone shipped.
+
+**Home's header now leads with the wordmark** and the *Daily Quest* eyebrow moved to its own line below.
+The header previously opened with the eyebrow, which meant the app never said its own name anywhere.
+
+**The splash is the platform's, not ours.** Android 12+ shows a system splash whether or not you ask for one,
+so it is built with `androidx.core.splashscreen` and customised. **A custom splash Activity layered on top
+produces a visible double-splash** — the most common way this feature ships broken.
+
+- Icon animation is an `AnimatedVectorDrawable` in `windowSplashScreenAnimatedIcon`, designed to the
+  system's ~1000 ms budget because anything longer is simply cut off.
+- `setOnExitAnimationListener` takes over the `SplashScreenView` for the brand moment: the hangul resolving
+  out of a blur, an aura ring expanding, then the gate splitting to reveal Home. Around 600 ms.
+- `setKeepOnScreenCondition` holds only until the first frame is ready. **Never hold a splash to finish an
+  animation.** Cold start is already the worst moment in the app and delaying first paint is a retention cost.
+- Reduced motion is honoured through `Settings.Global.ANIMATOR_DURATION_SCALE`; at 0 it cross-fades straight
+  to Home. The design file mirrors this with `prefers-reduced-motion`.
+- The reveal is decoration over an already-rendered Home, so a failure anywhere in the sequence still lands
+  the user on a working screen.
+
+## 21. Telling the user what their class means
+
+The Awakening screen already proved *why* a class was assigned — three lines pulled from the user's own
+record. It never explained what being a Fighter actually **means** for the play ahead, so a **What a Fighter
+is** block now sits under the evidence, per class:
+
+- **How it plays** in one line. Fighter moves; Ranger leaves the house; Sage sits still; Healer sleeps;
+  Assassin starves the feeds; Tanker shows up; Envoy talks to people.
+- **Quest weighting** as three real bars summing to 100, so the user can see their quests will skew to Body,
+  or Attention, or People. This is the same weighting §13 derives from intent rather than asking for.
+- **First shadow** and a **title to chase** — Bull/Ironhanded, Wolf/Wayfarer, Knight/Ascetic,
+  Serpent/Nightbound, Wraith/Void-Touched, Beast/Unbroken, Spearman/Pacifist. Per §11, a title the user can
+  see and aim at is what makes them play for it.
+- **The trade**, stated plainly. Every class is worse at something: Sage loses a whole day to one broken
+  session, Envoy runs half on your word so it pays less, Assassin has no excuses because usage history
+  proves everything.
+
+**Why the trade line matters:** without it the class reads as flattery, and an override becomes arbitrary.
+With it the assignment is an argument the user can disagree with — which is the only reason the override in
+§13 means anything.
 
 ## Live artifacts
 

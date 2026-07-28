@@ -52,6 +52,31 @@ Read these before writing code. Several look like style choices and are not.
 
 ---
 
+## Branding in the app
+
+**The name appears in two places and nowhere else:** the splash, and a small wordmark in the Home header
+(`각성 GAKSEONG`, hangul first, latin as a spaced-out sub-label). Everywhere else the app still speaks as
+**The System**. The wordmark is a mark, not a voice — it never says "Gakseong" in a sentence to the user.
+
+### Splash — use the platform API, do not build an Activity
+
+**Android 12+ shows a system splash whether you want one or not.** Build it with
+`androidx.core.splashscreen` (`SplashScreen` compat) and customise it. **A custom splash Activity on top of
+that produces a visible double-splash**, which is the single most common way this gets shipped wrong.
+
+- Icon animation goes in an **`AnimatedVectorDrawable`** set as `windowSplashScreenAnimatedIcon`. The system
+  gives it roughly **1000 ms**; anything longer is cut off, so design to that budget.
+- Use **`setOnExitAnimationListener`** to take over the `SplashScreenView` and run the handoff yourself. That
+  is where the brand moment lives: the hangul resolving out of a blur, the aura ring expanding, then the gate
+  splitting to reveal Home. Budget ~600 ms for the handoff.
+- **`setKeepOnScreenCondition` only until the first frame is ready.** Never hold the splash to finish an
+  animation — a splash that delays first paint is a retention cost, and cold start is already the worst
+  moment in the app.
+- **Respect reduced motion.** Check `Settings.Global.ANIMATOR_DURATION_SCALE`; when it is 0, skip straight to
+  Home with a cross-fade. The design file mirrors this with `prefers-reduced-motion`.
+- The gate-split reveal is decoration over an already-rendered Home. If anything in the sequence fails, the
+  user still lands on a working screen.
+
 ## The economy
 
 | concept | rule |
