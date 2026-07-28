@@ -322,3 +322,9 @@ each instruction changed. The synthesis of *why* lives in `DECISIONS.md`; this i
     so it read as a fourth metadata chip over the hero art. Rebuilt as a vertical lockup: 각성 at 1.15rem in
     ink with an accent glow, GAKSEONG beneath in the class accent, stats moved to a right-aligned stack. A
     wordmark has to differ from its neighbours in kind, not only in content.
+
+93. *"can we add a decision to start DND also"* (on the Focus Active screen) — sessions now turn Do Not
+    Disturb on and release it at the end. Built on `AutomaticZenRule` rather than `setInterruptionFilter`
+    specifically because a condition-driven rule expires on its own if the app dies, where a manually set
+    filter can strand someone in permanent silence. Calls always ring, which is not negotiable with
+    fifteen-year-olds in the audience.

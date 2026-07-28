@@ -13,7 +13,7 @@ or art.
 
 | artifact | what it is | path |
 |---|---|---|
-| Full App Design | 44 screens, 7 classes, light and dark | `/IjTdPV_ItiPn` |
+| Full App Design | 44 screens, 7 classes, light and dark | `/Dz8hx3G5BQEW` |
 | Feature Spec | every mechanic, its Android verifier, why it survives | `/0XY02nXT3S84` |
 | Decision Record | this document plus the instruction log | `/-xE8brb4PuOA` |
 | Rank Ceremony | one composition, five classes, one CSS variable | `/Dq0Y8K2gCdoc` |
@@ -535,6 +535,31 @@ is** block now sits under the evidence, per class:
 **Why the trade line matters:** without it the class reads as flattery, and an override becomes arbitrary.
 With it the assignment is an argument the user can disagree with — which is the only reason the override in
 §13 means anything.
+
+## 22. Do Not Disturb during sessions
+
+**A session turns DND on and takes it off again when it ends** — focus sessions, the night gate, raids.
+Shown on the Focus screen beside the screen-off pause, and governed by two Settings rows.
+
+- **Built on `AutomaticZenRule`, never `setInterruptionFilter`.** A registered rule appears in system Settings
+  under the app's own name so the user can edit or kill it, and a condition-driven rule **expires by itself if
+  the app dies mid-session.** Setting the filter by hand can leave someone in permanent silence after a crash,
+  which would be the worst bug this feature could ship.
+- **`ACCESS_NOTIFICATION_POLICY` is a special access**, granted through a Settings screen rather than a
+  runtime dialog. Requested **at the first session, never at onboarding**, per §3. Not Play-restricted, so no
+  declaration form.
+- **Calls always ring.** The rule allows calls and repeat callers.
+  **Why this is not negotiable:** the audience includes fifteen-year-olds, and an app that silences a parent
+  for forty-five minutes is indefensible whatever it does for focus. It also matches the dialer whitelist that
+  already exists during focus sessions.
+- **Read the prior filter and restore it.** Someone who already had DND on for their own reasons keeps it.
+- **Skipped during the night gate if system Bedtime mode already owns DND.** Do not fight the platform for
+  the same setting.
+- Off until the grant exists, and a refused grant degrades to an ordinary session rather than blocking one.
+
+**Why add it at all:** the design catches rather than blocks, and DND fits that. It removes the interruption
+that causes the failure instead of preventing the user from acting. A notification is the most common reason a
+focus session dies, and silencing one is not the same as locking the phone.
 
 ## Live artifacts
 

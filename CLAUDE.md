@@ -125,6 +125,30 @@ that issues "don't touch your phone for 90 minutes" issues a 72-hour Gate.
 closes. **Focus session** is a foreground service bounded by session length, dialer whitelisted, with a
 ~10s return grace so a mis-tap does not cost the session.
 
+### Do Not Disturb during sessions
+
+A session turns DND on and takes it off again when the session ends. Applies to focus sessions, the night
+gate and raids.
+
+- **Use `AutomaticZenRule`**, not `setInterruptionFilter`. Register a named rule via
+  `NotificationManager.addAutomaticZenRule` and drive it with a condition. It appears in system Settings under
+  the app's own name so the user can edit or kill it, and — the reason that matters — **a condition-driven
+  rule expires on its own if the app dies mid-session.** Setting the filter by hand can strand a user in
+  permanent silence after a crash, which is the worst bug this feature could ship.
+- Needs **`ACCESS_NOTIFICATION_POLICY`**, which is a special access granted through
+  `Settings.ACTION_NOTIFICATION_POLICY_ACCESS_SETTINGS` rather than a runtime dialog. **Ask at the first
+  session, never at onboarding**, same rule as §3. It is not a Play-restricted permission and needs no
+  declaration form.
+- **Calls always ring.** Configure the rule to allow calls and repeat callers. The audience includes
+  fifteen-year-olds, and an app that silences a parent's call for forty-five minutes is indefensible. This
+  also matches the existing dialer whitelist during focus sessions.
+- **Restore, do not assume.** Read the prior interruption filter before starting and put it back after, so a
+  user who already had DND on for their own reasons keeps it.
+- Skip it entirely during the night gate if system Bedtime mode already has DND active. Do not fight the
+  platform for control of the same setting.
+- Fully optional and off by default until the user grants access. A refused grant degrades to a normal
+  session rather than blocking it.
+
 **Speed bump** uses `SYSTEM_ALERT_WINDOW` (a single user toggle) and only while a session's foreground
 service is already alive. **Containment** (real blocking) needs `AccessibilityService`, so it stays
 opt-in, earned by repeated failure, disclosed at onboarding with the permission requested at the trigger.
