@@ -350,3 +350,10 @@ each instruction changed. The synthesis of *why* lives in `DECISIONS.md`; this i
     never a requirement: the daily quest falls back to the static bank and the whole ladder runs with no key at
     all. Framed as awakening the System rather than as setup, three steps and no card, free-tier training
     warning shown before the paste. 46 screens.
+
+96. *"showijg 38 screens where ate new screens"* (screenshot of the picker) — the new screens were all present;
+    the **count label was stale**. Three hardcoded numbers had drifted: the page tab and design-system kicker
+    still said 38 screens, and "14 screens × 7 classes = 98 states" was wrong now that 15 screens respond to the
+    class picker. Also caught "one engine, eight verifiers" while the table had gained `READ_SESSION` without a
+    row. All recomputed from the source rather than edited by hand: 46 screens, 46 nav buttons, zero mismatches,
+    15 × 7 = 105 states, nine verifiers.

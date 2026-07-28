@@ -120,6 +120,7 @@ that issues "don't touch your phone for 90 minutes" issues a 72-hour Gate.
 | `LOCATION_CHECKIN` | foreground location, one tap | passive geofencing needs a restricted permission |
 | `CALL_DURATION` | `READ_PHONE_STATE` | duration only, never who. Avoids `READ_CALL_LOG` |
 | `DECLARED` | user confirmation | low ceiling, one yes/no at expiry |
+| `READ_SESSION` | in-app reader foregrounded, scroll advancing | app-initiated tier. The passage ends and never autoloads |
 
 **Night gate** is `SCREEN_OFF_BLOCK` across a configurable 00:30–06:00 window, checked once after it
 closes. **Focus session** is a foreground service bounded by session length, dialer whitelisted, with a
