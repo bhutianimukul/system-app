@@ -317,3 +317,8 @@ each instruction changed. The synthesis of *why* lives in `DECISIONS.md`; this i
     **means**. Added a per-class "What a Fighter is" block: how it plays in one line, quest weighting as three
     bars summing to 100, first shadow, a title to chase, and the trade each class makes. The trade line is the
     load-bearing part — without it the class reads as flattery and the override means nothing.
+
+92. *"home screen dont have app name"* — it did, but at 0.52rem in `--dim` sharing a row with LV/streak/rank,
+    so it read as a fourth metadata chip over the hero art. Rebuilt as a vertical lockup: 각성 at 1.15rem in
+    ink with an accent glow, GAKSEONG beneath in the class accent, stats moved to a right-aligned stack. A
+    wordmark has to differ from its neighbours in kind, not only in content.

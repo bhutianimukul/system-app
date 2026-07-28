@@ -13,7 +13,7 @@ or art.
 
 | artifact | what it is | path |
 |---|---|---|
-| Full App Design | 44 screens, 7 classes, light and dark | `/TymGg2Gkuufe` |
+| Full App Design | 44 screens, 7 classes, light and dark | `/IjTdPV_ItiPn` |
 | Feature Spec | every mechanic, its Android verifier, why it survives | `/0XY02nXT3S84` |
 | Decision Record | this document plus the instruction log | `/-xE8brb4PuOA` |
 | Rank Ceremony | one composition, five classes, one CSS variable | `/Dq0Y8K2gCdoc` |
@@ -489,8 +489,16 @@ The consequences are real and are not optional:
 without touching the other. A wordmark is a mark, not a voice. The System never refers to itself as Gakseong
 in a sentence, because the fiction is that it is a system, not an app someone shipped.
 
-**Home's header now leads with the wordmark** and the *Daily Quest* eyebrow moved to its own line below.
-The header previously opened with the eyebrow, which meant the app never said its own name anywhere.
+**Home's header leads with the wordmark** as a vertical lockup — `각성` at 1.15rem in ink with an accent
+glow, `GAKSEONG` beneath it in the class accent at 0.5rem with wide tracking — and the *Daily Quest* eyebrow
+sits on its own line below. Rank and level moved to a right-aligned stack.
+
+**This was built wrong once and it is worth recording why.** The first attempt put the wordmark inline at
+0.52rem in `--dim`, sharing a row with `LV 34`, `14d streak` and `D · III`. It was technically present and
+effectively invisible: at that size and colour, over the hero art, it read as a fourth metadata chip rather
+than a name. **A wordmark needs to differ from its neighbours in kind, not just in content** — its own line,
+its own scale, its own weight. The fix was a vertical lockup with a glow and a drop shadow so it survives a
+busy background, and moving the stat chips into a stack so nothing competes with it.
 
 **The splash is the platform's, not ours.** Android 12+ shows a system splash whether or not you ask for one,
 so it is built with `androidx.core.splashscreen` and customised. **A custom splash Activity layered on top
