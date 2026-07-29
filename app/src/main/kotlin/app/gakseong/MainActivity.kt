@@ -30,6 +30,11 @@ import app.gakseong.ui.screens.BaselineScreen
 import app.gakseong.ui.screens.IntentScreen
 import app.gakseong.ui.screens.StagedScreen
 import app.gakseong.ui.screens.NewAppScreen
+import app.gakseong.ui.screens.CompleteScreen
+import app.gakseong.ui.screens.GatesScreen
+import app.gakseong.ui.screens.MonarchScreen
+import app.gakseong.ui.screens.ReaderScreen
+import app.gakseong.ui.screens.ShadowsScreen
 import app.gakseong.ui.screens.PrivateSetupScreen
 import app.gakseong.ui.screens.RateScreen
 import app.gakseong.ui.screens.ThresholdScreen
@@ -111,6 +116,11 @@ private fun Route(screen: String) {
         "thresh" -> ThresholdScreen()
         "weights" -> WeightsScreen()
         "newapp" -> NewAppScreen()
+        "read" -> ReaderScreen()
+        "shadows" -> ShadowsScreen()
+        "complete" -> CompleteScreen()
+        "monarch" -> MonarchScreen()
+        "gates" -> GatesScreen()
         else -> HomeScreen()
     }
 }

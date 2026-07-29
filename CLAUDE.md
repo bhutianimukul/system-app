@@ -396,15 +396,17 @@ noise, which at 26% under an overlay blend is not visible.
 
 ### Screen inventory
 
-Thirty-five built, all compiling and rendering with no runtime errors. Route with
+`screenshots/index.html` is a contact sheet of every built screen, captured from the debug APK on a Pixel 7
+emulator. Regenerate it after a batch rather than describing screens in prose.
+
+Forty built, all compiling and rendering with no runtime errors. Route with
 `adb shell am start -n app.gakseong/.MainActivity --es screen <name> --es class <class>`.
 
 **Built:** `home` `focus` `ceremony` `raid` `raidhub` `runraid` `runsettle` `share` `arise` `league` `gate`
 `break` `invite` `guild` `feed` `refer` `soon` `profile` `private` `report` `splash` `welcome` `perms` `diag`
-`apps` `contract` `intent` `class` `assess` `stage` `rate` `privset` `thresh` `weights` `newapp`
+`apps` `contract` `intent` `class` `assess` `stage` `rate` `privset` `thresh` `weights` `newapp` `read` `shadows` `complete` `monarch` `gates`
 
-**Remaining:** `read` `shadows`
-`complete` `monarch` `gates` `chat` `aikey` `bonus` `widget` `settings` `pact` `contain` `store`
+**Remaining:** `chat` `aikey` `bonus` `widget` `settings` `pact` `contain` `store`
 
 **The chart kit is in `ui/Charts.kt`:** `AuraByDay`, `HoursHeatmap`, `DayCalendar`, `Legend`. `assess` needs it
 too, so use it rather than drawing new bars.
