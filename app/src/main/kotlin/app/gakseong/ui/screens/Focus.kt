@@ -1,5 +1,6 @@
 package app.gakseong.ui.screens
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
@@ -9,7 +10,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Text
+import androidx.activity.compose.BackHandler
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
@@ -28,6 +34,7 @@ import app.gakseong.ui.Grain
 import app.gakseong.ui.Pill
 import app.gakseong.ui.Plate
 import app.gakseong.ui.RingTimer
+import app.gakseong.ui.rememberHaptics
 import app.gakseong.ui.Screen
 import app.gakseong.ui.ShadeRadial
 import app.gakseong.ui.Tag
@@ -42,6 +49,17 @@ fun FocusScreen() {
     val p = LocalPalette.current
     val m = LocalMetrics.current
     val t = LocalType.current
+    val haptics = rememberHaptics()
+    var bumped by remember { mutableStateOf(false) }
+
+    // A session is bounded by its own length. Leaving is what ends it, so back cannot be a silent exit: it
+    // raises the speed bump the screen already carries, and only Proceed actually gives the session up.
+    BackHandler(enabled = true) {
+        if (!bumped) {
+            bumped = true
+            haptics.thud()
+        }
+    }
 
     Screen {
         Bg()
@@ -102,7 +120,7 @@ fun FocusScreen() {
                 }
 
                 Filler()
-                Card(Modifier.fillMaxWidth(), big = true, lit = true) {
+                if (bumped) Card(Modifier.fillMaxWidth(), big = true, lit = true) {
                     Tag("⚠ Speed bump", t.tag.copy(color = p.hot))
                     Gap(6.4)
                     Text("The System does not permit this", style = t.md)
@@ -110,8 +128,8 @@ fun FocusScreen() {
                     Text("31 minutes remain. Proceeding ends your session.", style = t.body.copy(fontSize = m.s(12.2)))
                     Gap(13.6)
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(m.d(6.4))) {
-                        Cta("Return", modifier = Modifier.weight(1f))
-                        Cta("Proceed", ghost = true, modifier = Modifier.weight(1f))
+                        Cta("Return", modifier = Modifier.weight(1f).clickable { bumped = false })
+                        Cta("Proceed · lose the session", ghost = true, modifier = Modifier.weight(1f))
                     }
                 }
                 Gap(17.6)

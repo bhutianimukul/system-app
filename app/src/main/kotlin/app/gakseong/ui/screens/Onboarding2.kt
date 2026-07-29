@@ -178,85 +178,6 @@ fun AwakeningScreen() {
     }
 }
 
-/** `data-s="assess"` — Baseline. Unnumbered: nothing to answer, and the band is set low on purpose. */
-@Composable
-fun BaselineScreen() {
-    val p = LocalPalette.current
-    val m = LocalMetrics.current
-    val t = LocalType.current
-    Screen {
-        Bg()
-        Bg2()
-        // Feathered: this scene is shorter than the shade's fade, so its bottom edge showed as a hard rectangle.
-        Art(R.drawable.sc_sigilup, top = -0.03f, left = -0.03f, width = 1.06f, alpha = 0.62f, feather = true)
-        Shade(0f to 0.57f, 0.12f to 0f, 0.30f to 0.59f, 0.44f to 1f)
-        Grain()
-        TopFade()
-        Body {
-            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                Eye("Baseline"); Filler(); Tag("Nothing to answer")
-            }
-            Gap(99.2)
-            Tag("Record read", t.tag.copy(letterSpacing = 0.30.em))
-            Gap(3.2)
-            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.Bottom) {
-                XlNumber("30", designPx = 48)
-                GapW(6.4)
-                Column {
-                    Text("DAYS", style = t.display(18.4))
-                    Gap(5.6)
-                }
-                Filler()
-                Column {
-                    Pill("Rank E · I", on = true)
-                    Gap(6.4)
-                }
-            }
-
-            Gap(14.4)
-            Column(
-                Modifier.weight(1f).verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(m.d(8)),
-            ) {
-                Plate(Modifier.fillMaxWidth()) {
-                    Column(verticalArrangement = Arrangement.spacedBy(m.d(8))) {
-                        BaselineRow("Screen time", "6h 51m avg")
-                        BaselineRow("Sleep", "5h 42m avg")
-                        BaselineRow("Steps", "3,180 avg")
-                        BaselineRow("Longest phone-free block", "38 min")
-                    }
-                }
-                SystemWindow {
-                    Tag("Your band, set low", t.tag.copy(color = p.hot))
-                    Gap(4.8)
-                    Text(
-                        buildAnnotatedString {
-                            append("Threshold 150, cap 500. ")
-                            withStyle(SpanStyle(color = p.ink, fontWeight = FontWeight(650))) {
-                                append("The System sets it under what you already do.")
-                            }
-                            append(" Seven clean days and it will offer to raise it, which is your call and not its.")
-                        },
-                        style = t.body.copy(fontSize = m.s(12.5)),
-                    )
-                }
-                Card(Modifier.fillMaxWidth(), padding = 14.4) {
-                    Tag("Your first three quests")
-                    Gap(9.6)
-                    Column(verticalArrangement = Arrangement.spacedBy(m.d(8))) {
-                        BaselineRow("Screen off · 30 min block", "+180")
-                        BaselineRow("Scroll under 4h", "+220")
-                        BaselineRow("2,000 steps", "+240")
-                    }
-                }
-                Gap(4)
-            }
-            Cta("Begin")
-            Gap(19.2)
-        }
-    }
-}
-
 /** `data-s="stage"` — what the System asks for, and when. Four asks in minute one; everything else in context. */
 @Composable
 fun StagedScreen() {
@@ -334,18 +255,6 @@ private fun Starter(glyph: String, statement: String, domain: String, picked: Bo
             Text(statement, style = t.questTitle.copy(fontSize = m.s(12.5)), modifier = Modifier.weight(1f))
             Tag(domain, t.key.copy(color = if (picked) p.hot else p.faint))
         }
-    }
-}
-
-@Composable
-private fun BaselineRow(label: String, value: String) {
-    val p = LocalPalette.current
-    val m = LocalMetrics.current
-    val t = LocalType.current
-    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-        Text(label, style = t.body.copy(fontSize = m.s(12.6), color = p.dim))
-        Filler()
-        Text(value, style = t.body.copy(fontSize = m.s(12.6), color = p.ink, fontWeight = FontWeight(660)))
     }
 }
 

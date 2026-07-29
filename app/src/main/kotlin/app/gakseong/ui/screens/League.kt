@@ -138,11 +138,22 @@ private fun LeagueRow(place: Int, name: String, aura: String, you: Boolean = fal
     Card(Modifier.fillMaxWidth(), lit = you, dashed = pacer, padding = 10.4) {
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             Text("$place", style = t.monoSmall.copy(color = if (you) p.hot else p.faint), modifier = Modifier.width(m.d(22)))
-            if (pacer) Text("◇  ", style = t.tag.copy(color = p.soft))
-            Text(name, style = t.questTitle.copy(fontSize = m.s(12.8)))
+            // §9 says a pacer carries the diamond and the label. One label: rendering the name and the tag
+            // side by side read as "pacerPACER".
             if (pacer) {
-                GapW(6)
-                Tag("pacer", t.key.copy(color = p.soft))
+                Text("◇", style = t.tag.copy(color = p.soft, fontSize = m.s(11.2)))
+                GapW(6.4)
+            }
+            Text(
+                name,
+                style = t.questTitle.copy(
+                    fontSize = m.s(12.8),
+                    color = if (pacer) p.soft else p.ink,
+                ),
+            )
+            if (pacer) {
+                GapW(6.4)
+                Tag("not a person", t.key.copy(color = p.faint))
             }
             Filler()
             Text(aura, style = t.monoSmall.copy(color = if (you) p.soft else p.dim))

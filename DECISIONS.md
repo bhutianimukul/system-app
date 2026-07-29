@@ -801,6 +801,76 @@ buys no standing at all.
 provability, rank transitions, shields and penalty sequencing. Level only rises and gates nothing, so it can be
 added when a screen needs it.
 
+## 30. Two onboarding screens cut, and one moved
+
+Mukul's call while reviewing the built screens, and both were right.
+
+**`rate` (day 2 self-rating) is gone.** It read as non-essential and it extended a flow whose whole promise in §13
+is four questions and ninety seconds. Worth recording what that costs: the app no longer collects the subjective
+half the sensors cannot see. Nothing else depended on it, and the honest note is that my rendering of it was
+invented anyway — the design page's `data-selfrate` list is generated in JavaScript I never found, so four cards
+of 1-to-5 buttons was a guess, and a generic form is exactly the "reads as homework" failure §25 warns about.
+
+**`assess` (Baseline) is gone from onboarding, and its record moved to Profile.** It was redundant three ways:
+Reality already showed the thirty-day record, `thresh` owns the band explanation, and Home shows the day's quests.
+The thirty-day averages now sit on the hunter record, which is where a record belongs.
+
+Onboarding is therefore Splash, Welcome, Access, Intent, Reality, Apps, Terms, Awakening. Four asks, three
+reveals, and nothing that asks twice.
+
+## 31. Typography: the design's fonts do not exist on Android
+
+`--ui: system-ui` and `--mono: ui-monospace` resolve to Roboto and Droid Sans Mono on Android, which are not the
+faces the design was drawn against. A specimen screen (`--es screen type`) put the candidates side by side on a
+real device, and three things came out of it.
+
+**Display type uses `sans-serif-condensed` at 900, not a `scaleX` squeeze.** The stylesheet's `.disp` squeezes
+Roboto Black to 90%, but a transform scales the strokes too, so the stems come out light. Roboto Condensed is
+drawn narrow at full weight, ships with Android, and costs no asset, no licence and no APK size. It is narrower
+than the squeeze and heavier at the same time.
+
+**Monospace is now for numerals only.** `THRESHOLD CLEARED · SHADOW IN 3 DAYS` wraps to two lines in Droid Sans
+Mono and fits on one in tracked Roboto, and labels are roughly forty per cent of the app's text. Mono stays where
+digits have to line up in a column: aura values, timers, `+450`. Everywhere else the label face is Roboto with
+the tracking the stylesheet asks for.
+
+**`faint` is never used over art.** It is what made Ceremony's `THRESHOLD HELD · 14 DAYS` unreadable against the
+aura. Over art the floor is `dim`; `faint` is fine on a card.
+
+## 32. The bottom nav, and why it deviates
+
+The stylesheet's nav bar is `#0B0D1AD9` over a screen whose bottom is already that colour, so on a device it
+vanishes and the bar reads dull. It now lifts off the content with a gradient, a brighter hairline with the
+accent bled into its middle third, larger icons, a glow behind the active one and a short accent indicator under
+it. The centre Raid button gets the `box-shadow` glow the CSS specifies and that I had dropped.
+
+This is a deliberate deviation from the design page rather than a port of it. Everything still comes out of the
+palette.
+
+## 33. Sharing a raid clear
+
+§28 said gate and raid clears get a card if people share, and the raid screen turned out to be the more postable
+moment. The card takes a `ShareMoment`, and the raid variant carries the duration held, the objective and the
+bonus.
+
+**It cannot name the partner.** §28's allowlist has no room for a guild member, so the card says the raid was held
+with one other hunter and stops there. Whoever posts it can name them in their own caption.
+
+The composition for the card comes from the standalone ceremony artifact rather than the 49-screen page: a gate
+disc, a torn rift of light, the figure keyed over the top, then the rank in a white-to-deep gradient. That page is
+built to be looked at, which is exactly what a share card needs. The wordmark and the link are on the image
+because Instagram Stories drops `EXTRA_TEXT`.
+
+## 34. Motion and haptics
+
+The design page's own transition is `pgIn`: opacity 0 plus `translateY(8px)`, over 400ms on
+`cubic-bezier(.16,1,.3,1)`. Screen changes use those exact numbers, and each one ticks with a
+`VibrationEffect` composition primitive, which fires even when the phone is on silent. `ANIMATOR_DURATION_SCALE`
+is checked first, so a reader who has turned animations off gets none.
+
+**Back cannot leave a focus session silently.** A session is bounded by its length and leaving is what ends it, so
+back raises the speed bump the screen already carries. Only `Proceed` gives the session up, and it says so.
+
 ## Live artifacts
 
 - Feature spec / roadmap — https://claude.ai/code/artifact/8fa0df80-201f-4380-88dc-cb8f3c98ffb3

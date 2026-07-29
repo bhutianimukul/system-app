@@ -43,6 +43,7 @@ import app.gakseong.ui.theme.LocalHunterClass
 import app.gakseong.ui.theme.LocalMetrics
 import app.gakseong.ui.theme.LocalPalette
 import app.gakseong.ui.theme.LocalType
+import app.gakseong.ui.theme.ArtPlate
 import app.gakseong.ui.theme.Ok
 
 /** `data-s="raid"` — a live co-op session. Base aura is never at risk; only the bonus is. */
@@ -145,6 +146,9 @@ internal fun PortraitChip(res: Int, width: Number = 42, height: Number = 50, alp
             .size(m.d(width), m.d(height))
             .clip(RoundedCornerShape(m.d(8)))
             .drawBehind {
+                // The plate first. Lighten against a card that is brighter than the art keys nothing out, which
+                // is why the characters read as dull; the stylesheet does the same thing in light mode.
+                drawRect(ArtPlate)
                 val w = size.width
                 val h = w * image.height / image.width
                 drawImage(

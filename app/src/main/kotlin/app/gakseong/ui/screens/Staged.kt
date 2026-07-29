@@ -38,54 +38,6 @@ import app.gakseong.ui.theme.pct
 // The staged asks. None of these are in setup, which is the point: §13 keeps setup to four questions and lets
 // everything else arrive when it is relevant.
 
-/** `data-s="rate"` — day 2. Self-rating covers the half the sensors cannot see, and the data still wins. */
-@Composable
-fun RateScreen() {
-    val p = LocalPalette.current
-    val m = LocalMetrics.current
-    val t = LocalType.current
-    Screen {
-        Bg(); Bg2()
-        Aura(0.70f, 0.15f, top = 0.09f, left = 0.15f, alpha = 0.4f)
-        Grain(); TopFade()
-        Body {
-            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                Eye("Day 2", color = p.soft); Filler(); Tag("Optional · not in setup")
-            }
-            Gap(19.2)
-            Text("NOW RATE\nYOURSELF", style = t.display(28))
-            Gap(11.2)
-            Tag("One day in. The System has your numbers — this is the half it cannot see.")
-
-            Gap(16)
-            Column(
-                Modifier.weight(1f).verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(m.d(7)),
-            ) {
-                SelfRate("Focus", "How much of today did you actually choose?", 2)
-                SelfRate("Rest", "Woke up recovered, or woke up tired?", 3)
-                SelfRate("Body", "Did you move like someone who lives in it?", 1)
-                SelfRate("Company", "Did you speak to anybody who matters?", 4)
-                Gap(4)
-                Card(Modifier.fillMaxWidth(), dashed = true, padding = 12.8) {
-                    Text(
-                        buildAnnotatedString {
-                            append("Where your rating and your data disagree, ")
-                            withStyle(SpanStyle(color = p.ink, fontWeight = FontWeight(650))) {
-                                append("the System trusts the data")
-                            }
-                            append(", and tells you so.")
-                        },
-                        style = t.body.copy(fontSize = m.s(12)),
-                    )
-                }
-            }
-            Cta("Continue")
-            Gap(17.6)
-        }
-    }
-}
-
 /** `data-s="privset"` — day 3. Skipping costs nothing, which is what makes the opt-in honest. */
 @Composable
 fun PrivateSetupScreen() {
@@ -389,34 +341,6 @@ private fun Slider(label: String, detail: String, fraction: Float) {
         }
         Gap(5.4)
         Meter(fill = fraction, height = 7)
-    }
-}
-
-@Composable
-private fun SelfRate(label: String, question: String, score: Int) {
-    val p = LocalPalette.current
-    val m = LocalMetrics.current
-    val t = LocalType.current
-    Card(Modifier.fillMaxWidth(), padding = 13.6) {
-        Text(label, style = t.questTitle.copy(fontSize = m.s(13.4)))
-        Gap(2.9)
-        Tag(question, t.key)
-        Gap(9.6)
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(m.d(5.4))) {
-            (1..5).forEach { i ->
-                Box(
-                    Modifier
-                        .weight(1f)
-                        .height(m.d(30))
-                        .clip(RoundedCornerShape(m.d(9)))
-                        .background(if (i <= score) p.hot.pct(0.22f) else p.card)
-                        .border(1.dp, if (i <= score) p.hot.pct(0.5f) else p.line, RoundedCornerShape(m.d(9))),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Text("$i", style = t.monoSmall.copy(color = if (i <= score) p.ink else p.faint))
-                }
-            }
-        }
     }
 }
 

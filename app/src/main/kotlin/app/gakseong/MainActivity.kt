@@ -26,17 +26,23 @@ import app.gakseong.ui.screens.PermsScreen
 import app.gakseong.ui.screens.RealityScreen
 import app.gakseong.ui.screens.SplashScreen
 import app.gakseong.ui.screens.AwakeningScreen
-import app.gakseong.ui.screens.BaselineScreen
 import app.gakseong.ui.screens.IntentScreen
 import app.gakseong.ui.screens.StagedScreen
 import app.gakseong.ui.screens.NewAppScreen
 import app.gakseong.ui.screens.CompleteScreen
 import app.gakseong.ui.screens.GatesScreen
+import app.gakseong.ui.screens.AiGateScreen
+import app.gakseong.ui.screens.BonusScreen
+import app.gakseong.ui.screens.ChatScreen
+import app.gakseong.ui.screens.ContainScreen
+import app.gakseong.ui.screens.PactScreen
+import app.gakseong.ui.screens.StoreScreen
+import app.gakseong.ui.screens.TypeSpecimenScreen
+import app.gakseong.ui.screens.WidgetScreen
 import app.gakseong.ui.screens.MonarchScreen
 import app.gakseong.ui.screens.ReaderScreen
 import app.gakseong.ui.screens.ShadowsScreen
 import app.gakseong.ui.screens.PrivateSetupScreen
-import app.gakseong.ui.screens.RateScreen
 import app.gakseong.ui.screens.ThresholdScreen
 import app.gakseong.ui.screens.WeightsScreen
 import app.gakseong.ui.screens.WelcomeScreen
@@ -45,7 +51,9 @@ import app.gakseong.ui.screens.RaidHubScreen
 import app.gakseong.ui.screens.RaidScreen
 import app.gakseong.ui.screens.RunRaidScreen
 import app.gakseong.ui.screens.RunSettleScreen
+import app.gakseong.ui.screens.ShareMoment
 import app.gakseong.ui.screens.ShareScreen
+import app.gakseong.ui.ScreenTransition
 import app.gakseong.ui.theme.GakseongTheme
 import app.gakseong.ui.theme.HunterClass
 
@@ -73,7 +81,7 @@ class MainActivity : ComponentActivity() {
             // Dark is the design's default. The light theme is real rather than an inversion; it follows the
             // system once onboarding owns this choice.
             GakseongTheme(hunterClass = hunter, dark = true) {
-                Route(screen)
+                ScreenTransition(screen) { Route(it as String) }
             }
         }
     }
@@ -89,6 +97,7 @@ private fun Route(screen: String) {
         "runraid" -> RunRaidScreen()
         "runsettle" -> RunSettleScreen()
         "share" -> ShareScreen()
+        "shareraid" -> ShareScreen(ShareMoment.RAID)
         "arise" -> AriseScreen()
         "league" -> LeagueScreen()
         "gate" -> GateScreen()
@@ -109,9 +118,7 @@ private fun Route(screen: String) {
         "contract" -> ContractScreen()
         "intent" -> IntentScreen()
         "class" -> AwakeningScreen()
-        "assess" -> BaselineScreen()
         "stage" -> StagedScreen()
-        "rate" -> RateScreen()
         "privset" -> PrivateSetupScreen()
         "thresh" -> ThresholdScreen()
         "weights" -> WeightsScreen()
@@ -121,6 +128,14 @@ private fun Route(screen: String) {
         "complete" -> CompleteScreen()
         "monarch" -> MonarchScreen()
         "gates" -> GatesScreen()
+        "aikey" -> AiGateScreen()
+        "bonus" -> BonusScreen()
+        "widget" -> WidgetScreen()
+        "pact" -> PactScreen()
+        "contain" -> ContainScreen()
+        "chat" -> ChatScreen()
+        "store" -> StoreScreen()
+        "type" -> TypeSpecimenScreen()
         else -> HomeScreen()
     }
 }

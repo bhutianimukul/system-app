@@ -697,7 +697,13 @@ fun Meter(fill: Float, marker: Float? = null, height: Number = 10) {
     }
 }
 
-/** `.nav` — five destinations, the middle one raised. Raid takes the centre. */
+/**
+ * `.nav` — five destinations, the middle one raised. Raid takes the centre.
+ *
+ * The stylesheet's bar is `#0B0D1AD9` over a screen whose bottom is already that colour, so it vanished and read
+ * as dull. This deviates deliberately: the bar lifts off the content with a gradient and a brighter hairline,
+ * the active tab gets a glow and an indicator, and the icons are larger. Everything still comes from the palette.
+ */
 @Composable
 fun BoxScope.BottomNav(active: Int) {
     val p = LocalPalette.current
@@ -708,9 +714,24 @@ fun BoxScope.BottomNav(active: Int) {
         Row(
             Modifier
                 .fillMaxWidth()
-                .background(p.navBar)
-                .drawBehind { drawLine(p.line, Offset(0f, 0f), Offset(size.width, 0f)) }
-                .padding(start = m.d(6.4), end = m.d(6.4), top = m.d(9.6), bottom = m.d(13.6)),
+                .background(
+                    Brush.verticalGradient(
+                        0f to p.base.copy(alpha = 0.0f),
+                        0.22f to p.base.copy(alpha = 0.86f),
+                        1f to p.base,
+                    )
+                )
+                .drawBehind {
+                    // A brighter hairline with the accent bled into its middle third, so the bar has an edge.
+                    drawLine(p.line2, Offset(0f, 0f), Offset(size.width, 0f), strokeWidth = 2f)
+                    drawLine(
+                        p.hot.pct(0.35f),
+                        Offset(size.width * 0.3f, 0f),
+                        Offset(size.width * 0.7f, 0f),
+                        strokeWidth = 2f,
+                    )
+                }
+                .padding(start = m.d(6.4), end = m.d(6.4), top = m.d(11.2), bottom = m.d(13.6)),
             horizontalArrangement = Arrangement.SpaceAround,
             verticalAlignment = Alignment.Bottom,
         ) {
@@ -722,22 +743,67 @@ fun BoxScope.BottomNav(active: Int) {
                     verticalArrangement = Arrangement.spacedBy(m.d(3.2)),
                 ) {
                     if (mid) {
+                        // `box-shadow:0 0 20px -4px hot, inset 0 1px 0 #FFFFFF3D`. The glow is most of what makes
+                        // this button read as raised rather than pasted on, so it is drawn rather than skipped.
                         Box(
-                            Modifier
-                                .offset(y = m.d(-15))
-                                .size(m.d(36))
-                                .clip(CircleShape)
-                                .background(Brush.linearGradient(listOf(p.hot, p.deep))),
+                            Modifier.offset(y = m.d(-15)).size(m.d(36)),
                             contentAlignment = Alignment.Center,
                         ) {
-                            Text(glyph, style = t.md.copy(fontSize = m.s(14.4), color = p.base))
+                            Box(
+                                Modifier
+                                    .size(m.d(44))
+                                    .blur(m.d(13), BlurredEdgeTreatment.Unbounded)
+                                    .background(p.hot.pct(if (on) 0.9f else 0.75f), CircleShape)
+                            )
+                            Box(
+                                Modifier
+                                    .size(m.d(36))
+                                    .clip(CircleShape)
+                                    .background(Brush.linearGradient(listOf(p.hot, p.deep)))
+                                    .drawBehind {
+                                        drawLine(
+                                            Color.White.pct(0.24f),
+                                            Offset(size.width * 0.2f, 1f),
+                                            Offset(size.width * 0.8f, 1f),
+                                            strokeWidth = 2f,
+                                        )
+                                    },
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                Text(glyph, style = t.md.copy(fontSize = m.s(15.2), color = p.base))
+                            }
                         }
                     } else {
-                        Text(glyph, style = t.nav.copy(fontSize = m.s(13), color = if (on) p.hot else p.ghost))
+                        Box(Modifier.size(m.d(26)), contentAlignment = Alignment.Center) {
+                            if (on) {
+                                Box(
+                                    Modifier
+                                        .size(m.d(26))
+                                        .blur(m.d(9), BlurredEdgeTreatment.Unbounded)
+                                        .background(p.hot.pct(0.55f), CircleShape)
+                                )
+                            }
+                            Text(
+                                glyph,
+                                style = t.nav.copy(
+                                    fontSize = m.s(15.2),
+                                    color = if (on) p.ink else p.dim,
+                                ),
+                            )
+                        }
                     }
                     Text(
                         label.uppercase(),
-                        style = t.nav.copy(color = if (mid) p.soft else if (on) p.hot else p.ghost),
+                        style = t.nav.copy(
+                            fontSize = m.s(7.2),
+                            color = if (mid) p.soft else if (on) p.hot else p.faint,
+                        ),
+                    )
+                    // The active indicator, which is the cheapest way to make a bar stop reading as flat.
+                    Box(
+                        Modifier
+                            .size(width = m.d(if (on && !mid) 14 else 0), height = m.d(2))
+                            .background(p.hot, CircleShape)
                     )
                 }
             }
@@ -825,6 +891,7 @@ fun MaskedImage(res: Int, width: Number, height: Number = width, mask: Mask = Ma
     }
     Box(
         Modifier.size(m.d(width), m.d(height)).drawBehind {
+            if (keyed) drawRect(app.gakseong.ui.theme.ArtPlate)
             val w = size.width
             val h = w * image.height / image.width
             drawImage(
@@ -893,3 +960,122 @@ private fun ImageBitmap.masked(cy: Float, radius: Float, inner: Float, outer: Fl
     return out.asImageBitmap()
 }
 
+
+// ── the ceremony composition ──────────────────────────────────────────────────
+// Ported from the standalone "Rank Ascension — Ceremony" artifact rather than the 49-screen page. That one is
+// built to be looked at: a gate disc behind everything, a torn rift of light through it, the figure keyed over
+// the top, then the rank slammed on in a gradient. It is the composition worth putting on a share card.
+
+/** `.disc` — the gate as a moon. 78% of the width, centred at 21% height. */
+@Composable
+fun BoxScope.GateDisc(top: Float = 0.21f, widthFraction: Float = 0.78f) {
+    val p = LocalPalette.current
+    BoxWithConstraints(Modifier.matchParentSize()) {
+        val d = maxWidth * widthFraction
+        Box(
+            Modifier
+                .requiredSize(d, d)
+                .offset(x = (maxWidth - d) / 2, y = maxHeight * top - d / 2)
+                .clip(CircleShape)
+                .drawBehind {
+                    drawCircle(
+                        Brush.radialGradient(
+                            0f to p.soft.pct(0.55f),
+                            0.38f to p.hot.pct(0.62f),
+                            0.74f to p.deep,
+                            1f to p.deep.pct(0.4f),
+                            center = Offset(size.width * 0.42f, size.height * 0.36f),
+                            radius = size.width * 0.72f,
+                        )
+                    )
+                    // `.disc::after` — the shadowed lower-right lobe that stops it reading as a flat ball.
+                    drawCircle(
+                        Brush.radialGradient(
+                            0f to Color.Black.pct(0.38f),
+                            0.55f to Color.Transparent,
+                            center = Offset(size.width * 0.62f, size.height * 0.70f),
+                            radius = size.width * 0.6f,
+                        )
+                    )
+                }
+        )
+    }
+}
+
+/** `.riftwrap` — the tear of light, with its two blurred bleeds. */
+@Composable
+fun BoxScope.Rift(top: Float = 0.26f, heightFraction: Float = 0.56f) {
+    val p = LocalPalette.current
+    val m = LocalMetrics.current
+    BoxWithConstraints(Modifier.matchParentSize()) {
+        val h = maxHeight * heightFraction
+        val centreY = maxHeight * top
+        Box(
+            Modifier
+                .requiredSize(maxWidth * 1.76f, h * 0.78f)
+                .offset(x = -maxWidth * 0.38f, y = centreY - h * 0.39f)
+                .blur(m.d(20), BlurredEdgeTreatment.Unbounded)
+                .background(p.hot.pct(0.29f), CircleShape)
+        )
+        Box(
+            Modifier
+                .requiredSize(maxWidth * 0.06f, h * 0.86f)
+                .offset(x = maxWidth * 0.47f, y = centreY - h * 0.43f)
+                .blur(m.d(9), BlurredEdgeTreatment.Unbounded)
+                .background(
+                    Brush.verticalGradient(
+                        0f to Color.Transparent,
+                        0.08f to p.hot.pct(0.52f),
+                        0.26f to p.soft,
+                        0.48f to Color.White,
+                        0.70f to p.soft,
+                        0.92f to p.hot.pct(0.52f),
+                        1f to Color.Transparent,
+                    ),
+                    CircleShape,
+                )
+        )
+    }
+}
+
+/** `.glass` — the panel the ceremony puts its stats and its shadow inside. */
+@Composable
+fun Glass(modifier: Modifier = Modifier, padding: Number = 10, content: @Composable ColumnScope.() -> Unit) {
+    val p = LocalPalette.current
+    val m = LocalMetrics.current
+    val shape = RoundedCornerShape(m.d(15))
+    Column(
+        modifier
+            .clip(shape)
+            .background(
+                Brush.linearGradient(
+                    listOf(Color(0x1AB4BCD0), Color(0x07B4BCD0), Color(0x18000000)),
+                )
+            )
+            .border(1.dp, Color(0x17FFFFFF), shape)
+            .padding(m.d(padding)),
+        content = content,
+    )
+}
+
+/** `.hero` — the rank, slammed on. 5.6rem, and the gradient runs white to the class's deep. */
+@Composable
+fun CeremonyHero(text: String, designPx: Number = 89.6) {
+    val p = LocalPalette.current
+    val t = LocalType.current
+    val m = LocalMetrics.current
+    Text(
+        text,
+        style = t.xl.copy(
+            fontSize = m.s(designPx),
+            lineHeight = 0.82.em,
+            letterSpacing = (-0.07).em,
+            brush = Brush.linearGradient(
+                0.04f to Color.White,
+                0.26f to p.soft,
+                0.58f to p.hot,
+                1f to p.deep,
+            ),
+        ),
+    )
+}

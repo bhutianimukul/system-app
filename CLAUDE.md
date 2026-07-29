@@ -404,9 +404,10 @@ Forty built, all compiling and rendering with no runtime errors. Route with
 
 **Built:** `home` `focus` `ceremony` `raid` `raidhub` `runraid` `runsettle` `share` `arise` `league` `gate`
 `break` `invite` `guild` `feed` `refer` `soon` `profile` `private` `report` `splash` `welcome` `perms` `diag`
-`apps` `contract` `intent` `class` `assess` `stage` `rate` `privset` `thresh` `weights` `newapp` `read` `shadows` `complete` `monarch` `gates`
+`apps` `contract` `intent` `class` `stage` `privset` `thresh` `weights` `newapp` `read` `shadows` `complete` `monarch`
+`gates` `aikey` `bonus` `widget` `pact` `contain` `chat` `store` `shareraid` `type` `read` `shadows` `complete` `monarch` `gates`
 
-**Remaining:** `chat` `aikey` `bonus` `widget` `settings` `pact` `contain` `store`
+**Remaining:** `settings`. `rate` and `assess` were cut, see `DECISIONS.md` §30. Old list: `chat` `aikey` `bonus` `widget` `settings` `pact` `contain` `store`
 
 **The chart kit is in `ui/Charts.kt`:** `AuraByDay`, `HoursHeatmap`, `DayCalendar`, `Legend`. `assess` needs it
 too, so use it rather than drawing new bars.

@@ -45,12 +45,18 @@ import app.gakseong.ui.theme.LocalPalette
 import app.gakseong.ui.theme.LocalType
 import app.gakseong.ui.theme.Radius
 
+/** Which moment the card is for. §28 started with ascension; a raid clear is the other one worth posting. */
+enum class ShareMoment { ASCENSION, RAID }
+
 /**
  * `data-s="share"` — DECISIONS.md §28. The preview exists because capture needs the card laid out anyway, and
  * because nobody should post something they have not seen. Everything on the card comes from an allowlist.
+ *
+ * A raid card cannot name the partner. §28's allowlist excludes guild members, so the card says it was held with
+ * one other hunter and leaves it there. Whoever posts it can name them in their own caption if they want to.
  */
 @Composable
-fun ShareScreen() {
+fun ShareScreen(moment: ShareMoment = ShareMoment.ASCENSION) {
     val p = LocalPalette.current
     val m = LocalMetrics.current
     val t = LocalType.current
@@ -64,7 +70,7 @@ fun ShareScreen() {
 
         Body {
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                Eye("Ascension · Share")
+                Eye(if (moment == ShareMoment.ASCENSION) "Ascension · Share" else "Raid · Share")
                 Filler()
                 Tag("1080 × 1920")
             }
@@ -81,7 +87,10 @@ fun ShareScreen() {
                     .background(p.base)
                     .border(1.dp, p.line, RoundedCornerShape(m.d(Radius.BIG))),
             ) {
-                Art(R.drawable.sc_arise, top = 0f, left = -0.02f, width = 1.04f, alpha = 0.95f)
+                Art(
+                    if (moment == ShareMoment.ASCENSION) R.drawable.sc_arise else R.drawable.sc_hero,
+                    top = 0f, left = -0.02f, width = 1.04f, alpha = 0.95f,
+                )
                 Aura(widthFraction = 0.76f, heightFraction = 0.22f, top = 0.26f, left = 0.12f, alpha = 0.5f)
                 // The card carries text over its own art, so it darkens earlier than a screen would: everything
                 // below the portrait has to stay legible in someone else's Instagram feed.
@@ -95,23 +104,38 @@ fun ShareScreen() {
                 ) {
                     PortraitChip(hunter.portrait, width = 46, height = 56)
                     Gap(9.6)
-                    Tag("${hunter.label} · 41 days held")
-                    Gap(4.8)
-                    Text(
-                        buildAnnotatedString {
-                            append("D · III → ")
-                            withStyle(SpanStyle(color = p.soft, fontWeight = FontWeight(900))) { append("C · I") }
-                        },
-                        style = t.md.copy(fontSize = m.s(21.6)),
-                    )
-                    Gap(4.8)
-                    Tag("Level 27")
-                    Gap(11.2)
-                    Text(
-                        "The gate did not open for you. You were simply strong enough to walk through it.",
-                        style = t.body.copy(fontSize = m.s(11.8), textAlign = TextAlign.Center),
-                        modifier = Modifier.width(m.d(190)),
-                    )
+                    if (moment == ShareMoment.ASCENSION) {
+                        Tag("${hunter.label} · 41 days held")
+                        Gap(4.8)
+                        Text(
+                            buildAnnotatedString {
+                                append("D · III → ")
+                                withStyle(SpanStyle(color = p.soft, fontWeight = FontWeight(900))) { append("C · I") }
+                            },
+                            style = t.md.copy(fontSize = m.s(21.6)),
+                        )
+                        Gap(4.8)
+                        Tag("Level 27")
+                        Gap(11.2)
+                        Text(
+                            "The gate did not open for you. You were simply strong enough to walk through it.",
+                            style = t.body.copy(fontSize = m.s(11.8), textAlign = TextAlign.Center),
+                            modifier = Modifier.width(m.d(190)),
+                        )
+                    } else {
+                        Tag("${hunter.label} · Rank D · III")
+                        Gap(4.8)
+                        Text("45:00 HELD", style = t.md.copy(fontSize = m.s(21.6)))
+                        Gap(4.8)
+                        // Never the partner's name: §28's allowlist has no room for a guild member.
+                        Tag("with one other hunter · +450")
+                        Gap(11.2)
+                        Text(
+                            "Neither of us broke. The System had nothing to take.",
+                            style = t.body.copy(fontSize = m.s(11.8), textAlign = TextAlign.Center),
+                            modifier = Modifier.width(m.d(190)),
+                        )
+                    }
                     Gap(14.4)
                     Text("각성 GAKSEONG", style = t.wordmarkLatin.copy(fontSize = m.s(9.3), color = p.soft))
                     Gap(4)
@@ -131,7 +155,7 @@ fun ShareScreen() {
             }
 
             Filler()
-            Cta("Share ascension")
+            Cta(if (moment == ShareMoment.ASCENSION) "Share ascension" else "Share the raid")
             Gap(8.8)
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(m.d(5.4))) {
                 Pill("WhatsApp")

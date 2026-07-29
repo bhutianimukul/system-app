@@ -77,6 +77,21 @@ fun ProfileScreen() {
                     }
                 }
 
+                // Moved off the onboarding Baseline screen: a thirty-day record belongs on the record, and
+                // onboarding had already shown the same numbers on Reality.
+                Card(Modifier.fillMaxWidth(), padding = 14.4) {
+                    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                        Tag("Thirty-day record"); Filler(); Tag("all Android kept", t.tag.copy(color = p.soft))
+                    }
+                    Gap(9.6)
+                    Column(verticalArrangement = Arrangement.spacedBy(m.d(8))) {
+                        RecordRow("Screen time", "6h 51m avg")
+                        RecordRow("Sleep", "5h 42m avg")
+                        RecordRow("Steps", "3,180 avg")
+                        RecordRow("Longest phone-free block", "38 min")
+                    }
+                }
+
                 Row(Modifier.fillMaxWidth().height(IntrinsicSize.Min), horizontalArrangement = Arrangement.spacedBy(m.d(6.4))) {
                     listOf("STR" to 15, "AGI" to 27, "VIT" to 13, "INT" to 21).forEach { (n, v) ->
                         Card(Modifier.weight(1f).fillMaxHeight(), padding = 11.2) {
@@ -122,6 +137,18 @@ fun ProfileScreen() {
             }
         }
         BottomNav(active = 4)
+    }
+}
+
+@Composable
+private fun RecordRow(label: String, value: String) {
+    val p = LocalPalette.current
+    val m = LocalMetrics.current
+    val t = LocalType.current
+    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+        Text(label, style = t.body.copy(fontSize = m.s(12.5), color = p.dim))
+        Filler()
+        Text(value, style = t.body.copy(fontSize = m.s(12.5), color = p.ink, fontWeight = androidx.compose.ui.text.font.FontWeight(660)))
     }
 }
 

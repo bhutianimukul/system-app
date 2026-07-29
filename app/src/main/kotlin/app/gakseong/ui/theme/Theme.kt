@@ -11,6 +11,8 @@ import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.DeviceFontFamilyName
+import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
@@ -65,7 +67,19 @@ class Palette(
 /** Text shadows exist in the stylesheet because most of this type sits over art. They are not decoration. */
 @Immutable
 class GakType(private val m: Metrics, private val p: Palette, density: Float = 1f) {
+    // `--mono` is kept for numerals only. Droid Sans Mono is what `ui-monospace` resolves to on Android and it is
+    // wide enough that a label like "THRESHOLD CLEARED · SHADOW IN 3 DAYS" wraps in mono and fits in one line in
+    // tracked Roboto. Mono earns its place where digits have to line up in a column, and nowhere else.
     private val mono = FontFamily.Monospace
+
+    /** Labels: Roboto with the tracking the design asks for, rather than a monospace face. */
+    private val label = FontFamily.SansSerif
+
+    /**
+     * `.disp` is 900 weight and horizontally squeezed. Roboto Condensed ships with Android, so the display face is
+     * drawn narrow instead of transformed narrow: `scaleX` scales the strokes too and the stems come out light.
+     */
+    private val condensed = FontFamily(Font(DeviceFontFamilyName("sans-serif-condensed"), FontWeight(900)))
 
     // `text-shadow:0 1px 8px #000000CC`. CSS lengths are CSS pixels; Compose's Shadow is raw pixels, so both
     // have to be multiplied by density or the shadow is ~2.6x too small and the type washes out over art.
@@ -81,13 +95,13 @@ class GakType(private val m: Metrics, private val p: Palette, density: Float = 1
         color = p.hot.mix(p.ink, 0.88f),
     )
     val tag = TextStyle(
-        fontFamily = mono, fontSize = m.s(8), letterSpacing = 0.28.em, color = p.faint, shadow = overArt,
+        fontFamily = label, fontSize = m.s(8), letterSpacing = 0.28.em, color = p.faint, shadow = overArt,
     )
     val key = TextStyle(
-        fontFamily = mono, fontSize = m.s(7.36), letterSpacing = 0.16.em, color = p.faint,
+        fontFamily = label, fontSize = m.s(7.36), letterSpacing = 0.16.em, color = p.faint,
     )
     val eye = TextStyle(
-        fontFamily = mono, fontSize = m.s(8), letterSpacing = 0.28.em, color = p.hot,
+        fontFamily = label, fontSize = m.s(8), letterSpacing = 0.28.em, color = p.hot,
     )
     val body = TextStyle(
         fontSize = m.s(13), lineHeight = 1.6.em, color = p.dim, shadow = overArt,
@@ -99,20 +113,20 @@ class GakType(private val m: Metrics, private val p: Palette, density: Float = 1
         fontSize = m.s(62.4), fontWeight = FontWeight(900), letterSpacing = (-0.07).em, lineHeight = 0.86.em,
     )
     val cta = TextStyle(
-        fontFamily = mono, fontSize = m.s(9.28), letterSpacing = 0.22.em, fontWeight = FontWeight(800),
+        fontFamily = label, fontSize = m.s(9.28), letterSpacing = 0.22.em, fontWeight = FontWeight(800),
     )
     val pill = TextStyle(
-        fontFamily = mono, fontSize = m.s(8), letterSpacing = 0.16.em, fontWeight = FontWeight(600), color = p.ink,
+        fontFamily = label, fontSize = m.s(8), letterSpacing = 0.16.em, fontWeight = FontWeight(600), color = p.ink,
     )
     val nav = TextStyle(
-        fontFamily = mono, fontSize = m.s(6.72), letterSpacing = 0.14.em, color = p.ghost,
+        fontFamily = label, fontSize = m.s(6.72), letterSpacing = 0.14.em, color = p.ghost,
     )
     val questTitle = TextStyle(
         fontSize = m.s(13.12), fontWeight = FontWeight(660), letterSpacing = (-0.02).em, lineHeight = 1.22.em,
         color = p.ink,
     )
     val questSub = TextStyle(
-        fontFamily = mono, fontSize = m.s(7.04), letterSpacing = 0.14.em, color = p.faint,
+        fontFamily = label, fontSize = m.s(7.04), letterSpacing = 0.14.em, color = p.faint,
     )
     val questValue = TextStyle(
         fontFamily = mono, fontSize = m.s(9.92), fontWeight = FontWeight(700), color = p.soft,
@@ -130,6 +144,7 @@ class GakType(private val m: Metrics, private val p: Palette, density: Float = 1
 
     /** `.disp` is 900 weight, uppercase and horizontally squeezed. Size varies per screen, so it is a function. */
     fun display(designPx: Number) = TextStyle(
+        fontFamily = condensed,
         fontSize = m.s(designPx), fontWeight = FontWeight(900), letterSpacing = (-0.055).em, lineHeight = 0.92.em,
         color = p.ink,
     )
