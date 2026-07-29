@@ -1,6 +1,14 @@
 package app.gakseong.ui.screens
 
+import android.appwidget.AppWidgetManager
+import android.content.ComponentName
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
+import androidx.compose.ui.platform.LocalContext
+import app.gakseong.widget.AuraReceiver
+import app.gakseong.widget.DailyQuestReceiver
+import app.gakseong.widget.NightGateReceiver
+import app.gakseong.widget.StreakReceiver
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -203,6 +211,18 @@ fun WidgetScreen() {
     val p = LocalPalette.current
     val m = LocalMetrics.current
     val t = LocalType.current
+    val context = LocalContext.current
+    val haptics = rememberHaptics()
+
+    // requestPinAppWidget is the only way an app can offer this: the launcher shows its own confirmation and the
+    // user still decides. Nothing is added behind their back.
+    val pin: (Class<*>) -> Unit = { cls ->
+        haptics.tick()
+        val manager = AppWidgetManager.getInstance(context)
+        if (manager.isRequestPinAppWidgetSupported) {
+            manager.requestPinAppWidget(ComponentName(context, cls), null, null)
+        }
+    }
     Screen {
         Bg(); Bg2()
         Art(R.drawable.sc_sigilup, top = -0.03f, left = -0.03f, width = 1.06f, alpha = 0.46f, feather = true)
@@ -220,7 +240,7 @@ fun WidgetScreen() {
                 Modifier.weight(1f).verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(m.d(13.6)),
             ) {
-                WidgetPreview("Daily quest", "4×2") {
+                WidgetPreview("Daily quest", "4×2", { pin(DailyQuestReceiver::class.java) }) {
                     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                         Tag("Daily Quest", t.tag.copy(color = p.hot)); Filler(); Tag("D · III")
                     }
@@ -239,19 +259,19 @@ fun WidgetScreen() {
                     Gap(8)
                     Text("640 · threshold cleared", style = t.questSub.copy(color = p.soft))
                 }
-                WidgetPreview("Aura today", "2×2") {
+                WidgetPreview("Aura today", "2×2", { pin(AuraReceiver::class.java) }) {
                     Text("640", style = t.lg(28))
                     Gap(3.2)
                     Tag("560 to D · II", t.key)
                 }
-                WidgetPreview("Night gate", "4×1") {
+                WidgetPreview("Night gate", "4×1", { pin(NightGateReceiver::class.java) }) {
                     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                         Text("☾ 00:30 — 06:00", style = t.questTitle.copy(fontSize = m.s(12.8)))
                         Filler()
                         Tag("pending", t.key.copy(color = p.soft))
                     }
                 }
-                WidgetPreview("Streak", "2×1") {
+                WidgetPreview("Streak", "2×1", { pin(StreakReceiver::class.java) }) {
                     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                         Text("14d", style = t.lg(20))
                         Filler()
@@ -573,7 +593,7 @@ private fun PactRow(label: String, value: String, color: Color) {
 }
 
 @Composable
-private fun WidgetPreview(label: String, size: String, content: @Composable () -> Unit) {
+private fun WidgetPreview(label: String, size: String, onPin: () -> Unit, content: @Composable () -> Unit) {
     val p = LocalPalette.current
     val t = LocalType.current
     Column(Modifier.fillMaxWidth()) {
@@ -582,6 +602,10 @@ private fun WidgetPreview(label: String, size: String, content: @Composable () -
         }
         Gap(5.6)
         Card(Modifier.fillMaxWidth(), padding = 12.8) { content() }
+        Gap(5.6)
+        Row(Modifier.fillMaxWidth().clickable(onClick = onPin)) {
+            Pill("Add to home screen")
+        }
     }
 }
 

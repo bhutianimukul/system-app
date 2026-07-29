@@ -410,10 +410,29 @@ Forty built, all compiling and rendering with no runtime errors. Route with
 **Nothing remains.** `rate` and `assess` were cut, see `DECISIONS.md` §30. Two routes are not from the design
 page: `shareraid` is the raid variant of the share card (§33) and `type` is the typography specimen (§31).
 
-**What does not exist yet, which is the larger half of the work:** `UsageStatsManager`, Health Connect, Room,
-`WorkManager`, the Glance widgets, Firebase, the foreground service for focus sessions, `AutomaticZenRule`, the
-quest bank, and any wiring at all between the phase-01 engine and these screens. Every screen is currently a
-static composition.
+### Widgets
+
+Four Glance widgets in `widget/Widgets.kt`, all four providers registered, verified live on a launcher home
+screen. `Add to home screen` on the Widget screen calls `requestPinAppWidget`, so the launcher asks and the user
+still decides.
+
+**Glance is not Compose.** A widget renders through `RemoteViews`, so nothing in `ui/Kit.kt` is reachable: no
+blur, no blend modes, no gradient text, no `Canvas`. The widgets are the palette and type scale on flat surfaces.
+Do not try to share components between the two.
+
+Three traps this cost:
+
+- **Only the RemoteViews-permitted view classes may appear in a `previewLayout`.** A plain `<View>` makes the
+  launcher report "Couldn't add widget" and show a grey box instead of the preview. `ImageView` with `android:src`
+  is the substitute for a coloured rectangle.
+- **Without `previewLayout` the picker shows Android's default robot,** which is what a user chooses from.
+- **aapt2 in build-tools 35 rejects `&apos;` in a string resource** with "Invalid unicode escape sequence", and
+  blames the merged `values.xml` rather than yours. Write the apostrophe literally.
+
+**What still does not exist, which is the larger half of the work:** `UsageStatsManager`, Health Connect, Room,
+`WorkManager`, Firebase, the foreground service for focus sessions, `AutomaticZenRule`, the quest bank, and any
+wiring at all between the phase-01 engine and either the screens or the widgets. The widget state is a
+placeholder data class.
 
 **The chart kit is in `ui/Charts.kt`:** `AuraByDay`, `HoursHeatmap`, `DayCalendar`, `Legend`. `assess` needs it
 too, so use it rather than drawing new bars.

@@ -55,5 +55,9 @@ dependencies {
     implementation("androidx.compose.foundation:foundation")
     implementation("androidx.compose.material3:material3")
 
+    // Glance for the home-screen widgets. Not Compose: a widget renders through RemoteViews, so it gets its own
+    // composables and cannot share the ui/Kit.kt components.
+    implementation("androidx.glance:glance-appwidget:1.1.1")
+
     debugImplementation("androidx.compose.ui:ui-tooling")
 }

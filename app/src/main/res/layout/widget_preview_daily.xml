@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The picker preview. Only the RemoteViews-permitted view classes may appear here: no plain View, no custom
+     views, no Compose. Without one the launcher shows Android's default placeholder, so nobody knows what they
+     are adding. Static XML on purpose: a preview has to render with no process running. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@drawable/widget_bg"
+    android:padding="14dp">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="DAILY QUEST"
+        android:textColor="#FF48D0"
+        android:textSize="9sp" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="20dp"
+        android:layout_marginTop="10dp"
+        android:orientation="horizontal">
+        <ImageView android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1"
+            android:layout_marginEnd="4dp" android:src="@drawable/widget_pip_on" android:scaleType="fitXY" />
+        <ImageView android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1"
+            android:layout_marginEnd="4dp" android:src="@drawable/widget_pip_on" android:scaleType="fitXY" />
+        <ImageView android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1"
+            android:layout_marginEnd="4dp" android:src="@drawable/widget_pip_on" android:scaleType="fitXY" />
+        <ImageView android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1"
+            android:layout_marginEnd="4dp" android:src="@drawable/widget_pip_off" android:scaleType="fitXY" />
+        <ImageView android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1"
+            android:src="@drawable/widget_pip_off" android:scaleType="fitXY" />
+    </LinearLayout>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:text="640"
+        android:textColor="#FFFFFF"
+        android:textSize="26sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="threshold cleared"
+        android:textColor="#4AE3A0"
+        android:textSize="9sp" />
+</LinearLayout>

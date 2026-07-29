@@ -19,6 +19,54 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <receiver
+            android:name=".widget.DailyQuestReceiver"
+            android:exported="false"
+            android:label="Daily quest">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_daily_quest" />
+        </receiver>
+
+        <receiver
+            android:name=".widget.AuraReceiver"
+            android:exported="false"
+            android:label="Aura today">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_aura" />
+        </receiver>
+
+        <receiver
+            android:name=".widget.NightGateReceiver"
+            android:exported="false"
+            android:label="Night gate">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_night_gate" />
+        </receiver>
+
+        <receiver
+            android:name=".widget.StreakReceiver"
+            android:exported="false"
+            android:label="Streak">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_streak" />
+        </receiver>
     </application>
 
 </manifest>
