@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="Theme.Gakseong" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowBackground">@color/gak_base</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+    </style>
+
+    <!-- The icon animation gets about 1000 ms from the system; anything longer is cut off. -->
+    <style name="Theme.Gakseong.Splash" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/gak_base</item>
+        <item name="postSplashScreenTheme">@style/Theme.Gakseong</item>
+    </style>
+
+</resources>

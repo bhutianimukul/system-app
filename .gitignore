@@ -16,3 +16,12 @@ assets/references/
 # so the art can be served by URL; the original phrasing names specific private
 # habits and reads as a confession when it is not one.
 PRIVATE-NOTES.md
+
+# Android build
+local.properties
+.gradle/
+build/
+app/build/
+*.iml
+.idea/
+.kotlin/

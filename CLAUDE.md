@@ -362,7 +362,37 @@ Every tunable number is in the `Balance` object. `DECISIONS.md` §29 records the
 design had left ambiguous across three screens. Level is not in the engine: it only rises and gates nothing, so
 it arrives when a screen needs it.
 
-Phase 02 onward still needs the Android project itself, which is where Gradle starts earning its keep.
+**Phase 02 is the Android project and the UI kit.** Single module, `app.gakseong`, compileSdk 35, minSdk 26,
+Compose. The engine stays in `engine/` and is pulled in with one `srcDir` line so `kotlinc engine/*.kt` keeps
+working.
+
+```
+export JAVA_HOME="$HOME/.sdkman/candidates/java/current"
+export ANDROID_HOME="$HOME/Library/Android/sdk"
+./gradlew assembleDebug
+```
+
+**How the design page becomes Compose.** That page draws the phone at `width:min(330px,92vw)` against a 16px
+root, so every size in it is proportional to its own width. `Metrics` in `ui/theme/Theme.kt` carries one scale
+factor, `screenWidthDp / 330`, and `d()` and `s()` convert design pixels to dp and sp. Text stays in sp so the
+reader's font-size setting still works; pixel-exactness is not worth breaking that for.
+
+**Layer order is the stylesheet's z-index, not its markup order.** `bg 0, bg2 0, aura 1, art 2, shade 3,
+grain 4, topfade 5, body 8, nav 9`. Compose draws in declaration order, so every screen calls them in that
+sequence: `Bg`, `Bg2`, `Aura`, `Art`, `Shade`, `Grain`, `TopFade`, `Body`, `BottomNav`. Reading the HTML top to
+bottom puts `topfade` under the art and washes out every header on a bright screen. Do not "tidy" this into a
+wrapper that hides the order — the order is the design.
+
+- `ui/theme/Tokens.kt` holds every colour from the stylesheet, including all seven class accents. Nothing there
+  was invented; if a value is missing, it is in the CSS.
+- `ui/Kit.kt` is the component kit: `Card`, `Cta`, `SystemWindow`, `QuestCard`, `Eye`, `Tag`, `Pill`, `Plate`,
+  `Meter`, `Sig`, `XlNumber`, `Wordmark`, `BottomNav`, plus the layer composables. Build a screen out of these
+  rather than styling from scratch, the same way the quest bank is built out of the closed verifier set.
+- Art is imported into `res/drawable-nodpi/` from `web/`, hyphens turned into underscores. Portraits composite
+  with `BlendMode.Lighten`, which is why they are generated on pure black.
+
+Two known gaps, both marked `ponytail:` in the source: `.art.feather`'s radial mask needs a pre-masked bitmap
+because Compose cannot blend an offscreen layer, and the grain is random grey rather than fractal noise.
 
 ---
 
