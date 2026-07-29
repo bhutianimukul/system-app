@@ -391,8 +391,39 @@ wrapper that hides the order — the order is the design.
 - Art is imported into `res/drawable-nodpi/` from `web/`, hyphens turned into underscores. Portraits composite
   with `BlendMode.Lighten`, which is why they are generated on pure black.
 
-Two known gaps, both marked `ponytail:` in the source: `.art.feather`'s radial mask needs a pre-masked bitmap
-because Compose cannot blend an offscreen layer, and the grain is random grey rather than fractal noise.
+One known gap, marked `ponytail:` in the source: the grain is random grey rather than feTurbulence's fractal
+noise, which at 26% under an overlay blend is not visible.
+
+### Screen inventory
+
+Nineteen built, all compiling and rendering with no runtime errors. Route with
+`adb shell am start -n app.gakseong/.MainActivity --es screen <name> --es class <class>`.
+
+**Built:** `home` `focus` `ceremony` `raid` `raidhub` `runraid` `runsettle` `share` `arise` `league` `gate`
+`break` `invite` `guild` `feed` `refer` `soon` `profile` `private`
+
+**Remaining:** `splash` `welcome` `perms` `diag` `intent` `apps` `contract` `class` `assess` `stage` `rate`
+`privset` `thresh` `weights` `newapp` `read` `shadows` `complete` `report` `monarch` `gates` `chat` `aikey`
+`bonus` `widget` `settings` `pact` `contain` `store`
+
+**`report` needs a chart kit first:** aura by day, an hours heatmap, and a 28-day calendar. Those three are
+shared with `diag` and `assess`, so build them once before any of the three screens.
+
+**The onboarding screens need lists that live in the design page's JavaScript** rather than its markup:
+`data-perms`, `data-contract`, `data-intent`, `data-apps`, `data-diag`. Read those out of the page before
+writing the screen, the same way the class stat blocks came from `st:` and `dl:`.
+
+**Traps already paid for, in case a screen regresses:**
+
+- Layer order is z-index, not markup order. `topfade` paints over `art`.
+- `Gap` sets height. Inside a `Row` it does nothing — use `GapW`.
+- CSS `text-shadow` and `radial-gradient` lengths are CSS pixels; Compose wants raw pixels, so multiply by
+  density. A `radial-gradient` with no size keyword means farthest-corner.
+- Compose does not stretch Row children to the tallest sibling. `Modifier.height(IntrinsicSize.Min)` on the Row
+  plus `fillMaxHeight()` on each child is the flex equivalent.
+- Negative padding throws. Use `offset`.
+- `fillMaxWidth(1.3f)` is clamped to the parent. Escaping the screen needs `BoxWithConstraints` and
+  `requiredSize`.
 
 ---
 
