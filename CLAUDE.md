@@ -407,7 +407,13 @@ Forty built, all compiling and rendering with no runtime errors. Route with
 `apps` `contract` `intent` `class` `stage` `privset` `thresh` `weights` `newapp` `read` `shadows` `complete` `monarch`
 `gates` `aikey` `bonus` `widget` `pact` `contain` `chat` `store` `shareraid` `type` `read` `shadows` `complete` `monarch` `gates`
 
-**Remaining:** `settings`. `rate` and `assess` were cut, see `DECISIONS.md` §30. Old list: `chat` `aikey` `bonus` `widget` `settings` `pact` `contain` `store`
+**Nothing remains.** `rate` and `assess` were cut, see `DECISIONS.md` §30. Two routes are not from the design
+page: `shareraid` is the raid variant of the share card (§33) and `type` is the typography specimen (§31).
+
+**What does not exist yet, which is the larger half of the work:** `UsageStatsManager`, Health Connect, Room,
+`WorkManager`, the Glance widgets, Firebase, the foreground service for focus sessions, `AutomaticZenRule`, the
+quest bank, and any wiring at all between the phase-01 engine and these screens. Every screen is currently a
+static composition.
 
 **The chart kit is in `ui/Charts.kt`:** `AuraByDay`, `HoursHeatmap`, `DayCalendar`, `Legend`. `assess` needs it
 too, so use it rather than drawing new bars.

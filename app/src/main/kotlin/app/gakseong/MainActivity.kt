@@ -37,6 +37,7 @@ import app.gakseong.ui.screens.ChatScreen
 import app.gakseong.ui.screens.ContainScreen
 import app.gakseong.ui.screens.PactScreen
 import app.gakseong.ui.screens.StoreScreen
+import app.gakseong.ui.screens.SettingsScreen
 import app.gakseong.ui.screens.TypeSpecimenScreen
 import app.gakseong.ui.screens.WidgetScreen
 import app.gakseong.ui.screens.MonarchScreen
@@ -136,6 +137,7 @@ private fun Route(screen: String) {
         "chat" -> ChatScreen()
         "store" -> StoreScreen()
         "type" -> TypeSpecimenScreen()
+        "settings" -> SettingsScreen()
         else -> HomeScreen()
     }
 }
