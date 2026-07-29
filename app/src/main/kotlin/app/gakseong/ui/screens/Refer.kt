@@ -94,13 +94,19 @@ fun ReferScreen() {
                     )
                 }
 
+                // The link string itself is not on the screen. Nobody types a referral link, and showing it
+                // invites the one flow that cannot be attributed. Share sheet or QR, and that is the whole set.
                 Card(Modifier.fillMaxWidth(), big = true, padding = 14.4) {
-                    Tag("Your link", t.tag.copy(color = p.hot))
-                    Gap(5.6)
-                    Text("gakseong.app/s/M9K-4TQ2", style = t.questSub.copy(color = p.ink, fontSize = m.s(10.9)))
-                    Gap(9.6)
+                    Tag("Summon them", t.tag.copy(color = p.hot))
+                    Gap(4.8)
+                    Text(
+                        "The link carries who invited them. It works through the Play round-trip, so a fresh " +
+                            "install still pairs the two of you.",
+                        style = t.body.copy(fontSize = m.s(12.2)),
+                    )
+                    Gap(11.2)
                     Row(horizontalArrangement = Arrangement.spacedBy(m.d(5.4))) {
-                        Pill("Share", on = true); Pill("Copy"); Pill("QR")
+                        Pill("Share", on = true); Pill("QR")
                     }
                 }
 

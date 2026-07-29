@@ -1,6 +1,15 @@
 package app.gakseong.ui.screens
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.remember
+import androidx.compose.ui.draw.clip
+import app.gakseong.ui.theme.pct
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -34,6 +43,17 @@ fun PrivateScreen() {
     val p = LocalPalette.current
     val m = LocalMetrics.current
     val t = LocalType.current
+    val haptics = rememberHaptics()
+
+    // The shipped seed labels are not in this repo, per §7. These are the categories the decision record already
+    // names in public, and every one of them starts inactive.
+    val tracked = remember {
+        mutableStateListOf(
+            Tracked("Substance", "Something you take that you would rather not", shadowAt = 90),
+            Tracked("Compulsion", "Something you do that you did not decide to", shadowAt = 90),
+            Tracked("Delivery apps", "The phone can see this one", autoDetected = true, shadowAt = 30),
+        )
+    }
 
     Screen {
         Bg()
@@ -86,9 +106,46 @@ fun PrivateScreen() {
                 Modifier.weight(1f).verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(m.d(7.2)),
             ) {
-                Streak("Substance", 41, shadowAt = 90, fill = 0.46f)
-                Streak("Compulsion", 12, shadowAt = 30, fill = 0.40f)
-                Streak("Delivery apps", 6, shadowAt = 30, fill = 0.20f, autoDetected = true)
+                // Everything starts off. §7 makes this track opt-in and skippable, and a screen that arrives with
+                // items already running would have decided for the user what they are fighting.
+                tracked.forEachIndexed { i, item ->
+                    Streak(
+                        label = item.label,
+                        detail = item.detail,
+                        active = item.active,
+                        days = item.days,
+                        shadowAt = item.shadowAt,
+                        autoDetected = item.autoDetected,
+                        onToggle = {
+                            haptics.tick()
+                            tracked[i] = item.copy(active = !item.active)
+                        },
+                    )
+                }
+
+                Card(
+                    Modifier.fillMaxWidth().clickable { haptics.tick() },
+                    dashed = true,
+                    padding = 15.2,
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(m.d(11.2))) {
+                        Box(
+                            Modifier
+                                .size(m.d(32))
+                                .clip(RoundedCornerShape(m.d(10)))
+                                .background(p.hot.pct(0.16f)),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            Text("＋", style = t.md.copy(fontSize = m.s(15.2), color = p.hot))
+                        }
+                        Column {
+                            Text("Add something else", style = t.questTitle.copy(fontSize = m.s(13.4)))
+                            Gap(2.9)
+                            Tag("You name it · the System never asks what it means", t.key)
+                        }
+                    }
+                }
+
                 Gap(4)
                 Card(Modifier.fillMaxWidth(), dashed = true, padding = 12.8) {
                     Text(
@@ -103,29 +160,70 @@ fun PrivateScreen() {
     }
 }
 
+/** One thing being tracked. Off until the user turns it on, which is the whole posture of §7. */
+private data class Tracked(
+    val label: String,
+    val detail: String,
+    val active: Boolean = false,
+    val days: Int = 0,
+    val shadowAt: Int = 30,
+    val autoDetected: Boolean = false,
+)
+
 @Composable
-private fun Streak(label: String, days: Int, shadowAt: Int, fill: Float, autoDetected: Boolean = false) {
+private fun Streak(
+    label: String,
+    detail: String,
+    active: Boolean,
+    days: Int,
+    shadowAt: Int,
+    autoDetected: Boolean,
+    onToggle: () -> Unit,
+) {
     val p = LocalPalette.current
     val m = LocalMetrics.current
     val t = LocalType.current
-    Card(Modifier.fillMaxWidth(), big = true, padding = 15.2) {
+    Card(
+        Modifier.fillMaxWidth().clickable(onClick = onToggle),
+        big = true,
+        lit = active,
+        dashed = !active,
+        padding = 15.2,
+    ) {
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-            Text(label, style = t.questTitle.copy(fontSize = m.s(14.1)))
-            if (autoDetected) {
-                GapW(6)
-                Tag("app-mediated", t.key.copy(color = p.faint))
+            Column(Modifier.weight(1f)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        label,
+                        style = t.questTitle.copy(
+                            fontSize = m.s(14.1),
+                            color = if (active) p.ink else p.dim,
+                        ),
+                    )
+                    if (autoDetected) {
+                        GapW(6)
+                        Tag("app-mediated", t.key.copy(color = p.faint))
+                    }
+                }
+                Gap(2.9)
+                Tag(detail, t.key)
             }
-            Filler()
-            Row(verticalAlignment = Alignment.Bottom) {
-                Text("$days", style = t.lg(22.4).copy(color = p.soft))
-                Tag(" d", t.tag)
+            if (active) {
+                Row(verticalAlignment = Alignment.Bottom) {
+                    Text("$days", style = t.lg(22.4).copy(color = p.soft))
+                    Tag(" d", t.tag)
+                }
+            } else {
+                Tag("tap to begin", t.key.copy(color = p.hot))
             }
         }
-        Gap(6)
-        Meter(fill = fill, height = 7)
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            Tag("Shadow at $shadowAt", t.key)
-            Tag("+40 / day", t.key)
+        if (active) {
+            Gap(6)
+            Meter(fill = days.toFloat() / shadowAt, height = 7)
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                Tag("Shadow at $shadowAt", t.key)
+                Tag("+40 / day", t.key)
+            }
         }
     }
 }
