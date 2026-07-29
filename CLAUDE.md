@@ -48,7 +48,9 @@ Read these before writing code. Several look like style choices and are not.
    counts, and crash stack traces. Never a package name from the user's app list, never a duration, never
    anything from the private track. Analytics is Firebase (GA4 for apps), user-switchable in Settings, and
    because it exists the app needs a **privacy policy URL and a Play Data Safety declaration** — both are
-   Play requirements the moment anything leaves the device.
+   Play requirements the moment anything leaves the device. **A share card is bound by this rule too.** It may
+   never render a package name, a duration or any screen-time number, and there is no "but the user chose to"
+   exemption. Build the card from an allowlist, not a blocklist.
 
 ---
 
@@ -236,6 +238,40 @@ abuse actually shows up, not upfront.
 - **The feed ends** at twenty posts a day. Guild-scoped only. Global UGC would need moderation, reporting,
   blocking and a published policy, all four being Play requirements.
 
+### Running raids — a shared window, never a shared place
+
+One objective in the eighteen, on the existing `DISTANCE` verifier. Both hunters commit to a window such as
+18:00–19:00, each runs wherever they actually run, and neither learns where the other was. No map, no route, no
+GPS trace, no new permission. Sensor-proven tier, so it pays full, because Health Connect carries `dataOrigin`.
+Aura rules are the ordinary raid rules: base safe, bonus at stake, +450 human and +180 shadow pacer. The
+pacer's pace is target distance over the window, rendered `6:00/km`. Full reasoning in `DECISIONS.md` §26.
+
+- **Settle retroactively, never at window close.** Strava, Nike and Samsung Health write to Health Connect on
+  sync, minutes after the run ends, so a query at the whistle reads zero. Close the window, then let the
+  15-minute `WorkManager` job re-check for up to 30 minutes while the screen holds `settling`. Never declare a
+  failure the app may have to reverse.
+- **The session starts in the runner's own app.** `Start in Strava` is
+  `PackageManager.getLaunchIntentForPackage` on the origin package from their last distance record. Not the
+  Strava API, which forbids showing one user's data to another and so cannot feed a raid or a ladder at all.
+  See §27; Health Connect already delivers Strava, Nike, Garmin, Fitbit and Samsung Health for free.
+- **A running raid is not a focus session.** No foreground service, no speed bump, no return grace, no penalty
+  for leaving the app. Leaving is the point.
+- Filter on the committed window, not on gait. `ExerciseSessionRecord` type checking is the upgrade path if
+  pace gaming appears.
+- No Health Connect grant means the objective is never drawn, same as steps.
+
+### Sharing an ascension
+
+Rank ascension only, for now. `Share this ascension` opens a preview screen showing the card at 9:16, then the
+system share sheet. Capture with `rememberGraphicsLayer()` → `record {}` → `toImageBitmap()`, PNG into
+`cacheDir`, out through `FileProvider` with `FLAG_GRANT_READ_URI_PERMISSION`. No storage permission, no new
+dependency, and the card is the real ceremony composable so the two cannot drift.
+
+**Allowlist for the card:** class portrait, rank before and after, level, streak days, one line of fixed System
+script, the `각성 GAKSEONG` wordmark, `gakseong.app/s/<code>`. Nothing else, per §10. **No share affordance
+exists anywhere in the private track.** Bake the referral link into the image *and* repeat it in `EXTRA_TEXT`,
+because Instagram Stories drops the text when an image is attached. If capture fails, share text only.
+
 ---
 
 ## Stack
@@ -301,7 +337,10 @@ An in-app reader. N minutes with the reader in the foreground and scroll progres
 - **The passage ends and nothing loads beneath it.** That is the whole justification for a screen-time quest
   inside an anti-screen-time app: twenty minutes of something finite replacing twenty minutes of something
   that never stops. An infinite reader would defeat the app exactly as an infinite feed would.
-- Time in the reader counts as reading, not as screen time, in every threshold that measures screen time.
+- Time in the reader counts as reading, not as screen time, in every threshold that measures screen time. The
+  same carve-out covers the recording app during a running raid window, for a harder reason: Strava holds the
+  foreground for the whole run, so without it a 10 km evening eats the day's screen budget and the app
+  penalises somebody for running.
 
 ---
 

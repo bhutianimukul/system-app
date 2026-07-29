@@ -631,6 +631,134 @@ quests, thresholds, streaks, gates, raids, leagues, shadows, the private track a
 - **The key lives in the Android keystore**, never logged, never in analytics, never sent anywhere but
   Google's endpoint.
 
+## 26. Running — the raid syncs an hour, not a place
+
+Feedback from a runner: a raid drawn at random and answered on the spot assumes the phone is the whole world.
+Running happens somewhere specific, at a time the runner already chose, and two hunters cannot both be at a
+track because a timer said so.
+
+**So a running raid commits a window and never a location.** Both hunters agree on 18:00 to 19:00. Each runs
+wherever they actually run. Neither ever learns where the other was.
+
+- **One new objective in the eighteen**, on the existing `DISTANCE` verifier. The target scales with rank like
+  every other threshold. No new verifier, no new permission, no map, no route, no GPS trace, and
+  `LOCATION_CHECKIN` keeps doing only what it already does.
+- **Sensor-proven tier**, so it pays full and reaches S-rank. Health Connect carries `dataOrigin` and the
+  check is the one steps objectives already pass.
+- **Settle is retroactive, not at the whistle.** Strava, Nike and Samsung Health write to Health Connect on
+  sync, which can land minutes after a run ends, so a query fired at window close reads zero kilometres. The
+  window closes, the 15-minute `WorkManager` job re-checks for up to 30 minutes, and the screen holds a
+  `settling` state. Declaring a failure the app may have to reverse is worse than making somebody wait. This
+  is §2's retroactive settle doing the job it was designed for.
+- **The economy is untouched.** Base aura never at risk, only the raid bonus; whoever broke it loses base as
+  well. Human partner +450, shadow pacer +180.
+- **The pacer was already in the design.** §9 says a shadow holds a fixed pace and never breaks, so only the
+  user can fail. For a run that pace is the target distance over the window, shown as `6:00/km`. A runner with
+  nobody free still gets a raid, which is the entire reason shadow raids exist.
+- **Users who have not granted Health Connect never see the objective drawn**, the same gate steps objectives
+  already sit behind.
+
+### The session starts where the runner already starts it
+
+Gakseong never asks anybody to press start in Gakseong. A runner starts their run in Strava, or Nike, or
+Samsung Health, because that is where their history lives and they were going to open it anyway. The window is
+the commitment; the recording belongs to their own app. This is the same posture as §3 throughout: the app
+reads the record rather than owning the activity.
+
+- **`Start in Strava` is a launch intent, not an integration.**
+  `PackageManager.getLaunchIntentForPackage` on the package that wrote their last distance record, which
+  Health Connect already reports as `dataOrigin` and which never leaves the device. No URI scheme to guess, no
+  OAuth, no API. A user whose runs have no recorded origin simply gets no button and the window alone.
+- **A running raid is not a focus session.** No foreground service, no speed bump, no return grace, and no
+  penalty of any kind for leaving Gakseong. Leaving is the intended behaviour, and the existing session
+  machinery would read it as abandonment.
+- **Foreground time in the recording app during a committed window does not count as screen time,** in any
+  threshold that measures screen time. Without this the run defeats its own player: Strava holds the
+  foreground for the length of the run, `UsageStatsManager` counts all of it, and a 10 km evening eats the
+  daily screen budget. §24 already carves out the reader on a softer argument than this one.
+- DND during the raid follows §22 unchanged. It suppresses notifications, leaves media alone, and always lets
+  calls ring, so a runner keeps their music and their mother.
+
+**Deliberately not distinguishing a run from a fast walk.** The committed window is the filter. Five
+kilometres inside an hour is real work whichever gait produced it, and `ExerciseSessionRecord` type checking
+is the upgrade path if pace gaming ever shows up.
+
+**Rejected: the running vertical.** Named tracks with check-ins, route or segment ladders, a runner class and
+its own screens. Two costs killed it. User-named places need moderation, which is the wall that keeps the feed
+guild-scoped in §9, and a route ladder invites GPS spoofing, which is the class of problem `dataOrigin`
+currently keeps out. A distance league beside the aura league was rejected for now on a thinner argument: it
+needs its own balancing and its own pacers, and one ladder that means something beats two that dilute.
+
+## 27. Strava — read it, do not integrate it
+
+Asked directly whether the Strava API is worth wiring in, given how many features it could carry. It is not,
+and the reason is not effort.
+
+**Strava's Android app already writes time, distance and calories from GPS activities into Health Connect.** A
+runner who uses Strava therefore delivers their run to Gakseong with no OAuth, no tokens, no account and no
+agreement to accept, identically to a runner on Nike, Garmin, Fitbit or Samsung Health. `dataOrigin` comes
+back as Strava's own package, so the settle screen can say `5.02 km · via Strava` and be telling the truth.
+That is the whole integration: one conditional on the origin string.
+
+**Why the API itself is the wrong trade for this app.** The API Agreement says *"Strava Data related to other
+users, even if such data is publicly viewable on the Strava Platform, may not be displayed or disclosed,"* and
+separately that *"you may not create applications that compete with or replicate Strava functionality."* A
+raid where you can see your partner's distance is the first clause. So is a distance ladder, and so is a guild
+feed post about somebody's run. Gakseong is a ladder, so the API forbids the half of it that would matter
+here. What stays permitted is personal-only: your own route on your own screen, your own segment records. That
+buys map tiles and a polyline renderer and moves nothing.
+
+OAuth would also introduce an account into an app whose whole posture in §13 is that there is no account.
+
+**The one real temptation was webhooks.** An activity-finished callback would delete the settle latency above.
+It needs a public HTTPS endpoint, which is server code, which §8 does not have. Thirty minutes of `settling`
+copy is cheaper than a backend.
+
+**Known ceilings, stated.** Health Connect receives GPS activities, so a treadmill run typed into Strava by
+hand may never arrive. The sync is Android-only, which costs nothing here. Press coverage of the November 2024
+agreement update also reported a ban on using API data for AI or ML training; that clause is not in the
+current agreement text, so it is recorded as unverified rather than as fact.
+
+## 28. Sharing an ascension — the invite with a picture
+
+Feedback: the app should let you share a screenshot the way Strava does. Strava's real trick is that the image
+*is* the invite, and §9 already has the install loop, so this is that loop with a picture attached.
+
+**Trigger: rank ascension, and nothing else yet.** It is the highest-status moment in the app, the ceremony art
+already exists, and one moment is enough to learn whether anybody shares at all. Gate clears and raid clears
+follow only if they do.
+
+**Flow:** ceremony, then `Share this ascension`, then a preview screen showing the card at 9:16, then the
+system share sheet. The preview is not politeness. Capture needs the composable laid out on screen anyway, and
+it means nobody posts something they have not seen.
+
+**Render:** `rememberGraphicsLayer()`, `record {}`, `toImageBitmap()`, a PNG in `cacheDir`, handed out through
+`FileProvider` with `FLAG_GRANT_READ_URI_PERMISSION`. No storage permission and no new dependency. The card is
+the real ceremony composable, so the two cannot drift apart.
+
+**What the card may carry, as an allowlist:** the class portrait, rank before and after, level, streak days,
+one line from the fixed System script, the `각성 GAKSEONG` wordmark, and `gakseong.app/s/<code>` in legible
+type.
+
+**What it may never carry:** a package name, a duration, any screen-time number, an app icon from the device, a
+guild member's name, or anything at all from the private track. §10's three-things rule has no "but the user
+chose to" exemption. `Instagram · 4h 12m` is the card that gets posted and then regretted, and the app should
+not be able to produce it. **No share affordance exists anywhere in the private track,** which follows from §7
+without needing a new rule.
+
+**The link is baked into the pixels and repeated in `EXTRA_TEXT`.** Instagram Stories drops the text when an
+image is attached, which is why Strava puts its branding in the image. WhatsApp carries both, and WhatsApp is
+the channel that matters for this audience.
+
+**Ceiling: the code dies on reinstall.** Anonymous Auth UIDs rotate, so a card posted before a reinstall
+carries a code that credits nobody. The link still installs the app, so a dead code costs the credit rather
+than the install. Not worth a server to fix.
+
+**If capture fails, share text only.** The ceremony never blocks on a bitmap.
+
+**Two screens are specified here and not yet drawn:** the share preview card, and the running raid's window
+commit and `settling` states. The published design page is still the 46 it says it is.
+
 ## Live artifacts
 
 - Feature spec / roadmap — https://claude.ai/code/artifact/8fa0df80-201f-4380-88dc-cb8f3c98ffb3
