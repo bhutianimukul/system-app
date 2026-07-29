@@ -26,6 +26,7 @@ import app.gakseong.ui.Card
 import app.gakseong.ui.Eye
 import app.gakseong.ui.Filler
 import app.gakseong.ui.Gap
+import app.gakseong.ui.GapW
 import app.gakseong.ui.Grain
 import app.gakseong.ui.Mask
 import app.gakseong.ui.MaskedImage
