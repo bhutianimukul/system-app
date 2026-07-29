@@ -1,6 +1,6 @@
 # DESIGN LOCKED — 2026-07-28
 
-**The design phase is closed.** 46 screens, 7 classes, four published artifacts. Everything
+**The design phase is closed.** 49 screens, 7 classes, four published artifacts. Everything
 below is a decision of record. Changing any of it is a new decision that needs its own reasoning, not a
 preference to be applied silently.
 
@@ -13,13 +13,15 @@ or art.
 
 | artifact | what it is | path |
 |---|---|---|
-| Full App Design | 46 screens, 7 classes, light and dark | `/oMhpqnEKxiSm` |
+| Full App Design | 49 screens, 7 classes, light and dark | `/fpy2EUijO2vo` |
 | Feature Spec | every mechanic, its Android verifier, why it survives | `/0XY02nXT3S84` |
 | Decision Record | this document plus the instruction log | `/-xE8brb4PuOA` |
 | Rank Ceremony | one composition, five classes, one CSS variable | `/Dq0Y8K2gCdoc` |
 
 Also on claude.ai, for anyone already signed in there:
-`claude.ai/code/artifact/7a66e316-7246-464f-a701-06d58ad1346f`
+`claude.ai/code/artifact/7a66e316-7246-464f-a701-06d58ad1346f`. That copy and the anyartifact page
+`/oMhpqnEKxiSm` are both the 46-screen predecessor. No owner token was kept for `/oMhpqnEKxiSm`, so it cannot
+be retired and stays public and stale; the token for the current page is in `PRIVATE-NOTES.md`.
 
 **Repo:** `github.com/bhutianimukul/system-app`, **public**. `CLAUDE.md` there is the feature spec and
 build rules, auto-loaded by Claude Code, so a session opened in that repo inherits the whole spec.
@@ -756,8 +758,11 @@ than the install. Not worth a server to fix.
 
 **If capture fails, share text only.** The ceremony never blocks on a bitmap.
 
-**Two screens are specified here and not yet drawn:** the share preview card, and the running raid's window
-commit and `settling` states. The published design page is still the 46 it says it is.
+**Drawn on 2026-07-30, taking the design page from 46 screens to 49:** `runraid` (window commit, with the
+`Start in Strava` launch intent and the not-a-focus-session rule on the screen), `runsettle` (the retroactive
+verdict, `5.02 km · via Strava`), and `share` (the 9:16 card in its preview, with the allowlist stated on the
+screen next to it). The Invite screen's stale `system.app/r/` link was corrected to `gakseong.app/r/` in the
+same pass.
 
 ## Live artifacts
 
