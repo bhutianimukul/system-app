@@ -6,9 +6,15 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.Composable
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import app.gakseong.ui.screens.AriseScreen
+import app.gakseong.ui.screens.BreakScreen
 import app.gakseong.ui.screens.CeremonyScreen
 import app.gakseong.ui.screens.FocusScreen
+import app.gakseong.ui.screens.GateScreen
 import app.gakseong.ui.screens.HomeScreen
+import app.gakseong.ui.screens.InviteScreen
+import app.gakseong.ui.screens.LeagueScreen
+import app.gakseong.ui.screens.RaidHubScreen
 import app.gakseong.ui.screens.RaidScreen
 import app.gakseong.ui.screens.RunRaidScreen
 import app.gakseong.ui.screens.RunSettleScreen
@@ -52,9 +58,15 @@ private fun Route(screen: String) {
         "focus" -> FocusScreen()
         "ceremony" -> CeremonyScreen()
         "raid" -> RaidScreen()
+        "raidhub" -> RaidHubScreen()
         "runraid" -> RunRaidScreen()
         "runsettle" -> RunSettleScreen()
         "share" -> ShareScreen()
+        "arise" -> AriseScreen()
+        "league" -> LeagueScreen()
+        "gate" -> GateScreen()
+        "break" -> BreakScreen()
+        "invite" -> InviteScreen()
         else -> HomeScreen()
     }
 }

@@ -45,6 +45,7 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.ImageShader
 import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.ShaderBrush
 import androidx.compose.ui.graphics.TileMode
@@ -181,7 +182,14 @@ fun BoxScope.TopFade() {
 
 /** `.aura` — one blurred accent ellipse. The only place the class colour is spent on atmosphere. */
 @Composable
-fun BoxScope.Aura(widthFraction: Float, heightFraction: Float, top: Float, left: Float, alpha: Float) {
+fun BoxScope.Aura(
+    widthFraction: Float,
+    heightFraction: Float,
+    top: Float,
+    left: Float,
+    alpha: Float,
+    color: Color? = null,
+) {
     val p = LocalPalette.current
     val m = LocalMetrics.current
     BoxWithConstraints(Modifier.matchParentSize()) {
@@ -190,7 +198,7 @@ fun BoxScope.Aura(widthFraction: Float, heightFraction: Float, top: Float, left:
                 .requiredSize(maxWidth * widthFraction, maxHeight * heightFraction)
                 .offset(x = maxWidth * left, y = maxHeight * top)
                 .blur(m.d(46), BlurredEdgeTreatment.Unbounded)
-                .background(p.hot.pct(0.92f * alpha), CircleShape)
+                .background((color ?: p.hot).pct(0.92f * alpha), CircleShape)
         )
     }
 }
@@ -429,13 +437,14 @@ fun Wordmark() {
 
 /** `.eye` — the accent-coloured section label, with its glowing 4px dot. */
 @Composable
-fun Eye(text: String) {
+fun Eye(text: String, color: Color? = null) {
     val t = LocalType.current
     val m = LocalMetrics.current
     val p = LocalPalette.current
+    val c = color ?: p.hot
     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(m.d(6))) {
-        Box(Modifier.size(m.d(4)).background(p.hot, CircleShape))
-        Text(text.uppercase(), style = t.eye)
+        Box(Modifier.size(m.d(4)).background(c, CircleShape))
+        Text(text.uppercase(), style = t.eye.copy(color = c))
     }
 }
 
@@ -448,20 +457,44 @@ fun Card(
     modifier: Modifier = Modifier,
     big: Boolean = false,
     lit: Boolean = false,
+    dashed: Boolean = false,
+    accent: Color? = null,
+    padding: Number = 13,
     content: @Composable ColumnScope.() -> Unit,
 ) {
     val p = LocalPalette.current
     val m = LocalMetrics.current
     val shape = RoundedCornerShape(m.d(if (big) Radius.BIG else Radius.CARD))
-    val background: Brush =
-        if (lit) Brush.linearGradient(listOf(p.hot.pct(0.13f), Color.White.pct(0.02f)))
-        else Brush.linearGradient(listOf(p.card, p.card))
+    val tint = accent ?: p.hot
+    val background: Brush = when {
+        accent != null -> Brush.linearGradient(listOf(tint.pct(0.08f), Color.White.pct(0.02f)))
+        lit -> Brush.linearGradient(listOf(p.hot.pct(0.13f), Color.White.pct(0.02f)))
+        else -> Brush.linearGradient(listOf(p.card, p.card))
+    }
+    val stroke = when {
+        accent != null -> tint.pct(0.27f)
+        lit -> p.hot.pct(0.38f)
+        else -> p.line
+    }
     Column(
         modifier
             .clip(shape)
             .background(background)
-            .border(1.dp, if (lit) p.hot.pct(0.38f) else p.line, shape)
-            .padding(m.d(13)),
+            .then(
+                // `border-style:dashed`. Compose's border() has no dash option, so the outline is drawn.
+                if (dashed) Modifier.drawBehind {
+                    val r = m.d(if (big) Radius.BIG else Radius.CARD).toPx()
+                    drawRoundRect(
+                        color = stroke,
+                        cornerRadius = androidx.compose.ui.geometry.CornerRadius(r, r),
+                        style = Stroke(
+                            width = 1.dp.toPx(),
+                            pathEffect = PathEffect.dashPathEffect(floatArrayOf(6f, 5f)),
+                        ),
+                    )
+                } else Modifier.border(1.dp, stroke, shape)
+            )
+            .padding(m.d(padding)),
         content = content,
     )
 }
