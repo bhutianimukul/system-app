@@ -396,14 +396,14 @@ noise, which at 26% under an overlay blend is not visible.
 
 ### Screen inventory
 
-Twenty-six built, all compiling and rendering with no runtime errors. Route with
+Thirty built, all compiling and rendering with no runtime errors. Route with
 `adb shell am start -n app.gakseong/.MainActivity --es screen <name> --es class <class>`.
 
 **Built:** `home` `focus` `ceremony` `raid` `raidhub` `runraid` `runsettle` `share` `arise` `league` `gate`
 `break` `invite` `guild` `feed` `refer` `soon` `profile` `private` `report` `splash` `welcome` `perms` `diag`
-`apps` `contract`
+`apps` `contract` `intent` `class` `assess` `stage`
 
-**Remaining:** `intent` `class` `assess` `stage` `rate` `privset` `thresh` `weights` `newapp` `read` `shadows`
+**Remaining:** `rate` `privset` `thresh` `weights` `newapp` `read` `shadows`
 `complete` `monarch` `gates` `chat` `aikey` `bonus` `widget` `settings` `pact` `contain` `store`
 
 **The chart kit is in `ui/Charts.kt`:** `AuraByDay`, `HoursHeatmap`, `DayCalendar`, `Legend`. `assess` needs it

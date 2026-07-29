@@ -25,6 +25,10 @@ import app.gakseong.ui.screens.ContractScreen
 import app.gakseong.ui.screens.PermsScreen
 import app.gakseong.ui.screens.RealityScreen
 import app.gakseong.ui.screens.SplashScreen
+import app.gakseong.ui.screens.AwakeningScreen
+import app.gakseong.ui.screens.BaselineScreen
+import app.gakseong.ui.screens.IntentScreen
+import app.gakseong.ui.screens.StagedScreen
 import app.gakseong.ui.screens.WelcomeScreen
 import app.gakseong.ui.screens.SoonScreen
 import app.gakseong.ui.screens.RaidHubScreen
@@ -93,6 +97,10 @@ private fun Route(screen: String) {
         "diag" -> RealityScreen()
         "apps" -> AppsScreen()
         "contract" -> ContractScreen()
+        "intent" -> IntentScreen()
+        "class" -> AwakeningScreen()
+        "assess" -> BaselineScreen()
+        "stage" -> StagedScreen()
         else -> HomeScreen()
     }
 }
