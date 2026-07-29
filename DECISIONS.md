@@ -764,6 +764,43 @@ verdict, `5.02 km · via Strava`), and `share` (the 9:16 card in its preview, wi
 screen next to it). The Invite screen's stale `system.app/r/` link was corrected to `gakseong.app/r/` in the
 same pass.
 
+## 29. The rank arithmetic, settled in code
+
+Phase 01 forced a decision the design had left open. Three screens disagreed about what moves Rank: the
+ceremony says `Threshold held · 14 days`, Home says `560 to D · II`, and the League screen says the top 5
+promote. An engine cannot hold all three.
+
+**Held days at the tier move Rank. The league never touches it.**
+
+- **Promotion** is cumulative days landing at or above the threshold while at the current tier, reset only by a
+  promotion or a demotion. Requirement by letter: **E 7, D 10, C 14, B 18, A 22, S 26**, so S-I is roughly 265
+  days of holding rather than a good fortnight.
+- **The streak is a separate counter** and its only job is shields, seven consecutive days for one, three at
+  most. Splitting the two means a bad Tuesday costs insurance without erasing a month of progress at the tier.
+- **Demotion is §6's day seven and nothing else.** The sequence then restarts, so containment is authorised
+  once per miss run rather than every day it continues.
+- **The league is division standing only.** Promote, hold and demote on that screen describe the division, not
+  the ladder. A ladder that moved on placement would put a real rank in the hands of whichever pacers padded a
+  thin division, which contradicts §9.
+- **Home's `560 to D · II` is distance to today's ceiling,** not a rank pool. `640 + 560 = 1200`, which is the
+  D-III cap and also exactly what that screen's five quests pay. The label needs rewording; the arithmetic is
+  right.
+
+**The curve, anchored on that same Home screen.** Threshold `200 + 100 × ordinal`, cap `600 + 200 × ordinal`,
+where ordinal runs 0 for E-III to 17 for S-I. That puts D-III at 500 and 1200, matching the screen. The band
+therefore widens in absolute aura and tightens in ratio as the ladder climbs, so higher ranks carry less slack.
+All four numbers live in one `Balance` object and are calibration rather than decision.
+
+**Provability shares are 1.0, 0.6 and 0.35.** A declared 450 pays 158, inside the 120–180 that §4 quotes for
+non-confirmable work.
+
+**Nothing counts toward Rank below the threshold.** Aura earned on a failed day still exists for Level, and it
+buys no standing at all.
+
+**Level is deliberately absent from phase 01.** The phase list in `CLAUDE.md` names thresholds, caps,
+provability, rank transitions, shields and penalty sequencing. Level only rises and gates nothing, so it can be
+added when a screen needs it.
+
 ## Live artifacts
 
 - Feature spec / roadmap — https://claude.ai/code/artifact/8fa0df80-201f-4380-88dc-cb8f3c98ffb3

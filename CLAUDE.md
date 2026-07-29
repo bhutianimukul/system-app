@@ -350,7 +350,19 @@ An in-app reader. N minutes with the reader in the foreground and scroll progres
 Android dependencies. Thresholds, caps, provability tiers, rank transitions, shields, penalty sequencing.
 Everything else depends on this being right, and it is the only part that is cheap to test exhaustively.
 
-Nothing has been written yet.
+**Phase 01 is done.** `engine/Aura.kt` and `engine/AuraSelfCheck.kt`, 51 assert-based checks, no framework and
+no Gradle yet because pure functions need neither:
+
+```
+kotlinc engine/*.kt -include-runtime -d /tmp/engine.jar
+java -cp /tmp/engine.jar gakseong.engine.AuraSelfCheckKt
+```
+
+Every tunable number is in the `Balance` object. `DECISIONS.md` §29 records the rank arithmetic, which the
+design had left ambiguous across three screens. Level is not in the engine: it only rises and gates nothing, so
+it arrives when a screen needs it.
+
+Phase 02 onward still needs the Android project itself, which is where Gradle starts earning its keep.
 
 ---
 
