@@ -50,7 +50,9 @@ import androidx.compose.ui.graphics.ShaderBrush
 import androidx.compose.ui.graphics.TileMode
 import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.res.imageResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
@@ -60,6 +62,7 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.em
 import app.gakseong.ui.theme.LocalHunterClass
 import app.gakseong.ui.theme.LocalMetrics
 import app.gakseong.ui.theme.LocalPalette
@@ -605,12 +608,13 @@ fun Sig(size: Number = 22) {
 
 /** `.xl` — the one big number per screen, filled with a white-to-accent gradient. */
 @Composable
-fun XlNumber(text: String) {
+fun XlNumber(text: String, designPx: Number? = null) {
     val p = LocalPalette.current
     val t = LocalType.current
+    val m = LocalMetrics.current
     Text(
         text,
-        style = t.xl.copy(
+        style = (if (designPx == null) t.xl else t.xl.copy(fontSize = m.s(designPx))).copy(
             brush = Brush.linearGradient(
                 0f to Color.White, 0.52f to p.soft, 1f to p.hot,
             )
@@ -703,5 +707,152 @@ fun BoxScope.BottomNav(active: Int) {
         }
         Spacer(Modifier.windowInsetsBottomHeight(WindowInsets.navigationBars))
     }
+}
+
+/** A `.shade` whose CSS is a radial rather than a linear gradient. */
+@Composable
+fun BoxScope.ShadeRadial(
+    centerX: Float,
+    centerY: Float,
+    radiusFraction: Float,
+    vararg stops: Pair<Float, Float>,
+) {
+    val p = LocalPalette.current
+    Box(
+        Modifier
+            .matchParentSize()
+            .drawBehind {
+                drawRect(
+                    Brush.radialGradient(
+                        colorStops = stops.map { (at, a) -> at to p.base.copy(alpha = a) }.toTypedArray(),
+                        center = Offset(size.width * centerX, size.height * centerY),
+                        radius = size.width * radiusFraction,
+                    )
+                )
+            }
+    )
+}
+
+/**
+ * The focus session's progress ring: the SVG in the markup, as an arc. Stroke 3 of a 100 viewBox on a 212px
+ * box, and `stroke-dasharray:283 stroke-dashoffset:88` is 69% elapsed.
+ */
+@Composable
+fun RingTimer(progress: Float, time: String, of: String) {
+    val p = LocalPalette.current
+    val m = LocalMetrics.current
+    val t = LocalType.current
+    Box(Modifier.size(m.d(212)), contentAlignment = Alignment.Center) {
+        Box(
+            Modifier.matchParentSize().drawBehind {
+                val stroke = size.width * 0.03f
+                val inset = stroke / 2 + size.width * 0.05f
+                val arcSize = Size(size.width - inset * 2, size.height - inset * 2)
+                drawArc(
+                    color = Color.White.pct(0.07f),
+                    startAngle = -90f, sweepAngle = 360f, useCenter = false,
+                    topLeft = Offset(inset, inset), size = arcSize,
+                    style = Stroke(stroke),
+                )
+                drawArc(
+                    color = p.hot,
+                    startAngle = -90f, sweepAngle = 360f * progress, useCenter = false,
+                    topLeft = Offset(inset, inset), size = arcSize,
+                    style = Stroke(width = stroke, cap = StrokeCap.Round),
+                )
+            }
+        )
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            XlNumber(time, designPx = 46.4)
+            Gap(8)
+            Text(of.uppercase(), style = t.tag.copy(color = p.ink, letterSpacing = 0.32.em))
+        }
+    }
+}
+
+/** `.cut` and `.cutsq` — circular and near-square radial masks, baked in for the same reason `.art.feather` is. */
+enum class Mask { CIRCLE, SQUARISH }
+
+@Composable
+fun MaskedImage(res: Int, width: Number, height: Number = width, mask: Mask = Mask.CIRCLE, keyed: Boolean = false) {
+    val m = LocalMetrics.current
+    val loaded = ImageBitmap.imageResource(res)
+    val image = remember(loaded, mask) {
+        when (mask) {
+            // `radial-gradient(circle at 50% 48%, ...)` with no size keyword resolves to farthest-corner, so on a
+            // square image the gradient radius is hypot(w/2, h/2) and the visible disc is well inside the frame.
+            // Treating the radius as half the width leaves the corners opaque, which reads as a black box.
+            Mask.CIRCLE -> loaded.masked(cy = 0.48f, radius = FARTHEST_CORNER, inner = 0.52f, outer = 0.74f)
+            Mask.SQUARISH -> loaded.masked(cy = 0.50f, radius = 0.62f, inner = 0.58f, outer = 0.82f)
+        }
+    }
+    Box(
+        Modifier.size(m.d(width), m.d(height)).drawBehind {
+            val w = size.width
+            val h = w * image.height / image.width
+            drawImage(
+                image = image,
+                dstOffset = IntOffset(0, ((size.height - h) / 2).toInt()),
+                dstSize = IntSize(w.toInt(), h.toInt()),
+                blendMode = if (keyed) BlendMode.Lighten else BlendMode.SrcOver,
+            )
+        }
+    )
+}
+
+/** `[data-stats]` — STR, AGI, VIT, INT with their gains, divided by hairlines, inside a System window. */
+@Composable
+fun StatsRow(values: List<Int>, gains: List<Int>) {
+    val p = LocalPalette.current
+    val t = LocalType.current
+    val names = listOf("STR", "AGI", "VIT", "INT")
+    Row(Modifier.fillMaxWidth()) {
+        names.forEachIndexed { i, name ->
+            Column(
+                Modifier
+                    .weight(1f)
+                    .then(
+                        if (i > 0) Modifier.drawBehind {
+                            drawLine(p.line, Offset(0f, 0f), Offset(0f, size.height))
+                        } else Modifier
+                    ),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                Text(name, style = t.tag)
+                Gap(4.5)
+                Text("${values[i]}", style = t.lg(21.6))
+                Gap(2.6)
+                Text("+${gains[i]}", style = t.tag.copy(color = p.soft))
+            }
+        }
+    }
+}
+
+/** Sentinel for "size this gradient to the farthest corner", which is the CSS default. */
+private const val FARTHEST_CORNER = -1f
+
+private fun ImageBitmap.masked(cy: Float, radius: Float, inner: Float, outer: Float): ImageBitmap {
+    val src = asAndroidBitmap()
+    val out = android.graphics.Bitmap.createBitmap(src.width, src.height, android.graphics.Bitmap.Config.ARGB_8888)
+    val canvas = android.graphics.Canvas(out)
+    canvas.drawBitmap(src, 0f, 0f, null)
+    val r = if (radius == FARTHEST_CORNER) {
+        kotlin.math.hypot(src.width * 0.5, src.height * 0.5).toFloat()
+    } else {
+        src.width * radius
+    }
+    val paint = android.graphics.Paint().apply {
+        shader = android.graphics.RadialGradient(
+            src.width * 0.5f,
+            src.height * cy,
+            r,
+            intArrayOf(android.graphics.Color.BLACK, android.graphics.Color.BLACK, android.graphics.Color.TRANSPARENT),
+            floatArrayOf(0f, inner, outer),
+            android.graphics.Shader.TileMode.CLAMP,
+        )
+        xfermode = android.graphics.PorterDuffXfermode(android.graphics.PorterDuff.Mode.DST_IN)
+    }
+    canvas.drawRect(0f, 0f, src.width.toFloat(), src.height.toFloat(), paint)
+    return out.asImageBitmap()
 }
 

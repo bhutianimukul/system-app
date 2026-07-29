@@ -9,6 +9,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -63,9 +64,13 @@ class Palette(
 
 /** Text shadows exist in the stylesheet because most of this type sits over art. They are not decoration. */
 @Immutable
-class GakType(private val m: Metrics, private val p: Palette) {
+class GakType(private val m: Metrics, private val p: Palette, density: Float = 1f) {
     private val mono = FontFamily.Monospace
-    private val overArt = if (p.light) null else Shadow(Color(0xCC000000), Offset(0f, 1f), 8f)
+
+    // `text-shadow:0 1px 8px #000000CC`. CSS lengths are CSS pixels; Compose's Shadow is raw pixels, so both
+    // have to be multiplied by density or the shadow is ~2.6x too small and the type washes out over art.
+    private val overArt =
+        if (p.light) null else Shadow(Color(0xCC000000), Offset(0f, density), 8f * density)
 
     val wordmarkHangul = TextStyle(
         fontSize = m.s(18.4), fontWeight = FontWeight(700), letterSpacing = 0.02.em,
@@ -116,6 +121,12 @@ class GakType(private val m: Metrics, private val p: Palette) {
         fontFamily = mono, fontSize = m.s(9.92), fontWeight = FontWeight(700), color = p.soft,
     )
     val listItem = TextStyle(fontSize = m.s(13.28), fontWeight = FontWeight(650), color = p.ink)
+
+    /** `.lg` — the mid-weight numeral, for stat blocks and anywhere `.xl` would shout. */
+    fun lg(designPx: Number = 32.8) = TextStyle(
+        fontSize = m.s(designPx), fontWeight = FontWeight(860), letterSpacing = (-0.05).em,
+        lineHeight = 0.94.em, color = p.ink,
+    )
 
     /** `.disp` is 900 weight, uppercase and horizontally squeezed. Size varies per screen, so it is a function. */
     fun display(designPx: Number) = TextStyle(
@@ -169,7 +180,7 @@ fun GakseongTheme(
     CompositionLocalProvider(
         LocalMetrics provides metrics,
         LocalPalette provides palette,
-        LocalType provides GakType(metrics, palette),
+        LocalType provides GakType(metrics, palette, LocalDensity.current.density),
         LocalHunterClass provides hunterClass,
         content = content,
     )
