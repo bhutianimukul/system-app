@@ -10,10 +10,16 @@ import app.gakseong.ui.screens.AriseScreen
 import app.gakseong.ui.screens.BreakScreen
 import app.gakseong.ui.screens.CeremonyScreen
 import app.gakseong.ui.screens.FocusScreen
+import app.gakseong.ui.screens.FeedScreen
 import app.gakseong.ui.screens.GateScreen
+import app.gakseong.ui.screens.GuildScreen
 import app.gakseong.ui.screens.HomeScreen
 import app.gakseong.ui.screens.InviteScreen
 import app.gakseong.ui.screens.LeagueScreen
+import app.gakseong.ui.screens.PrivateScreen
+import app.gakseong.ui.screens.ProfileScreen
+import app.gakseong.ui.screens.ReferScreen
+import app.gakseong.ui.screens.SoonScreen
 import app.gakseong.ui.screens.RaidHubScreen
 import app.gakseong.ui.screens.RaidScreen
 import app.gakseong.ui.screens.RunRaidScreen
@@ -67,6 +73,12 @@ private fun Route(screen: String) {
         "gate" -> GateScreen()
         "break" -> BreakScreen()
         "invite" -> InviteScreen()
+        "guild" -> GuildScreen()
+        "feed" -> FeedScreen()
+        "refer" -> ReferScreen()
+        "soon" -> SoonScreen()
+        "profile" -> ProfileScreen()
+        "private" -> PrivateScreen()
         else -> HomeScreen()
     }
 }

@@ -424,6 +424,10 @@ fun RowScope.Filler() = Spacer(Modifier.weight(1f))
 @Composable
 fun Gap(designPx: Number) = Spacer(Modifier.height(LocalMetrics.current.d(designPx)))
 
+/** The horizontal one. [Gap] sets height, so inside a Row it does nothing at all. */
+@Composable
+fun GapW(designPx: Number) = Spacer(Modifier.width(LocalMetrics.current.d(designPx)))
+
 /** `.wm` — hangul first, latin as a spaced-out sub-label. The mark, never the voice. */
 @Composable
 fun Wordmark() {
@@ -657,14 +661,14 @@ fun XlNumber(text: String, designPx: Number? = null) {
 
 /** `.meter` with its `i` fill and `u` threshold marker. */
 @Composable
-fun Meter(fill: Float, marker: Float) {
+fun Meter(fill: Float, marker: Float? = null, height: Number = 10) {
     val p = LocalPalette.current
     val m = LocalMetrics.current
-    Box(Modifier.fillMaxWidth().height(m.d(18)), contentAlignment = Alignment.Center) {
+    Box(Modifier.fillMaxWidth().height(m.d(height.toFloat() + 8f)), contentAlignment = Alignment.Center) {
         Box(
             Modifier
                 .fillMaxWidth()
-                .height(m.d(10))
+                .height(m.d(height))
                 .clip(CircleShape)
                 .background(p.meterTrack)
         ) {
@@ -676,10 +680,10 @@ fun Meter(fill: Float, marker: Float) {
                     .background(Brush.horizontalGradient(listOf(p.deep, p.hot)))
             )
         }
-        Box(
+        if (marker != null) Box(
             Modifier
                 .fillMaxWidth()
-                .height(m.d(18))
+                .height(m.d(height.toFloat() + 8f))
                 .drawBehind {
                     val x = size.width * marker
                     drawRoundRect(

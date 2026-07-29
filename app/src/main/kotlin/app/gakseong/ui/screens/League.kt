@@ -140,7 +140,7 @@ private fun LeagueRow(place: Int, name: String, aura: String, you: Boolean = fal
             if (pacer) Text("◇  ", style = t.tag.copy(color = p.soft))
             Text(name, style = t.questTitle.copy(fontSize = m.s(12.8)))
             if (pacer) {
-                Gap(6)
+                GapW(6)
                 Tag("pacer", t.key.copy(color = p.soft))
             }
             Filler()
