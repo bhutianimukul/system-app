@@ -29,6 +29,11 @@ import app.gakseong.ui.screens.AwakeningScreen
 import app.gakseong.ui.screens.BaselineScreen
 import app.gakseong.ui.screens.IntentScreen
 import app.gakseong.ui.screens.StagedScreen
+import app.gakseong.ui.screens.NewAppScreen
+import app.gakseong.ui.screens.PrivateSetupScreen
+import app.gakseong.ui.screens.RateScreen
+import app.gakseong.ui.screens.ThresholdScreen
+import app.gakseong.ui.screens.WeightsScreen
 import app.gakseong.ui.screens.WelcomeScreen
 import app.gakseong.ui.screens.SoonScreen
 import app.gakseong.ui.screens.RaidHubScreen
@@ -101,6 +106,11 @@ private fun Route(screen: String) {
         "class" -> AwakeningScreen()
         "assess" -> BaselineScreen()
         "stage" -> StagedScreen()
+        "rate" -> RateScreen()
+        "privset" -> PrivateSetupScreen()
+        "thresh" -> ThresholdScreen()
+        "weights" -> WeightsScreen()
+        "newapp" -> NewAppScreen()
         else -> HomeScreen()
     }
 }
