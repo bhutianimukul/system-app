@@ -20,6 +20,12 @@ import app.gakseong.ui.screens.PrivateScreen
 import app.gakseong.ui.screens.ProfileScreen
 import app.gakseong.ui.screens.ReferScreen
 import app.gakseong.ui.screens.ReportScreen
+import app.gakseong.ui.screens.AppsScreen
+import app.gakseong.ui.screens.ContractScreen
+import app.gakseong.ui.screens.PermsScreen
+import app.gakseong.ui.screens.RealityScreen
+import app.gakseong.ui.screens.SplashScreen
+import app.gakseong.ui.screens.WelcomeScreen
 import app.gakseong.ui.screens.SoonScreen
 import app.gakseong.ui.screens.RaidHubScreen
 import app.gakseong.ui.screens.RaidScreen
@@ -81,6 +87,12 @@ private fun Route(screen: String) {
         "profile" -> ProfileScreen()
         "private" -> PrivateScreen()
         "report" -> ReportScreen()
+        "splash" -> SplashScreen()
+        "welcome" -> WelcomeScreen()
+        "perms" -> PermsScreen()
+        "diag" -> RealityScreen()
+        "apps" -> AppsScreen()
+        "contract" -> ContractScreen()
         else -> HomeScreen()
     }
 }

@@ -396,22 +396,27 @@ noise, which at 26% under an overlay blend is not visible.
 
 ### Screen inventory
 
-Nineteen built, all compiling and rendering with no runtime errors. Route with
+Twenty-six built, all compiling and rendering with no runtime errors. Route with
 `adb shell am start -n app.gakseong/.MainActivity --es screen <name> --es class <class>`.
 
 **Built:** `home` `focus` `ceremony` `raid` `raidhub` `runraid` `runsettle` `share` `arise` `league` `gate`
-`break` `invite` `guild` `feed` `refer` `soon` `profile` `private`
+`break` `invite` `guild` `feed` `refer` `soon` `profile` `private` `report` `splash` `welcome` `perms` `diag`
+`apps` `contract`
 
-**Remaining:** `splash` `welcome` `perms` `diag` `intent` `apps` `contract` `class` `assess` `stage` `rate`
-`privset` `thresh` `weights` `newapp` `read` `shadows` `complete` `report` `monarch` `gates` `chat` `aikey`
-`bonus` `widget` `settings` `pact` `contain` `store`
+**Remaining:** `intent` `class` `assess` `stage` `rate` `privset` `thresh` `weights` `newapp` `read` `shadows`
+`complete` `monarch` `gates` `chat` `aikey` `bonus` `widget` `settings` `pact` `contain` `store`
 
-**`report` needs a chart kit first:** aura by day, an hours heatmap, and a 28-day calendar. Those three are
-shared with `diag` and `assess`, so build them once before any of the three screens.
+**The chart kit is in `ui/Charts.kt`:** `AuraByDay`, `HoursHeatmap`, `DayCalendar`, `Legend`. `assess` needs it
+too, so use it rather than drawing new bars.
 
-**The onboarding screens need lists that live in the design page's JavaScript** rather than its markup:
-`data-perms`, `data-contract`, `data-intent`, `data-apps`, `data-diag`. Read those out of the page before
-writing the screen, the same way the class stat blocks came from `st:` and `dl:`.
+**Screen content that lives in the design page's JavaScript, not its markup.** Read it out before writing the
+screen, the way the class stat blocks came from `st:` and `dl:`. Already recovered: `data-perms`,
+`data-contract`, `data-apps`, `data-diag`, `data-thresh`. Still needed: `data-intent`, `data-titles`,
+`data-feed`, `data-league`, `data-soon`, `data-chat`, `data-findings`.
+
+**`data-thresh`, already recovered, for whoever builds `thresh`:** Movement 2,000 steps AGI · Walk or run 1.5 km
+AGI · Screen off 45 min-block INT · Scroll cap 3 h-max INT · Sleep 6h 30 m VIT · Focus session 20 min INT. The
+last column is whether the user may raise it.
 
 **Traps already paid for, in case a screen regresses:**
 
