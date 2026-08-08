@@ -53,7 +53,7 @@ fun FeedScreen() {
 
         Body(navSpace = true) {
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                Eye("Guild Feed"); Filler(); Pill("14 / 20 today", on = true)
+                Eye("Guild Feed"); Filler(); Pill("${posts.orEmpty().size} / $FEED_PER_DAY today", on = true)
             }
             Gap(17.6)
             Text("This feed ends.", style = t.md.copy(fontSize = m.s(20.5)))
