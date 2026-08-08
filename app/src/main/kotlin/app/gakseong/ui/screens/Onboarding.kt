@@ -15,7 +15,13 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
+import androidx.compose.foundation.clickable
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -29,8 +35,10 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import app.gakseong.R
+import app.gakseong.data.Repo
 import app.gakseong.ui.*
 import app.gakseong.ui.theme.Bad
+import kotlinx.coroutines.launch
 import app.gakseong.ui.theme.LocalMetrics
 import app.gakseong.ui.theme.LocalPalette
 import app.gakseong.ui.theme.LocalType
@@ -91,6 +99,7 @@ fun WelcomeScreen() {
     val p = LocalPalette.current
     val m = LocalMetrics.current
     val t = LocalType.current
+    val nav = LocalNav.current
     Screen {
         Bg()
         Bg2()
@@ -128,7 +137,7 @@ fun WelcomeScreen() {
                     )
                 }
                 Filler()
-                Cta("Awaken")
+                Cta("Awaken", onClick = { nav("perms") })
                 Gap(12.8)
                 Tag("Already have a record? Restore")
                 Gap(19.2)
@@ -142,6 +151,7 @@ fun WelcomeScreen() {
 fun PermsScreen() {
     val m = LocalMetrics.current
     val t = LocalType.current
+    val nav = LocalNav.current
     Screen {
         Bg()
         Bg2()
@@ -175,7 +185,9 @@ fun PermsScreen() {
                     )
                 }
             }
-            Cta("Grant access")
+            // ponytail: navigates only. The actual grants are phase 04, where each row gets its own intent and
+            // its real state. Wiring the route now keeps the four asks walkable end to end.
+            Cta("Grant access", onClick = { nav("intent") })
             Gap(19.2)
         }
     }
@@ -190,6 +202,7 @@ fun RealityScreen() {
     val p = LocalPalette.current
     val m = LocalMetrics.current
     val t = LocalType.current
+    val nav = LocalNav.current
     Screen {
         Bg()
         Bg2()
@@ -236,7 +249,7 @@ fun RealityScreen() {
                     )
                 }
             }
-            Cta("I want it back", bad = true)
+            Cta("I want it back", bad = true, onClick = { nav("class") })
             Gap(17.6)
         }
     }
@@ -247,6 +260,17 @@ fun RealityScreen() {
 fun AppsScreen() {
     val m = LocalMetrics.current
     val t = LocalType.current
+    val nav = LocalNav.current
+    val scope = rememberCoroutineScope()
+
+    // ponytail: the names and the per-day figures are placeholders until phase 04 reads the user's own 30 days
+    // out of UsageStatsManager. The selection itself is real, and what it writes never leaves the device (§10).
+    val candidates = listOf(
+        "Instagram" to "2h 41m", "YouTube Shorts" to "1h 18m", "Reddit" to "52m", "X" to "34m",
+        "Snapchat" to "22m", "Swiggy" to "9m", "WhatsApp" to "1h 04m",
+    )
+    var picked by remember { mutableStateOf(setOf("Instagram", "YouTube Shorts", "Reddit", "X", "Snapchat")) }
+
     Screen {
         Bg()
         Bg2()
@@ -274,15 +298,17 @@ fun AppsScreen() {
                 Modifier.weight(1f).verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(m.d(6.4)),
             ) {
-                AppRow("Instagram", "2h 41m", true)
-                AppRow("YouTube Shorts", "1h 18m", true)
-                AppRow("Reddit", "52m", true)
-                AppRow("X", "34m", true)
-                AppRow("Snapchat", "22m", false)
-                AppRow("Swiggy", "9m", false)
-                AppRow("WhatsApp", "1h 04m", false)
+                candidates.forEach { (name, perDay) ->
+                    AppRow(name, perDay, name in picked) {
+                        picked = if (name in picked) picked - name else picked + name
+                    }
+                }
             }
-            Cta("Confirm 5 · continue")
+            // The label counts what is actually selected. It read "Confirm 5" over four ticked rows before.
+            Cta("Confirm ${picked.size} · continue", onClick = {
+                scope.launch { Repo.update { it.copy(profile = it.profile.copy(watchedPackages = picked.toList())) } }
+                nav("contract")
+            })
             Gap(19.2)
         }
     }
@@ -293,6 +319,8 @@ fun AppsScreen() {
 fun ContractScreen() {
     val m = LocalMetrics.current
     val t = LocalType.current
+    val nav = LocalNav.current
+    val scope = rememberCoroutineScope()
     Screen {
         Bg()
         Bg2()
@@ -328,7 +356,11 @@ fun ContractScreen() {
                 TermRow("♡", "Rest is not weakness",
                     "Fatigue from sleep and HRV reduces your load and protects your rank. One full waiver per Pact.")
             }
-            Cta("Accept · issue first quest")
+            // The single accept gate. It is the only place `onboarded` is set, so there is one door into the app.
+            Cta("Accept · issue first quest", onClick = {
+                scope.launch { Repo.update { it.copy(onboarded = true) } }
+                nav("diag")
+            })
             Gap(11.2)
             Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
                 Tag("Every term is reversible in Settings")
@@ -398,11 +430,11 @@ private fun WhereRow(glyph: String, name: String, hours: String) {
 }
 
 @Composable
-private fun AppRow(name: String, perDay: String, selected: Boolean) {
+private fun AppRow(name: String, perDay: String, selected: Boolean, onToggle: () -> Unit = {}) {
     val p = LocalPalette.current
     val m = LocalMetrics.current
     val t = LocalType.current
-    Card(Modifier.fillMaxWidth(), lit = selected, padding = 12.8) {
+    Card(Modifier.fillMaxWidth().clickable(onClick = onToggle), lit = selected, padding = 12.8) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(m.d(11.2))) {
             Box(
                 Modifier.size(m.d(30)).clip(RoundedCornerShape(m.d(9))).background(Color(0xFF12162B)),

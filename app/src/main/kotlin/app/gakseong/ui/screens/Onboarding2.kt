@@ -14,7 +14,13 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
+import androidx.compose.foundation.clickable
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -26,8 +32,15 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.em
 import app.gakseong.R
+import app.gakseong.data.MIN_STATEMENTS
+import app.gakseong.data.Repo
+import app.gakseong.data.STATEMENTS
+import app.gakseong.data.dominantDomain
+import app.gakseong.data.hunterClassFor
 import app.gakseong.ui.*
+import app.gakseong.ui.theme.HunterClass
 import app.gakseong.ui.theme.LocalHunterClass
+import kotlinx.coroutines.launch
 import app.gakseong.ui.theme.LocalMetrics
 import app.gakseong.ui.theme.LocalPalette
 import app.gakseong.ui.theme.LocalType
@@ -39,6 +52,11 @@ fun IntentScreen() {
     val p = LocalPalette.current
     val m = LocalMetrics.current
     val t = LocalType.current
+    val nav = LocalNav.current
+    val sys = LocalSystem.current
+    val scope = rememberCoroutineScope()
+    var picked by remember { mutableStateOf(sys.profile.intent.toSet()) }
+    val enough = picked.size >= MIN_STATEMENTS
     Screen {
         Bg()
         Bg2()
@@ -72,7 +90,7 @@ fun IntentScreen() {
 
             Gap(14.4)
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                Tag("Pick at least five"); Filler(); Pill("3 of 5", on = true)
+                Tag("Pick at least five"); Filler(); Pill("${picked.size} of $MIN_STATEMENTS", on = enough)
             }
 
             Gap(9.6)
@@ -80,23 +98,25 @@ fun IntentScreen() {
                 Modifier.weight(1f).verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(m.d(6)),
             ) {
-                Starter("◉", "I lose whole evenings to reels", "Attention", true)
-                Starter("☾", "I go to bed at 3am and hate it", "Rest", true)
-                Starter("⌖", "I have not left the house in days", "Isolation", true)
-                Starter("◈", "I start things and never finish", "Attention", false)
-                Starter("○", "I order food instead of cooking", "Intake", false)
-                Starter("⚡", "I stopped training and feel it", "Body", false)
-                Starter("✦", "I scroll instead of replying to people", "Isolation", false)
-                Starter("♡", "I am tired all the time", "Rest", false)
-                Starter("◉", "I check my phone before I am fully awake", "Attention", false)
-                Starter("◈", "I cannot sit through anything without picking it up", "Attention", false)
-                Starter("⌖", "I say I will go out and then do not", "Isolation", false)
-                Starter("○", "I eat at midnight most nights", "Intake", false)
-                Starter("⚡", "I have not walked anywhere in weeks", "Body", false)
-                Starter("✦", "I compare myself to strangers online", "Mind", false)
-                Starter("♡", "I feel behind on everything", "Mind", false)
+                STATEMENTS.forEach { s ->
+                    Starter(s.glyph, s.text, s.domain, s.text in picked) {
+                        picked = if (s.text in picked) picked - s.text else picked + s.text
+                    }
+                }
             }
-            Cta("Continue")
+            // Ghost until five are picked, so the gate is visible rather than a tap that silently does nothing.
+            Cta(
+                if (enough) "Continue" else "Pick ${MIN_STATEMENTS - picked.size} more",
+                ghost = !enough,
+                onClick = if (!enough) null else {
+                    {
+                        scope.launch {
+                            Repo.update { it.copy(profile = it.profile.copy(intent = picked.toList())) }
+                        }
+                        nav("apps")
+                    }
+                },
+            )
             Gap(19.2)
         }
     }
@@ -108,7 +128,16 @@ fun AwakeningScreen() {
     val p = LocalPalette.current
     val m = LocalMetrics.current
     val t = LocalType.current
-    val hunter = LocalHunterClass.current
+    val nav = LocalNav.current
+    val sys = LocalSystem.current
+    val scope = rememberCoroutineScope()
+
+    // The class is read out of what the user said, so it is derived here rather than taken from the theme.
+    val derived = hunterClassFor(sys.profile.intent)
+    val hunter = HunterClass.entries.firstOrNull { it.name == derived } ?: LocalHunterClass.current
+    val dominant = dominantDomain(sys.profile.intent)
+    val rank = sys.hunter.toEngine().rank
+
     Screen {
         Bg()
         Bg2()
@@ -126,10 +155,11 @@ fun AwakeningScreen() {
                 Gap(9.6)
                 Text(hunter.label.uppercase(), style = t.display(33.6).copy(letterSpacing = 0.02.em))
                 Gap(5.6)
-                Tag("Trains · Screen discipline")
+                Tag("Trains · ${TRAINS[hunter.name] ?: "Screen discipline"}")
                 Gap(9.6)
                 Text(
-                    "Your quests weight toward attention. The System comes for your feeds first.",
+                    WEIGHTING[hunter.name] ?: "Your quests weight toward attention. The System comes for your " +
+                        "feeds first.",
                     style = t.body.copy(fontSize = m.s(12.8), textAlign = TextAlign.Center),
                     modifier = Modifier.width(m.d(240)),
                 )
@@ -139,8 +169,14 @@ fun AwakeningScreen() {
                     Tag("Why this class", t.tag.copy(color = p.hot))
                     Gap(4.2)
                     Text(
-                        "Three of your five statements were about attention. The class is read from what you " +
-                            "said, not picked from a menu, so it cannot be gamed into the easy one.",
+                        buildString {
+                            if (dominant != null) {
+                                append("${dominant.second} of your ${sys.profile.intent.size} statements ")
+                                append("were about ${dominant.first.lowercase()}. ")
+                            }
+                            append("The class is read from what you said, not picked from a menu, so it cannot ")
+                            append("be gamed into the easy one.")
+                        },
                         style = t.body.copy(fontSize = m.s(12.2)),
                     )
                 }
@@ -152,7 +188,7 @@ fun AwakeningScreen() {
                     Text(
                         buildAnnotatedString {
                             append("7 days of history read. Starting rank ")
-                            withStyle(SpanStyle(color = p.hot, fontWeight = FontWeight(650))) { append("E · I") }
+                            withStyle(SpanStyle(color = p.hot, fontWeight = FontWeight(650))) { append(rank.label) }
                             append(". The System reads what your phone already knows.")
                         },
                         style = t.body.copy(fontSize = m.s(12.5)),
@@ -171,7 +207,10 @@ fun AwakeningScreen() {
                     }
                 }
                 Filler()
-                Cta("Accept the class")
+                Cta("Accept the class", onClick = {
+                    scope.launch { Repo.update { it.copy(profile = it.profile.copy(hunterClass = derived)) } }
+                    nav("stage")
+                })
                 Gap(19.2)
             }
         }
@@ -183,6 +222,7 @@ fun AwakeningScreen() {
 fun StagedScreen() {
     val m = LocalMetrics.current
     val t = LocalType.current
+    val nav = LocalNav.current
     Screen {
         Bg()
         Bg2()
@@ -230,18 +270,43 @@ fun StagedScreen() {
                 ))
                 Gap(11.2)
             }
+            // The screen had no action at all, so onboarding dead-ended here. This is the last step before Home.
+            Cta("Begin", onClick = { nav("home") })
+            Gap(19.2)
         }
     }
 }
 
 // ── shared ────────────────────────────────────────────────────────────────────
 
+// What each class trains, and how its quests weight. The screen announced screen discipline for every class
+// before this, which made a derived class read as decoration.
+private val TRAINS = mapOf(
+    "ASSASSIN" to "Screen discipline",
+    "HEALER" to "Rest and recovery",
+    "ENVOY" to "Contact with people",
+    "TANKER" to "Intake and routine",
+    "FIGHTER" to "Body and training",
+    "SAGE" to "Attention of mind",
+    "RANGER" to "Distance covered",
+)
+
+private val WEIGHTING = mapOf(
+    "ASSASSIN" to "Your quests weight toward attention. The System comes for your feeds first.",
+    "HEALER" to "Your quests weight toward sleep. The System comes for your nights first.",
+    "ENVOY" to "Your quests weight toward contact. The System comes for the hours you spend alone.",
+    "TANKER" to "Your quests weight toward routine. The System comes for the midnight orders first.",
+    "FIGHTER" to "Your quests weight toward the body. The System comes for the days you did not move.",
+    "SAGE" to "Your quests weight toward the mind. The System comes for the comparing first.",
+    "RANGER" to "Your quests weight toward distance. The System comes for the walks you did not take.",
+)
+
 @Composable
-private fun Starter(glyph: String, statement: String, domain: String, picked: Boolean) {
+private fun Starter(glyph: String, statement: String, domain: String, picked: Boolean, onToggle: () -> Unit = {}) {
     val p = LocalPalette.current
     val m = LocalMetrics.current
     val t = LocalType.current
-    Card(Modifier.fillMaxWidth(), lit = picked, padding = 11.5) {
+    Card(Modifier.fillMaxWidth().clickable(onClick = onToggle), lit = picked, padding = 11.5) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(m.d(9.6))) {
             Box(
                 Modifier
