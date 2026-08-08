@@ -39,6 +39,8 @@
 06|DND expires on its own|app/src/main/kotlin/app/gakseong/session/Dnd.kt:AutomaticZenRule
 06|Prior interruption filter restored|app/src/main/kotlin/app/gakseong/session/Dnd.kt:currentInterruptionFilter
 06|Speed bump only while a session lives|app/src/main/kotlin/app/gakseong/session/SpeedBump.kt:SYSTEM_ALERT_WINDOW
+07|Guild shows nobody rather than inventing members|app/src/main/kotlin/app/gakseong/ui/screens/Guild.kt:Not connected
+07|Raid partners are labelled shadow pacers|app/src/main/kotlin/app/gakseong/ui/screens/Raid.kt:pacer
 07|Anonymous auth, no account|app/src/main/kotlin/app/gakseong/cloud/Auth.kt:signInAnonymously
 07|Referral pairing is create-only|firestore.rules:allow create
 07|Analytics refuses the private track|app/src/main/kotlin/app/gakseong/cloud/Analytics.kt:PRIVATE_TRACK_EXEMPT

@@ -38,6 +38,8 @@ between them is where this kind of work rots.
 | 06 | DND expires on its own | no | no |
 | 06 | Prior interruption filter restored | no | no |
 | 06 | Speed bump only while a session lives | no | no |
+| 07 | Guild shows nobody rather than inventing members | yes | no |
+| 07 | Raid partners are labelled shadow pacers | yes | yes |
 | 07 | Anonymous auth, no account | no | no |
 | 07 | Referral pairing is create-only | no | no |
 | 07 | Analytics refuses the private track | no | no |
@@ -115,20 +117,9 @@ finished work. Source: `critic/pending.txt`.
 - `Raid.kt|of 45:00 · both must hold`
 - `RunRaid.kt|18:00 — 19:00`
 - `RunRaid.kt|5.02 km`
+- `RunRaid.kt|◷ pacer · 6:00/km`
 - `RunRaid.kt|6:00/km · never breaks`
-- `Guild.kt|6 of 20`
-- `Guild.kt|Founded 41 days ago · invite only`
-- `Guild.kt|6th of 30 · 2d 04h`
-- `Guild.kt|7,120`
-- `Guild.kt|7,004`
-- `Guild.kt|6,880`
-- `Guild.kt|6,510`
-- `Guild.kt|5,940`
-- `Guild.kt|5,610`
-- `Guild.kt|D · III`
-- `Guild.kt|D · II`
-- `Guild.kt|C · III`
-- `Guild.kt|E · I`
+- `Feed.kt|14 / 20 today`
 - `League.kt|2d 04h`
 - `League.kt|7,120`
 - `League.kt|7,004`
@@ -139,15 +130,6 @@ finished work. Source: `critic/pending.txt`.
 - `League.kt|Hunter D-91`
 - `League.kt|Hunter D-44`
 - `League.kt|Hunter D-12`
-- `Feed.kt|14 / 20 today`
-- `Feed.kt|+300`
-- `Feed.kt|+260`
-- `Feed.kt|+450`
-- `Feed.kt|18:20`
-- `Feed.kt|06:02`
-- `Feed.kt|held a 45-minute focus session`
-- `Feed.kt|ran 5.02 km inside the raid window`
-- `Feed.kt|reached C · III`
 - `RaidHub.kt|4 of 6 holding · ends 21:00`
 - `RunRaid.kt|objective 12 of 18`
 - `Last.kt|4.8 ★ · 12K`

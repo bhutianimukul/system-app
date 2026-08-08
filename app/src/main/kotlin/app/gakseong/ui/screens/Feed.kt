@@ -49,10 +49,16 @@ fun FeedScreen() {
                 Modifier.weight(1f).verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(m.d(5.4)),
             ) {
-                Post("Rahul", "held a 45-minute focus session", "+300", "18:20")
-                Post("Aditi", "cleared the night gate", "+260", "06:02")
-                Post("Kabir", "reached C · III", null, "yesterday")
-                Post("Neha", "ran 5.02 km inside the raid window", "+450", "yesterday")
+                // Guild-scoped, and there is no guild until phase 07. Nothing is invented to fill it.
+                Card(Modifier.fillMaxWidth(), dashed = true, padding = 13.6) {
+                    Tag("Nothing here yet", t.tag.copy(color = p.hot))
+                    Gap(4.2)
+                    Text(
+                        "The feed is your guild's and no one else's. It fills when there is a guild, and stays " +
+                            "empty rather than showing posts nobody wrote.",
+                        style = t.body.copy(fontSize = m.s(12.2)),
+                    )
+                }
 
                 Gap(4)
                 Card(Modifier.fillMaxWidth(), dashed = true) {

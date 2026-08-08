@@ -171,7 +171,7 @@ fun RunSettleScreen() {
                 Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                     PartnerCard(hunter.portrait, "You", "✓ cleared", Ok, Modifier.weight(1f))
                     Text("⚔", style = t.tag.copy(color = p.hot, fontSize = m.s(14.4)))
-                    PartnerCard(R.drawable.p_ranger, "Rahul", "◷ settling", p.soft, Modifier.weight(1f), alpha = 0.85f)
+                    PartnerCard(R.drawable.p_ranger, "◇ Shadow", "◷ pacer · 6:00/km", p.soft, Modifier.weight(1f), alpha = 0.85f)
                 }
 
                 Gap(14.4)

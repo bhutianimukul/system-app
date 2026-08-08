@@ -27,6 +27,8 @@ fun GuildScreen() {
     val p = LocalPalette.current
     val m = LocalMetrics.current
     val t = LocalType.current
+    val sys = LocalSystem.current
+    val rank = sys.hunter.toEngine().rank
 
     Screen {
         Bg()
@@ -39,43 +41,23 @@ fun GuildScreen() {
 
         Body(navSpace = true) {
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                Eye("Guild"); Filler(); Tag("6 of 20")
+                Eye("Guild"); Filler(); Tag("Not connected")
             }
             Gap(19.2)
-            Text("Shadow Wardens", style = t.md.copy(fontSize = m.s(21.6)))
+            Text("No guild yet", style = t.md.copy(fontSize = m.s(21.6)))
             Gap(8)
-            Tag("Founded 41 days ago · invite only")
+            Tag("Guilds arrive when the System reaches the network")
 
             Gap(17.6)
-            SystemWindow {
-                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                    Tag("Party raid active", t.tag.copy(color = p.hot)); Filler()
-                    Tag("4 / 6 holding", t.tag.copy(color = p.soft))
-                }
-                Gap(4.8)
+            Card(Modifier.fillMaxWidth(), dashed = true, padding = 13.6) {
+                Tag("Why this is empty", t.tag.copy(color = p.hot))
+                Gap(4.2)
                 Text(
-                    buildAnnotatedString {
-                        append("Gate clears only if every member hits their part. ")
-                        withStyle(SpanStyle(color = p.ink, fontWeight = FontWeight(650))) { append("2 have not started.") }
-                    },
-                    style = t.body.copy(fontSize = m.s(12.5)),
+                    "The ladder is the one thing in this app that has to be trustworthy, so nobody is shown " +
+                        "here until there is somebody real to show. A guild feed that nobody posts in gets " +
+                        "noticed, and so does a member who never appears.",
+                    style = t.body.copy(fontSize = m.s(12.2)),
                 )
-                Gap(6)
-                Meter(fill = 0.66f, height = 7)
-            }
-
-            Gap(8.8)
-            Card(Modifier.fillMaxWidth(), padding = 12) {
-                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(m.d(8))) {
-                    MaskedImage(R.drawable.em_d, width = 26, mask = Mask.CIRCLE)
-                    Column {
-                        Tag("D Division", t.tag.copy(color = p.hot))
-                        Gap(1.9)
-                        Tag("6th of 30 · 2d 04h")
-                    }
-                    Filler()
-                    Text("→", style = t.tag.copy(color = p.soft))
-                }
             }
 
             Gap(8.8)
@@ -83,12 +65,8 @@ fun GuildScreen() {
                 Modifier.weight(1f).verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(m.d(5.4)),
             ) {
-                MemberRow("You", "D · III", "7,120", you = true)
-                MemberRow("Rahul", "D · II", "7,004")
-                MemberRow("Aditi", "C · III", "6,880")
-                MemberRow("Kabir", "D · III", "6,510")
-                MemberRow("Neha", "E · I", "5,940")
-                MemberRow("Ishan", "D · III", "5,610")
+                // Your own row is real today. Everyone else's arrives from Firestore in phase 07.
+                MemberRow("You", rank.label, sys.today.auraEarned.toString(), you = true)
                 Gap(11.2)
             }
         }

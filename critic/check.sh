@@ -5,7 +5,8 @@
 #   2. JVM unit tests and the debug build
 #   3. every route launched on a device, cold each time, logcat scanned for fatals
 #   4. the placeholder audit: screen literals that look like state
-#   5. CRITIC.md regenerated
+#   5. the invented-people check: no fabricated human names on any screen
+#   6. CRITIC.md regenerated
 #
 # Usage: critic/check.sh [--no-device]
 #
@@ -108,7 +109,30 @@ else
   printf '%s\n' "$SUSPECT" | head -40
 fi
 
-step "5. CRITIC.md"
+step "5. invented people"
+# §Social: never generate plausible human usernames to pad a ladder. The ladder is the one thing in this app
+# that has to be trustworthy, and a fabricated member who never posts in the guild feed gets noticed.
+#
+# Any name a screen renders must be the user, a labelled shadow pacer, or an opaque handle. This greps the
+# first string argument of the composables that render a person.
+# MemberRow and Post carry the name first; PartnerCard carries a drawable first and the name second.
+SCREENS=app/src/main/kotlin/app/gakseong/ui/screens/
+NAMES=$( { grep -rhoE '(MemberRow|Post)\( *"[^"]+"' "$SCREENS" 2>/dev/null | grep -oE '"[^"]+"'
+           grep -rhoE 'PartnerCard\([^,]+, *"[^"]+"' "$SCREENS" 2>/dev/null | grep -oE '"[^"]+"$'
+         } | tr -d '"' | sort -u \
+        | grep -vE '^(You|Shadow)$' \
+        | grep -vE '^Hunter ' \
+        | grep -vE '◇' \
+        || true)
+NAME_COUNT=$(printf '%s' "$NAMES" | grep -c . || true)
+if [ "$NAME_COUNT" -eq 0 ]; then
+  ok "no invented people on any screen"
+else
+  bad "$NAME_COUNT name(s) that are neither the user, a labelled pacer, nor an opaque handle"
+  printf '%s\n' "$NAMES"
+fi
+
+step "6. CRITIC.md"
 {
   echo "# Critic"
   echo

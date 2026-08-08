@@ -70,7 +70,7 @@ fun RaidScreen() {
                 Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                     PartnerCard(hunter.portrait, "You", "● Holding", Ok, Modifier.weight(1f))
                     Text("⚔", style = t.tag.copy(color = p.hot, fontSize = m.s(14.4)))
-                    PartnerCard(R.drawable.p_ranger, "Rahul", "● Holding", Ok, Modifier.weight(1f), alpha = 0.85f)
+                    PartnerCard(R.drawable.p_ranger, "◇ Shadow", "● pacer · never breaks", Ok, Modifier.weight(1f), alpha = 0.85f)
                 }
                 Gap(24)
                 XlNumber("18:44", designPx = 48)
