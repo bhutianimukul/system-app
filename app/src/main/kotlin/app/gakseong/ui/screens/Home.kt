@@ -3,6 +3,7 @@ package app.gakseong.ui.screens
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -34,10 +35,19 @@ import app.gakseong.ui.Tag
 import app.gakseong.ui.TopFade
 import app.gakseong.ui.Wordmark
 import app.gakseong.ui.XlNumber
+import app.gakseong.data.QuestInstance
+import app.gakseong.ui.LocalNav
+import app.gakseong.ui.LocalSystem
+import app.gakseong.ui.NAV_TABS
 import app.gakseong.ui.theme.LocalHunterClass
 import app.gakseong.ui.theme.LocalMetrics
 import app.gakseong.ui.theme.LocalPalette
 import app.gakseong.ui.theme.LocalType
+import gakseong.engine.Balance
+import gakseong.engine.Provability
+import gakseong.engine.Rank
+import gakseong.engine.award
+import gakseong.engine.bandFor
 
 /**
  * Screen 1, Home. The layer order and every number here come straight from the design page's `data-s="home"`
@@ -49,6 +59,19 @@ fun HomeScreen() {
     val m = LocalMetrics.current
     val t = LocalType.current
     val hunter = LocalHunterClass.current
+    val sys = LocalSystem.current
+    val nav = LocalNav.current
+
+    val engine = sys.hunter.toEngine()
+    val rank = engine.rank
+    val band = bandFor(rank)
+    val next = if (rank.ordinal < Rank.MAX) Rank(rank.ordinal + 1) else rank
+    val toNext = (bandFor(next).threshold - sys.today.auraEarned).coerceAtLeast(0)
+    val cleared = sys.today.auraEarned >= band.threshold
+    val fill = (sys.today.auraEarned.toFloat() / band.cap).coerceIn(0f, 1f)
+    val marker = (band.threshold.toFloat() / band.cap).coerceIn(0f, 1f)
+    val toShield = Balance.SHIELD_EVERY_DAYS - (sys.hunter.streak % Balance.SHIELD_EVERY_DAYS)
+    val shieldLine = if (sys.hunter.shields >= Balance.MAX_SHIELDS) "Shields full" else "Shadow in $toShield days"
 
     Screen {
         // Painted in z-index order, not markup order: aura 1, art 2, shade 3, grain 4, topfade 5, body 8, nav 9.
@@ -69,8 +92,8 @@ fun HomeScreen() {
                 Wordmark()
                 Filler()
                 Column(horizontalAlignment = Alignment.End, verticalArrangement = Arrangement.spacedBy(m.d(2.6))) {
-                    Tag("D · III", t.tag.copy(color = p.hot, fontWeight = FontWeight(700)))
-                    Tag("LV 34 · 14d", t.tag.copy(color = p.soft))
+                    Tag(rank.label, t.tag.copy(color = p.hot, fontWeight = FontWeight(700)))
+                    Tag("LV ${sys.level} · ${sys.hunter.streak}d", t.tag.copy(color = p.soft))
                 }
             }
 
@@ -81,20 +104,20 @@ fun HomeScreen() {
             Tag("Aura today")
             Gap(4)
             Row(verticalAlignment = Alignment.Bottom) {
-                XlNumber("640")
+                XlNumber(sys.today.auraEarned.toString())
                 Filler()
                 Column {
-                    Tag("560 to D · II", t.tag.copy(color = p.soft))
+                    Tag("$toNext to ${next.label}", t.tag.copy(color = p.soft))
                     Gap(8)
                 }
             }
 
             Gap(17.6)
-            Meter(fill = 0.53f, marker = 0.33f)
+            Meter(fill = fill, marker = marker)
             Gap(6.7)
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                Tag("Threshold cleared", t.key)
-                Tag("Shadow in 3 days", t.key)
+                Tag(if (cleared) "Threshold cleared" else "Below threshold", t.key)
+                Tag(shieldLine, t.key)
             }
 
             Gap(17.6)
@@ -102,57 +125,68 @@ fun HomeScreen() {
                 Modifier.weight(1f).verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(m.d(8)),
             ) {
-                Row(horizontalArrangement = Arrangement.spacedBy(m.d(8))) {
-                    QuestCard(
-                        icon = "🌙", title = "Screen off\n45 min", sub = "Verified", value = "+180",
-                        state = QuestState.DONE, modifier = Modifier.weight(1f),
-                    )
-                    QuestCard(
-                        icon = "◉", title = "Scroll under\n90 min", sub = "41 min used", value = "+220",
-                        state = QuestState.DONE, modifier = Modifier.weight(1f),
-                    )
-                }
-                Row(horizontalArrangement = Arrangement.spacedBy(m.d(8))) {
-                    QuestCard(
-                        icon = "⚡", title = "6,000\nsteps", sub = "Health Connect", value = "+240",
-                        state = QuestState.DONE, modifier = Modifier.weight(1f),
-                    )
-                    QuestCard(
-                        icon = "◈", title = "Focus session\n45 min", sub = "Not started", value = "+300",
-                        state = QuestState.PENDING, modifier = Modifier.weight(1f),
-                    )
-                }
-                QuestCard(
-                    icon = "☾", title = "Night gate · 00:30 to 06:00", sub = "Pending · tonight", value = "+260",
-                    state = QuestState.PENDING, wide = true, modifier = Modifier.fillMaxWidth(),
-                )
-
-                Gap(3.2)
-                SystemWindow {
-                    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                        Tag("⚡ Bonus spawned", t.tag.copy(color = p.hot))
-                        Filler()
-                        Tag("expires 41:08", t.tag.copy(color = p.soft))
+                // The value on a card is award(baseAura, provability), never a literal, so a declared quest
+                // cannot show a sensor rate no matter what the bank hands over.
+                val narrow = sys.today.quests.filterNot { it.wide }
+                narrow.chunked(2).forEach { pair ->
+                    Row(horizontalArrangement = Arrangement.spacedBy(m.d(8))) {
+                        pair.forEach { q -> QuestCard(q, Modifier.weight(1f)) }
+                        // An odd count would otherwise stretch the last card across the full width.
+                        if (pair.size == 1) Spacer(Modifier.weight(1f))
                     }
-                    Gap(7.2)
-                    Row(
-                        Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(m.d(9.6)),
-                    ) {
-                        Sig()
-                        Column(Modifier.weight(1f)) {
-                            Text("Phone down · 2 hours", style = t.listItem)
-                            Gap(2.2)
-                            Tag("Start within the hour or it is gone", t.tag.copy(letterSpacing = t.key.letterSpacing))
+                }
+                sys.today.quests.filter { it.wide }.forEach { q ->
+                    QuestCard(q, Modifier.fillMaxWidth())
+                }
+
+                sys.today.bonus?.let { bonus ->
+                    Gap(3.2)
+                    SystemWindow {
+                        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                            Tag("⚡ Bonus spawned", t.tag.copy(color = p.hot))
+                            Filler()
+                            Tag(expiryLabel(bonus.expiresAtEpochMs), t.tag.copy(color = p.soft))
                         }
-                        Text("+400", style = t.monoSmall)
+                        Gap(7.2)
+                        Row(
+                            Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(m.d(9.6)),
+                        ) {
+                            Sig()
+                            Column(Modifier.weight(1f)) {
+                                Text(bonus.title, style = t.listItem)
+                                Gap(2.2)
+                                Tag(bonus.detail, t.tag.copy(letterSpacing = t.key.letterSpacing))
+                            }
+                            Text("+${bonus.aura}", style = t.monoSmall)
+                        }
                     }
                 }
                 Gap(11.2)
             }
         }
 
-        BottomNav(active = 0)
+        BottomNav(active = 0, onSelect = { nav(NAV_TABS[it]) })
     }
+}
+
+/** One quest instance as a card. The aura shown is the engine's answer, not the template's base. */
+@Composable
+private fun QuestCard(q: QuestInstance, modifier: Modifier = Modifier) = QuestCard(
+    icon = q.icon,
+    title = q.title,
+    sub = q.sub,
+    value = "+${award(q.baseAura, Provability.valueOf(q.provability))}",
+    state = QuestState.valueOf(q.state),
+    wide = q.wide,
+    modifier = modifier,
+)
+
+/** `expires 41:08`, and `expired` once the clock has run out rather than a negative count. */
+private fun expiryLabel(expiresAtEpochMs: Long): String {
+    val left = expiresAtEpochMs - System.currentTimeMillis()
+    if (left <= 0L) return "expired"
+    val minutes = left / 60_000
+    return "expires %02d:%02d".format(minutes / 60, minutes % 60)
 }
