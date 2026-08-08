@@ -2,6 +2,7 @@ plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("org.jetbrains.kotlin.plugin.compose")
+    id("org.jetbrains.kotlin.plugin.serialization")
 }
 
 android {
@@ -37,6 +38,10 @@ android {
         compose = true
     }
 
+    // The engine keeps its own assert-based check runnable by `kotlinc engine/*.kt`, so this source set covers
+    // only the Android-side pure logic: the model, the rollover, and later the usage fold and the settle pipeline.
+    sourceSets["test"].kotlin.srcDir("src/test/kotlin")
+
     // ponytail: the phase-01 engine stays in its own directory rather than moving under app/. It has no Android
     // dependencies and `kotlinc engine/*.kt` must keep working, which is the whole point of it being pure.
     sourceSets["main"].kotlin.srcDir("../engine")
@@ -59,5 +64,11 @@ dependencies {
     // composables and cannot share the ui/Kit.kt components.
     implementation("androidx.glance:glance-appwidget:1.1.1")
 
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
+    implementation("androidx.datastore:datastore:1.1.1")
+    implementation("androidx.navigation:navigation-compose:2.8.5")
+
     debugImplementation("androidx.compose.ui:ui-tooling")
+
+    testImplementation("junit:junit:4.13.2")
 }
