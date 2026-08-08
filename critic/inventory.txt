@@ -54,6 +54,11 @@
 06|Speed bump only while a session lives|app/src/main/kotlin/app/gakseong/session/SpeedBump.kt:SYSTEM_ALERT_WINDOW
 07|Guild shows nobody rather than inventing members|app/src/main/kotlin/app/gakseong/ui/screens/Guild.kt:Not connected
 07|Raid partners are labelled shadow pacers|app/src/main/kotlin/app/gakseong/ui/screens/Raid.kt:pacer
+07|The ladder is real, padded with labelled pacers|app/src/main/kotlin/app/gakseong/cloud/Ladder.kt:fun pacers
+07|Pacers are never counted as members|app/src/main/kotlin/app/gakseong/cloud/Ladder.kt:memberCount
+07|Handles are opaque, never names|app/src/main/kotlin/app/gakseong/cloud/Ladder.kt:handleFor
+07|The cloud never blocks a screen|app/src/main/kotlin/app/gakseong/cloud/Ladder.kt:CLOUD_TIMEOUT_MS
+08|A generated quest joins the day|app/src/main/kotlin/app/gakseong/work/SettleWorker.kt:generateOne
 07|Anonymous auth, no account|app/src/main/kotlin/app/gakseong/cloud/Firebase.kt:signInAnonymously
 07|Referral pairing is create-only|firestore.rules:allow update, delete: if false
 07|Analytics refuses the private track|app/src/main/kotlin/app/gakseong/cloud/Wire.kt:PRIVATE_TRACK_EXEMPT

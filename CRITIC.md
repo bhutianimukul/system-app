@@ -53,6 +53,11 @@ between them is where this kind of work rots.
 | 06 | Speed bump only while a session lives | no | no |
 | 07 | Guild shows nobody rather than inventing members | yes | no |
 | 07 | Raid partners are labelled shadow pacers | yes | yes |
+| 07 | The ladder is real, padded with labelled pacers | yes | no |
+| 07 | Pacers are never counted as members | yes | yes |
+| 07 | Handles are opaque, never names | yes | no |
+| 07 | The cloud never blocks a screen | yes | no |
+| 08 | A generated quest joins the day | yes | no |
 | 07 | Anonymous auth, no account | yes | no |
 | 07 | Referral pairing is create-only | yes | no |
 | 07 | Analytics refuses the private track | yes | no |

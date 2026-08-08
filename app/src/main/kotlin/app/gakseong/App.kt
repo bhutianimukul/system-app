@@ -41,6 +41,8 @@ class App : Application() {
             val readings = gather(this@App)
             Repo.remember(readings)
             Repo.update { tick(it, readings, Repo.today(), Repo.endOfDayMs()) }
+            // A pasted key takes effect on the next open rather than at the next worker run.
+            SettleWorker.runNow(this@App)
         }
         SettleWorker.schedule(this)
     }

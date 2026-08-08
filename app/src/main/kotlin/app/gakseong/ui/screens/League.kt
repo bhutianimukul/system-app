@@ -27,6 +27,15 @@ import app.gakseong.ui.Eye
 import app.gakseong.ui.Filler
 import app.gakseong.ui.Gap
 import app.gakseong.ui.GapW
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.produceState
+import androidx.compose.ui.platform.LocalContext
+import app.gakseong.cloud.LEAGUE_SIZE
+import app.gakseong.cloud.Standing
+import app.gakseong.cloud.memberCount
+import app.gakseong.cloud.pushStanding
+import app.gakseong.cloud.readLadder
+import app.gakseong.ui.LocalSystem
 import app.gakseong.ui.Grain
 import app.gakseong.ui.Mask
 import app.gakseong.ui.MaskedImage
@@ -53,6 +62,20 @@ fun LeagueScreen() {
     val m = LocalMetrics.current
     val t = LocalType.current
 
+    val sys = LocalSystem.current
+    val context = LocalContext.current
+    val rank = sys.hunter.toEngine().rank
+
+    // The ladder, read once per visit. §Social: thin divisions are padded with labelled pacers, and the count
+    // shown is members rather than rows.
+    val ladder by produceState<List<Standing>?>(initialValue = null, sys.uid, rank.letter) {
+        pushStanding(context, sys.uid, rank.letter, sys.today.auraEarned)
+        value = readLadder(context, sys.uid, rank.letter, sys.today.auraEarned)
+    }
+    // null is loading, empty is a real answer. Conflating them left the screen saying "reading"
+    // forever on a project whose Firestore was never provisioned.
+    val members = memberCount(ladder.orEmpty())
+
     Screen {
         Bg()
         Bg2()
@@ -75,7 +98,7 @@ fun LeagueScreen() {
                 Column {
                     Text("D Division", style = t.md.copy(fontSize = m.s(20.8)))
                     Gap(3.2)
-                    Tag("30 hunters · same thresholds")
+                    Tag("$members of $LEAGUE_SIZE real · same thresholds")
                 }
             }
 
@@ -94,12 +117,19 @@ fun LeagueScreen() {
                 Modifier.weight(1f).verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(m.d(5.4)),
             ) {
-                LeagueRow(4, "You", "7,120", you = true)
-                LeagueRow(5, "Hunter D-91", "7,004")
-                LeagueRow(6, "pacer", "6,880", pacer = true)
-                LeagueRow(7, "Hunter D-44", "6,510")
-                LeagueRow(8, "pacer", "6,220", pacer = true)
-                LeagueRow(9, "Hunter D-12", "5,940")
+                if (ladder == null) {
+                    Tag("Reading the division", t.key)
+                } else {
+                    ladder!!.forEachIndexed { i, row ->
+                        LeagueRow(
+                            i + 1,
+                            if (row.you) "You" else row.handle,
+                            "%,d".format(row.aura),
+                            you = row.you,
+                            pacer = row.pacer,
+                        )
+                    }
+                }
                 Gap(4)
                 Card(Modifier.fillMaxWidth(), dashed = true) {
                     Tag("◇ Pacers are not people", t.tag.copy(color = p.soft))
