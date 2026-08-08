@@ -213,6 +213,7 @@ fun WidgetScreen() {
     val t = LocalType.current
     val context = LocalContext.current
     val haptics = rememberHaptics()
+    val sys = LocalSystem.current
 
     // requestPinAppWidget is the only way an app can offer this: the launcher shows its own confirmation and the
     // user still decides. Nothing is added behind their back.
@@ -266,7 +267,7 @@ fun WidgetScreen() {
                 }
                 WidgetPreview("Night gate", "4×1", { pin(NightGateReceiver::class.java) }) {
                     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                        Text("☾ 00:30 — 06:00", style = t.questTitle.copy(fontSize = m.s(12.8)))
+                        Text("☾ ${sys.settings.nightGateStart} — ${sys.settings.nightGateEnd}", style = t.questTitle.copy(fontSize = m.s(12.8)))
                         Filler()
                         Tag("pending", t.key.copy(color = p.soft))
                     }

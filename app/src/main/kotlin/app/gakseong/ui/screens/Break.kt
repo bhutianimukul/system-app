@@ -15,6 +15,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import app.gakseong.R
+import app.gakseong.ui.LocalSystem
 import app.gakseong.ui.Art
 import app.gakseong.ui.Aura
 import app.gakseong.ui.Bg
@@ -35,6 +36,7 @@ import app.gakseong.ui.theme.LocalMetrics
 import app.gakseong.ui.theme.LocalPalette
 import app.gakseong.ui.theme.LocalType
 import app.gakseong.ui.theme.Ok
+import gakseong.engine.Balance
 
 /**
  * `data-s="break"` — a dungeon break. §6 is the whole screen: the four penalties are shown as a sequence with
@@ -42,6 +44,8 @@ import app.gakseong.ui.theme.Ok
  */
 @Composable
 fun BreakScreen() {
+    val sys = LocalSystem.current
+    val misses = sys.hunter.consecutiveMisses
     val p = LocalPalette.current
     val m = LocalMetrics.current
     val t = LocalType.current
@@ -75,10 +79,21 @@ fun BreakScreen() {
                     Tag("Escalation · sequenced", t.tag.copy(color = Bad))
                     Gap(9.6)
                     Column(verticalArrangement = Arrangement.spacedBy(m.d(7.4))) {
-                        Step("Day 1", "Streak broken", trailing = "done")
-                        Step("Day 3", "Aura −200", trailing = "now", live = true)
-                        Step("Day 5", "Demotion warning", dimmed = true)
-                        Step("Day 7", "Containment", dimmed = true)
+                        // §4: penalties sequence, never stack. penaltyFor() decides which day is live, and
+                        // exactly one ever is. Five at once are illegible and the player learns nothing.
+                        LADDER.forEach { (day, label) ->
+                            Step(
+                                day = "Day $day",
+                                label = label,
+                                trailing = when {
+                                    misses > day -> "done"
+                                    misses == day -> "now"
+                                    else -> null
+                                },
+                                live = misses == day,
+                                dimmed = misses < day,
+                            )
+                        }
                     }
                 }
 
@@ -128,3 +143,16 @@ private fun Step(day: String, label: String, trailing: String? = null, live: Boo
         }
     }
 }
+
+/**
+ * The escalation, day by day, matching `penaltyFor` exactly. Kept beside it rather than derived from it because
+ * the screen needs the quiet days too: day 2, 4 and 6 carry no penalty on purpose, and a list built only from
+ * the days that fire would hide that the gaps are deliberate.
+ */
+internal val LADDER = listOf(
+    1 to "Streak broken",
+    3 to "Aura −${Balance.AURA_DEBIT}",
+    5 to "Demotion warning",
+    7 to "Demotion and containment",
+)
+

@@ -17,6 +17,8 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.em
 import app.gakseong.R
+import app.gakseong.ui.LocalSystem
+import gakseong.engine.Rank
 import app.gakseong.ui.Art
 import app.gakseong.ui.Aura
 import app.gakseong.ui.Bg
@@ -50,6 +52,10 @@ fun CeremonyScreen() {
     val m = LocalMetrics.current
     val t = LocalType.current
     val hunter = LocalHunterClass.current
+    val sys = LocalSystem.current
+    val rank = sys.hunter.toEngine().rank
+    // An ascension is always from the tier below. History supplies the real prior rank from phase 05.
+    val before = Rank(maxOf(0, rank.ordinal - 1))
 
     Screen {
         Bg()
@@ -65,22 +71,22 @@ fun CeremonyScreen() {
             Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
                 Eye("System Notification")
                 Filler()
-                Tag("Threshold held · 14 days")
+                Tag("Threshold held · ${sys.hunter.streak} days")
                 Gap(8)
                 Text(
                     buildAnnotatedString {
-                        withStyle(SpanStyle(textDecoration = TextDecoration.LineThrough)) { append("E · I") }
+                        withStyle(SpanStyle(textDecoration = TextDecoration.LineThrough)) { append(before.label) }
                         append("   ▶   ")
-                        withStyle(SpanStyle(color = p.soft)) { append("D · III") }
+                        withStyle(SpanStyle(color = p.soft)) { append(rank.label) }
                     },
                     style = t.tag.copy(letterSpacing = 0.20.em),
                 )
                 Gap(10.4)
                 MaskedImage(R.drawable.em_d, width = 88, mask = Mask.CIRCLE)
                 Gap(8)
-                Text("SENTINEL", style = t.display(32.8).copy(letterSpacing = 0.03.em, textAlign = TextAlign.Center))
+                Text(rank.title.uppercase(), style = t.display(32.8).copy(letterSpacing = 0.03.em, textAlign = TextAlign.Center))
                 Gap(4.5)
-                Tag("Rank D · Tier III")
+                Tag("Rank ${rank.letter} · Tier ${rank.tier}")
 
                 Gap(19.2)
                 SystemWindow {
