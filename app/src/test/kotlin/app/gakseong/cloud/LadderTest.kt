@@ -78,6 +78,36 @@ class LadderTest {
     }
 
     @Test
+    fun `a hunter clearing their threshold every day is not last`() {
+        // The version that ran every pacer from 400 upward put a real 420 below all twenty-nine of them.
+        // A week of clearing the threshold has to land somebody inside the division, not under it.
+        listOf("E", "D", "C", "B", "A", "S").forEachIndexed { i, letter ->
+            val weeklyIfThresholdCleared = gakseong.engine.bandFor(gakseong.engine.Rank(i * 3 + 1)).threshold * 7
+            val ladder = pacers(letter, 29)
+            val below = ladder.count { it.aura < weeklyIfThresholdCleared }
+            // Clearing the threshold every day is what the division asks for. It should land in the hold band
+            // (6th to 25th of thirty), not on the demotion line.
+            val position = 29 - below + 1
+            assertTrue("$letter put a threshold-clearing hunter at position $position of 30", position <= 25)
+        }
+    }
+
+    @Test
+    fun `a hunter at the cap every day is near the top`() {
+        listOf("E", "D", "C", "B", "A", "S").forEachIndexed { i, letter ->
+            val weeklyAtCap = gakseong.engine.bandFor(gakseong.engine.Rank(i * 3 + 1)).cap * 7
+            val above = pacers(letter, 29).count { it.aura > weeklyAtCap }
+            assertTrue("$letter put a capped hunter below $above pacers", above == 0)
+        }
+    }
+
+    @Test
+    fun `a higher division is a harder division`() {
+        // Thresholds scale with rank, so the pace does too. An S pacer must out-run an E one.
+        assertTrue(pacers("S", 10).maxOf { it.aura } > pacers("E", 10).maxOf { it.aura })
+    }
+
+    @Test
     fun `a league is one rank letter, so everyone in it is asked the same thing`() {
         assertEquals("D", leagueFor("D"))
         assertEquals(30, LEAGUE_SIZE)

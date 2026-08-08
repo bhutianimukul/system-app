@@ -4,6 +4,8 @@ import android.content.Context
 import android.util.Log
 import com.google.firebase.firestore.FieldValue
 import kotlinx.coroutines.tasks.await
+import gakseong.engine.Rank
+import gakseong.engine.bandFor
 import kotlinx.coroutines.withTimeoutOrNull
 
 // The weekly league. §Social: guilds before global leaderboards, weekly leagues of about thirty, and a division
@@ -64,7 +66,9 @@ suspend fun pushStanding(context: Context, uid: String, rankLetter: String, aura
             .collection("rows").document(uid)
             .set(mapOf("aura" to aura, "rank" to rankLetter, "updatedAt" to FieldValue.serverTimestamp()))
             .await()
-    }.onFailure { Log.w(TAG, "standing not pushed, staying local") }
+    // The throwable is kept: a Firestore error names the rule or the field that refused, which is
+    // diagnostic rather than sensitive. §10 is about what leaves the device, not about logcat.
+    }.onFailure { Log.w(TAG, "standing not pushed, staying local", it) }
     }
 }
 
@@ -112,6 +116,23 @@ suspend fun readLadder(context: Context, uid: String, rankLetter: String, yourAu
  */
 fun pacers(rankLetter: String, count: Int): List<Standing> {
     if (count <= 0) return emptyList()
+
+    // Paced against the division's own band rather than a fixed ladder of numbers.
+    //
+    // The first version ran every pacer from 400 upward in steps of 60, so a real hunter's 420 sat below all
+    // twenty-nine of them. §Social says a pacer holds a fixed pace, not that it wins: a row you can never reach
+    // is a wall, and thirty of them is a reason to close the screen.
+    //
+    // A week is seven days, so a weekly total sits between seven thresholds and seven caps. The pacers span
+    // exactly that, which is the range a real hunter in this letter actually occupies.
+    val band = bandFor(Rank(LETTERS.indexOf(rankLetter).coerceAtLeast(0) * 3 + 1))
+    // The floor is half a week of thresholds, not a full one. Somebody who clears the threshold every single
+    // day has done what the division asks and belongs in the hold band, not at the bottom of it; a floor at
+    // seven thresholds tied them with the slowest pacer instead.
+    val floor = band.threshold * 7 / 2
+    val ceiling = band.cap * 7
+    val step = if (count > 1) (ceiling - floor) / (count - 1) else 0
+
     // A fixed pace per position rather than a random one: a pacer that drifts is pretending to have a bad day.
     return (1..count).map { i ->
         Standing(
@@ -119,11 +140,14 @@ fun pacers(rankLetter: String, count: Int): List<Standing> {
             // diamond here too printed "◇ ◇ pacer 1".
             handle = "pacer $i",
             rank = rankLetter,
-            aura = 400 + (count - i) * 60,
+            aura = floor + (count - i) * step,
             pacer = true,
         )
     }
 }
+
+/** Rank letters in ladder order, so a division's band can be found from its letter alone. */
+private val LETTERS = listOf("E", "D", "C", "B", "A", "S")
 
 /** §Social: pacers are never counted as members. The screen shows this number, not the row count. */
 fun memberCount(ladder: List<Standing>) = ladder.count { !it.pacer }

@@ -28,3 +28,6 @@ app/build/
 
 # Firebase config is per-developer and may carry other apps from a shared project.
 app/google-services.json
+
+# firebase-tools is installed locally so the rules can be deployed from here rather than pasted.
+node_modules/
