@@ -5,6 +5,7 @@
     <uses-permission android:name="android.permission.VIBRATE" />
 
     <application
+        android:name=".App"
         android:label="Gakseong"
         android:supportsRtl="true"
         android:theme="@style/Theme.Gakseong">
