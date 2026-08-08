@@ -36,6 +36,9 @@
 05|Fifteen-minute job, no live watcher|app/src/main/kotlin/app/gakseong/work/SettleWorker.kt:PeriodicWorkRequest
 05|One settle pass, idempotent by date|app/src/main/kotlin/app/gakseong/quest/Tick.kt:fun tick
 05|At most two declared quests a day|app/src/main/kotlin/app/gakseong/quest/Bank.kt:MAX_DECLARED_PER_DAY
+05|Each declared quest answers for itself|app/src/main/kotlin/app/gakseong/quest/Verifier.kt:Declared(val questId
+05|A bonus spawns and expires with its day|app/src/main/kotlin/app/gakseong/quest/Bank.kt:drawBonus
+05|Answering re-scores the day at once|app/src/main/kotlin/app/gakseong/data/Repo.kt:answerDeclared
 05|Widgets read real state|app/src/main/kotlin/app/gakseong/widget/Widgets.kt:Repo
 06|Focus foreground service|app/src/main/kotlin/app/gakseong/session/FocusService.kt:startForeground
 06|DND expires on its own|app/src/main/kotlin/app/gakseong/session/Dnd.kt:AutomaticZenRule

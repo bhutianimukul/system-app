@@ -53,11 +53,11 @@ val BANK: List<QuestTemplate> = listOf(
     QuestTemplate("read-20", "✦", "Read\n20 minutes", 300, Verifier.ReadSession(20)),
 
     // ── declared: the half the sensors cannot see, and the half that matters most ─
-    QuestTemplate("meditate", "○", "Ten minutes\nsitting still", 450, Verifier.Declared),
-    QuestTemplate("parents", "♡", "Thirty minutes\nwith your parents", 450, Verifier.Declared, wide = true),
-    QuestTemplate("friend", "♡", "Talk to\na friend", 450, Verifier.Declared),
-    QuestTemplate("meal", "○", "A meal\nwith people", 450, Verifier.Declared),
-    QuestTemplate("music", "✦", "A music session\nwith no screen", 450, Verifier.Declared),
+    QuestTemplate("meditate", "○", "Ten minutes\nsitting still", 450, Verifier.Declared("meditate")),
+    QuestTemplate("parents", "♡", "Thirty minutes\nwith your parents", 450, Verifier.Declared("parents"), wide = true),
+    QuestTemplate("friend", "♡", "Talk to\na friend", 450, Verifier.Declared("friend")),
+    QuestTemplate("meal", "○", "A meal\nwith people", 450, Verifier.Declared("meal")),
+    QuestTemplate("music", "✦", "A music session\nwith no screen", 450, Verifier.Declared("music")),
     QuestTemplate("call-10", "☎", "A call\nover 10 minutes", 400, Verifier.CallDuration(10)),
 )
 
@@ -110,4 +110,37 @@ fun draw(date: String, readings: Readings, count: Int = QUESTS_PER_DAY): List<Qu
     // One wide quest at most: two full-width cards on Home reads as a list rather than a board.
     val wide = filled.filter { it.wide }
     return (filled.filterNot { it.wide } + wide.take(1)).take(count)
+}
+
+/** §Economy: one bonus a day, spawned at random, raising today's ceiling by 120 to 450. */
+private const val BONUS_MIN = 120
+private const val BONUS_MAX = 450
+
+/** Roughly one day in three carries one. Rare enough to be worth noticing, common enough to be a real mechanic. */
+private const val BONUS_ODDS = 3
+
+private val BONUSES = listOf(
+    "Phone down · 2 hours" to "Start within the hour or it is gone",
+    "A walk before dark" to "Outside, before the light goes",
+    "One clean hour" to "No feeds, no shorts, no exceptions",
+    "Sleep before midnight" to "The whole day rides on tonight",
+    "Reach somebody first" to "Message someone before they message you",
+)
+
+/**
+ * Draw today's bonus, or nothing.
+ *
+ * Seeded by the date like the quests, so it cannot be rerolled and every surface agrees about whether today
+ * has one. The bonus raises the ceiling and nothing else: it never lowers a threshold and never pays by itself.
+ */
+fun drawBonus(date: String, expiresAtEpochMs: Long): app.gakseong.data.Bonus? {
+    val random = Random(date.hashCode() * 31)
+    if (random.nextInt(BONUS_ODDS) != 0) return null
+    val (title, detail) = BONUSES[random.nextInt(BONUSES.size)]
+    return app.gakseong.data.Bonus(
+        title = title,
+        detail = detail,
+        aura = random.nextInt(BONUS_MIN, BONUS_MAX + 1),
+        expiresAtEpochMs = expiresAtEpochMs,
+    )
 }

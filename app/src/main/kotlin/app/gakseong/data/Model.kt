@@ -64,6 +64,13 @@ data class Today(
     val quests: List<QuestInstance> = emptyList(),
     val auraEarned: Int = 0,
     val bonus: Bonus? = null,
+    /**
+     * The yes/no answers for today's declared quests, keyed by quest id.
+     *
+     * Kept on the day rather than on the quest so it survives a re-issue, and cleared with the day so an
+     * answer can never carry into tomorrow.
+     */
+    val declared: Map<String, Boolean> = emptyMap(),
 )
 
 /**

@@ -18,8 +18,13 @@ data class Readings(
     val readerMinutes: Int = 0,
     /** Minutes held in a focus session. Owned by the phase-06 service, never by the template. */
     val focusMinutes: Int = 0,
-    /** The single yes/no at expiry. Null means it was never answered, which is not a yes. */
-    val declared: Boolean? = null,
+    /**
+     * The yes/no answers, keyed by quest id. A missing key means never answered, which is not a yes.
+     *
+     * Keyed rather than a single flag because a day can draw two declared quests, and one answer clearing both
+     * would let "a meal with people" quietly settle "thirty minutes with your parents".
+     */
+    val declared: Map<String, Boolean> = emptyMap(),
     /** Seconds of call time. Duration only, never who. */
     val callSeconds: Int = 0,
     val locationCheckedIn: Boolean = false,
@@ -166,17 +171,20 @@ sealed class Verifier {
      * A quest never answered expires unclaimed. Defaulting an unanswered question to cleared would make
      * silence the cheapest way to farm, which is exactly what the low ceiling exists to prevent.
      */
-    data object Declared : Verifier() {
+    data class Declared(val questId: String) : Verifier() {
         override val provability = Provability.DECLARED
-        override fun evaluate(r: Readings) = Progress(
-            cleared = r.declared == true, current = if (r.declared == true) 1L else 0L, target = 1L,
-            available = true,
-            label = when (r.declared) {
-                true -> "Confirmed"
-                false -> "Not done"
-                null -> "Answer when it expires"
-            },
-        )
+        override fun evaluate(r: Readings): Progress {
+            val answer = r.declared[questId]
+            return Progress(
+                cleared = answer == true, current = if (answer == true) 1L else 0L, target = 1L,
+                available = true,
+                label = when (answer) {
+                    true -> "Confirmed"
+                    false -> "Not done"
+                    null -> "Answer when it expires"
+                },
+            )
+        }
     }
 
     /**

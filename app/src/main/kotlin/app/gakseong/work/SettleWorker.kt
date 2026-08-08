@@ -9,7 +9,7 @@ import androidx.work.WorkerParameters
 import app.gakseong.data.Repo
 import app.gakseong.quest.Readings
 import app.gakseong.quest.tick
-import app.gakseong.sense.READER_CARVE_OUT
+import app.gakseong.sense.readerCarveOut
 import app.gakseong.sense.readHealth
 import app.gakseong.sense.readUsage
 import app.gakseong.session.FocusService
@@ -29,7 +29,8 @@ class SettleWorker(context: Context, params: WorkerParameters) : CoroutineWorker
 
     override suspend fun doWork(): Result {
         val readings = gather(applicationContext)
-        Repo.update { tick(it, readings, Repo.today()) }
+        Repo.remember(readings)
+        Repo.update { tick(it, readings, Repo.today(), Repo.endOfDayMs()) }
         return Result.success()
     }
 
@@ -62,7 +63,7 @@ suspend fun gather(context: Context): Readings {
     val now = Instant.now()
 
     return Readings(
-        usage = readUsage(context, startOfDay.toEpochMilli(), now.toEpochMilli(), setOf(READER_CARVE_OUT)),
+        usage = readUsage(context, startOfDay.toEpochMilli(), now.toEpochMilli(), setOf(readerCarveOut(context))),
         health = readHealth(context, startOfDay, now),
         focusMinutes = FocusService.state.value?.let { heldMinutes(it, now.toEpochMilli()) } ?: 0,
     )

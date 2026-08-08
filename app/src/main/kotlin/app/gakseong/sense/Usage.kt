@@ -13,14 +13,17 @@ import android.provider.Settings
 // only asks the system for events and hands them over.
 
 /**
- * The app's own package.
+ * The app's own package, read from the context rather than written down.
  *
- * §24 carves **reader session** time out of screen time, not all time spent in Gakseong. Until phase 05 records
- * reader sessions there is nothing finer to carve, so callers that measure a threshold pass this explicitly and
+ * `UsageStatsManager` reports the applicationId, which is not the Kotlin namespace: this app's code lives in
+ * `app.gakseong` and ships as `app.gakeseong`. A hard-coded constant would silently carve out nothing.
+ *
+ * §24 carves **reader session** time out of screen time, not all time spent in the app. Until reader sessions
+ * are recorded there is nothing finer to carve, so callers that measure a threshold pass this explicitly and
  * everything else passes nothing. Defaulting to it made the Reality screen read 0 hours while its own list
  * showed 231.
  */
-const val READER_CARVE_OUT = "app.gakseong"
+fun readerCarveOut(context: Context): String = context.packageName
 
 /**
  * Usage access is **special access**, not a runtime permission. There is no `requestPermissions` for it and no

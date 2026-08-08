@@ -10,6 +10,10 @@
 #
 # Usage: critic/check.sh [--no-device]
 #
+# The component is app.gakeseong/app.gakseong.MainActivity: the applicationId and the Kotlin namespace differ
+# by one letter on purpose, because the Firebase project registered the former. `.MainActivity` shorthand
+# resolves against the applicationId and would look for app.gakeseong.MainActivity, which does not exist.
+#
 # Written for bash on purpose. zsh does not word-split unquoted variables, so `for s in $ROUTES` runs the loop
 # exactly once and reports a pass after testing one route. The route list below is a bash array for that reason.
 
@@ -63,7 +67,7 @@ else
   for s in "${ROUTES[@]}"; do
     # -S force-stops first. Without it `am start` re-delivers the intent to the running instance, onCreate
     # never runs again, the route never changes, and the loop reports 48 clean screens having rendered one.
-    adb shell am start -S -n app.gakseong/.MainActivity --es screen "$s" > /dev/null 2>&1
+    adb shell am start -S -n app.gakeseong/app.gakseong.MainActivity --es screen "$s" > /dev/null 2>&1
     sleep 1.1
   done
   CRASHES=$(adb logcat -d | grep -c "FATAL EXCEPTION")
@@ -87,18 +91,24 @@ step "4. placeholder audit"
 # "+450" is the spec's human-raid bonus in Raid.kt and a feed post's aura in Feed.kt, and only one of those is
 # a constant.
 grep -hv '^#\|^$' critic/allowlist.txt critic/pending.txt | sort -u > /tmp/critic-known.txt
-SUSPECT=$(grep -rnoE '"[^"]*([0-9]{2,}|[EDCBAS] · (I|II|III))[^"]*"' \
-            app/src/main/kotlin/app/gakseong/ui/screens/ 2>/dev/null \
+SUSPECT=$(grep -rn '"' app/src/main/kotlin/app/gakseong/ui/screens/ 2>/dev/null \
           | grep -v 'Typography.kt' \
-          | awk -F'"' -v known=/tmp/critic-known.txt '
+          | awk -F: '
+              # Drop comment lines. A KDoc example naming "6,000 steps" is prose about a literal, not one.
+              { rest = $0; sub(/^[^:]*:[0-9]+:/, "", rest)
+                gsub(/^[ \t]+/, "", rest)
+                if (rest ~ /^(\/\/|\*|\/\*)/) next
+                print }
+            ' \
+          | grep -oE '^[^:]*:[0-9]+:|"[^"]*([0-9]{2,}|[EDCBAS] · (I|II|III))[^"]*"' \
+          | awk -v known=/tmp/critic-known.txt '
               BEGIN { while ((getline l < known) > 0) seen[l] = 1 }
+              /^[^:]*:[0-9]+:$/ { loc = $0; n = split(loc, path, "/"); split(path[n], p2, ":"); file = p2[1]; next }
               {
-                lit = $2
-                # A literal that interpolates or formats is state-driven by construction: the number in it came
-                # from somewhere. Listing each one individually would be listing the absence of a problem.
+                lit = $0; gsub(/^"|"$/, "", lit)
+                # Interpolated and format strings are state-driven by construction.
                 if (lit ~ /\$\{/ || lit ~ /%[0-9.]*[dsf]/) next
-                n = split($1, path, "/"); split(path[n], loc, ":"); file = loc[1]
-                if (!(lit in seen) && !((file "|" lit) in seen)) print
+                if (!(lit in seen) && !((file "|" lit) in seen)) print loc lit
               }
             ' \
           || true)

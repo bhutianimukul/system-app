@@ -10,7 +10,12 @@ android {
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "app.gakseong"
+        // The Play and Firebase identity, deliberately not the same as `namespace` above.
+        //
+        // The Firebase project registered app.gakeseong, and an applicationId is permanent once published while
+        // a namespace is only where the Kotlin lives. Changing this one line costs nothing; renaming every
+        // package would have touched forty files to reach the same place.
+        applicationId = "app.gakeseong"
         // 26 is the floor: Health Connect needs it, and UsageStatsManager is well behaved from here up.
         minSdk = 26
         targetSdk = 35

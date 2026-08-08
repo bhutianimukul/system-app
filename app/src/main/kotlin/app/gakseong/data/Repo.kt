@@ -2,6 +2,8 @@ package app.gakseong.data
 
 import android.content.Context
 import androidx.datastore.core.DataStore
+import app.gakseong.quest.Readings
+import app.gakseong.quest.tick
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -47,6 +49,38 @@ object Repo {
         val opened = store ?: return
         opened.updateData { block(it) }
     }
+
+    /**
+     * The last sensor readings, kept so an answer can be re-scored without two fresh queries.
+     *
+     * Answering a declared quest changes nothing a sensor can see, so re-reading UsageStats and Health Connect
+     * on a button tap would be two IPCs to learn what did not change.
+     */
+    @Volatile
+    var lastReadings: Readings = Readings()
+        private set
+
+    /** Called by whoever just gathered. Keeps [lastReadings] honest without making it a second source of truth. */
+    fun remember(readings: Readings) {
+        lastReadings = readings
+    }
+
+    /**
+     * Answer a declared quest and re-score the day immediately.
+     *
+     * Without the re-score the answer lands on disk and the screen keeps saying "Answer when it expires" until
+     * something else happens to tick. Verified: the aura moved only after a kill and relaunch.
+     */
+    suspend fun answerDeclared(questId: String, yes: Boolean) {
+        update { state ->
+            val answered = state.copy(today = state.today.copy(declared = state.today.declared + (questId to yes)))
+            tick(answered, lastReadings, today(), endOfDayMs())
+        }
+    }
+
+    /** Milliseconds at the end of the current local day. What a bonus expires at. */
+    fun endOfDayMs(): Long =
+        LocalDate.now().plusDays(1).atStartOfDay(java.time.ZoneId.systemDefault()).toInstant().toEpochMilli()
 
     /** Local date as an ISO string. The day boundary is the device's, which is the one the user experiences. */
     fun today(): String = LocalDate.now().toString()

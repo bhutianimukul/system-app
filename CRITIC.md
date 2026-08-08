@@ -26,7 +26,7 @@ between them is where this kind of work rots.
 | 04 | Usage event fold | yes | no |
 | 04 | Usage access is special access | yes | no |
 | 04 | Health Connect provenance checked | yes | yes |
-| 04 | Reader time carved out of screen time | yes | yes |
+| 04 | Reader time carved out of screen time | no | no |
 | 04 | Unclosed sessions are capped | yes | no |
 | 04 | Reality screen reads the device | yes | yes |
 | 05 | Closed verifier set | yes | yes |
@@ -35,6 +35,9 @@ between them is where this kind of work rots.
 | 05 | Fifteen-minute job, no live watcher | yes | no |
 | 05 | One settle pass, idempotent by date | yes | yes |
 | 05 | At most two declared quests a day | yes | no |
+| 05 | Each declared quest answers for itself | yes | no |
+| 05 | A bonus spawns and expires with its day | yes | yes |
+| 05 | Answering re-scores the day at once | yes | yes |
 | 05 | Widgets read real state | yes | yes |
 | 06 | Focus foreground service | yes | no |
 | 06 | DND expires on its own | yes | yes |

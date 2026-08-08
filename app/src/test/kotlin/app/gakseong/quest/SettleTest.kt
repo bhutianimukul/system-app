@@ -12,6 +12,7 @@ import gakseong.engine.Rank
 import gakseong.engine.award
 import gakseong.engine.bandFor
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -23,7 +24,7 @@ class SettleTest {
         health = HealthReading(20_000, 20_000.0, 600, setOf("com.strava"), available = true),
         readerMinutes = 120,
         focusMinutes = 120,
-        declared = true,
+        declared = BANK.map { it.id }.associateWith { true },
         callSeconds = 3600,
         locationCheckedIn = true,
     )
@@ -76,7 +77,7 @@ class SettleTest {
 
     @Test
     fun `aura is awarded through the engine, never at the base rate`() {
-        val declared = BANK.first { it.verifier == Verifier.Declared }
+        val declared = BANK.first { it.verifier is Verifier.Declared }
         val total = auraSoFar(listOf(declared.instance(everything)), everything)
         assertEquals(award(declared.baseAura, Provability.DECLARED), total)
         assertNotEquals(declared.baseAura, total)
@@ -266,5 +267,71 @@ class DrawBalanceTest {
     @Test
     fun `a day is still five quests`() {
         assertEquals(QUESTS_PER_DAY, draw("2026-08-08", sensorsOn).size)
+    }
+}
+
+/** The two gaps the loop had: one answer clearing two quests, and a bonus that never spawned. */
+class DeclaredAndBonusTest {
+
+    private val sensorsOn = Readings(
+        usage = UsageReading(0L, emptyMap(), 0L, emptySet(), available = true),
+        health = HealthReading(0, 0.0, 0, emptySet(), available = true),
+    )
+
+    @Test
+    fun `answering one declared quest does not clear another`() {
+        // A day can draw two. "A meal with people" must not settle "thirty minutes with your parents".
+        val meal = BANK.first { it.id == "meal" }
+        val parents = BANK.first { it.id == "parents" }
+        val r = sensorsOn.copy(declared = mapOf("meal" to true))
+
+        assertTrue(meal.verifier.evaluate(r).cleared)
+        assertFalse(parents.verifier.evaluate(r).cleared)
+    }
+
+    @Test
+    fun `each declared quest answers for itself`() {
+        BANK.filter { it.verifier is Verifier.Declared }.forEach { t ->
+            val only = sensorsOn.copy(declared = mapOf(t.id to true))
+            assertTrue("${t.id} did not clear on its own answer", t.verifier.evaluate(only).cleared)
+            BANK.filter { it.verifier is Verifier.Declared && it.id != t.id }.forEach { other ->
+                assertFalse("${t.id} cleared ${other.id}", other.verifier.evaluate(only).cleared)
+            }
+        }
+    }
+
+    @Test
+    fun `a no is not a yes`() {
+        val r = sensorsOn.copy(declared = mapOf("meal" to false))
+        assertFalse(BANK.first { it.id == "meal" }.verifier.evaluate(r).cleared)
+    }
+
+    @Test
+    fun `the same date always draws the same bonus`() {
+        assertEquals(drawBonus("2026-08-08", 0L), drawBonus("2026-08-08", 0L))
+    }
+
+    @Test
+    fun `a bonus stays inside the band the economy names`() {
+        // §Economy: raises today's ceiling by 120 to 450, and nothing outside that is a bonus.
+        (1..200).forEach { d ->
+            drawBonus("2026-%02d-%02d".format((d % 12) + 1, (d % 28) + 1), 0L)?.let {
+                assertTrue("aura ${it.aura} is outside 120..450", it.aura in 120..450)
+            }
+        }
+    }
+
+    @Test
+    fun `bonuses are occasional rather than daily or never`() {
+        val days = (1..90).map { "2026-08-%02d".format((it % 28) + 1) }.distinct()
+        val spawned = days.count { drawBonus(it, 0L) != null }
+        assertTrue("$spawned of ${days.size} days had one", spawned in 1 until days.size)
+    }
+
+    @Test
+    fun `a bonus expires with its day`() {
+        val endOfDay = 1_786_000_000_000L
+        val b = (1..40).firstNotNullOfOrNull { drawBonus("2026-08-%02d".format((it % 28) + 1), endOfDay) }
+        assertEquals(endOfDay, b?.expiresAtEpochMs)
     }
 }

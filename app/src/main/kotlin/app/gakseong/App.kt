@@ -26,7 +26,8 @@ class App : Application() {
             // Gathered before the update, because the block DataStore hands back must not suspend: it can be
             // re-run on write contention, and re-running two sensor queries per retry is not free.
             val readings = gather(this@App)
-            Repo.update { tick(it, readings, Repo.today()) }
+            Repo.remember(readings)
+            Repo.update { tick(it, readings, Repo.today(), Repo.endOfDayMs()) }
         }
         SettleWorker.schedule(this)
     }

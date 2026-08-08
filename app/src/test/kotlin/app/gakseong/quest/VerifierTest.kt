@@ -25,8 +25,8 @@ class VerifierTest {
     fun `a declared quest can never pay a sensor rate`() {
         // §6/§7: the System assigns aura and the provability tier is a property of how it is proven, so no bank
         // entry can hand a declared quest a sensor payout.
-        assertEquals(Provability.DECLARED, Verifier.Declared.provability)
-        assertTrue(award(400, Verifier.Declared.provability) < award(400, Provability.SENSOR))
+        assertEquals(Provability.DECLARED, Verifier.Declared("meal").provability)
+        assertTrue(award(400, Verifier.Declared("meal").provability) < award(400, Provability.SENSOR))
     }
 
     @Test
@@ -109,14 +109,15 @@ class VerifierTest {
     @Test
     fun `a declared quest never answered expires unclaimed`() {
         // Silence must not be the cheapest way to farm.
-        assertFalse(Verifier.Declared.evaluate(Readings(declared = null)).cleared)
-        assertFalse(Verifier.Declared.evaluate(Readings(declared = false)).cleared)
-        assertTrue(Verifier.Declared.evaluate(Readings(declared = true)).cleared)
+        val meal = Verifier.Declared("meal")
+        assertFalse("never answered", meal.evaluate(Readings()).cleared)
+        assertFalse("answered no", meal.evaluate(Readings(declared = mapOf("meal" to false))).cleared)
+        assertTrue("answered yes", meal.evaluate(Readings(declared = mapOf("meal" to true))).cleared)
     }
 
     @Test
     fun `an unanswered declared quest says so rather than looking done`() {
-        assertEquals("Answer when it expires", Verifier.Declared.evaluate(Readings()).label)
+        assertEquals("Answer when it expires", Verifier.Declared("meal").evaluate(Readings()).label)
     }
 
     @Test
