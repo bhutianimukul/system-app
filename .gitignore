@@ -25,3 +25,6 @@ app/build/
 *.iml
 .idea/
 .kotlin/
+
+# Firebase config is per-developer and may carry other apps from a shared project.
+app/google-services.json
