@@ -714,10 +714,14 @@ fun Meter(fill: Float, marker: Float? = null, height: Number = 10) {
  * the active tab gets a glow and an indicator, and the icons are larger. Everything still comes from the palette.
  */
 @Composable
-fun BoxScope.BottomNav(active: Int, onSelect: (Int) -> Unit = {}) {
+fun BoxScope.BottomNav(active: Int, onSelect: ((Int) -> Unit)? = null) {
     val p = LocalPalette.current
     val m = LocalMetrics.current
     val t = LocalType.current
+    // The bar knows its own destinations, so a screen does not have to hand them over. Ten screens draw this
+    // and none of them should need to hold a navigator just to make the bar work.
+    val nav = LocalNav.current
+    val select = onSelect ?: { i -> nav(NAV_TABS[i]) }
     val items = listOf("◈" to "Quest", "◎" to "Gates", "⚔" to "Raid", "❖" to "Guild", "◭" to "Self")
     Column(Modifier.align(Alignment.BottomCenter)) {
         Row(
@@ -753,7 +757,7 @@ fun BoxScope.BottomNav(active: Int, onSelect: (Int) -> Unit = {}) {
                     Modifier.clickable(
                         interactionSource = remember { MutableInteractionSource() },
                         indication = null,
-                        onClick = { onSelect(i) },
+                        onClick = { select(i) },
                     ),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.spacedBy(m.d(3.2)),

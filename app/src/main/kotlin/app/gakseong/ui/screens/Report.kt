@@ -36,6 +36,21 @@ fun ReportScreen() {
     val m = LocalMetrics.current
     val t = LocalType.current
     val hunter = LocalHunterClass.current
+    val sys = LocalSystem.current
+
+    val weekOfYear = runCatching {
+        java.time.LocalDate.parse(sys.today.date).get(java.time.temporal.WeekFields.ISO.weekOfWeekBasedYear())
+    }.getOrDefault(1)
+
+    // The last 28 settled days, counted rather than asserted. An empty history says so instead of drawing a
+    // clean month nobody earned.
+    val recent = sys.history.takeLast(28)
+    val held = recent.count { it.outcome != "BELOW_THRESHOLD" }
+    val shielded = recent.count { it.penalty == null && it.outcome == "BELOW_THRESHOLD" }
+    val missed = recent.size - held - shielded
+    val tally =
+        if (recent.isEmpty()) "NO DAYS SETTLED YET"
+        else "$held HELD · $shielded SHIELDED · $missed MISSED"
 
     Screen {
         Bg()
@@ -56,7 +71,7 @@ fun ReportScreen() {
             }
             Gap(9.6)
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                Eye("Weekly Report"); Filler(); Tag("Week 07")
+                Eye("Weekly Report"); Filler(); Tag("Week %02d".format(weekOfYear))
             }
 
             Gap(16)
@@ -123,7 +138,7 @@ fun ReportScreen() {
                         // Row children can exceed the row, so a long right-hand label has to be constrained or
                         // it draws straight over the left one.
                         Text(
-                            "24 HELD · 3 SHIELDED · 1 MISSED",
+                            tally,
                             style = t.tag.copy(color = p.soft, textAlign = androidx.compose.ui.text.style.TextAlign.End),
                             modifier = Modifier.weight(1f, fill = false),
                         )

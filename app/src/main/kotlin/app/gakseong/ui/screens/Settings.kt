@@ -22,6 +22,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -34,12 +35,15 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import app.gakseong.R
+import app.gakseong.data.Repo
+import app.gakseong.data.SystemState
 import app.gakseong.ui.*
 import app.gakseong.ui.theme.LocalMetrics
 import app.gakseong.ui.theme.LocalPalette
 import app.gakseong.ui.theme.LocalType
 import app.gakseong.ui.theme.Warn
 import app.gakseong.ui.theme.pct
+import kotlinx.coroutines.launch
 
 /**
  * `data-s="settings"` — five tabs. Every term §13 promised is reversible is reversible here, which is what makes
@@ -51,7 +55,10 @@ fun SettingsScreen() {
     val m = LocalMetrics.current
     val t = LocalType.current
     val haptics = rememberHaptics()
+    val sys = LocalSystem.current
+    val scope = rememberCoroutineScope()
     var tab by remember { mutableStateOf(Tab.GENERAL) }
+    val rank = sys.hunter.toEngine().rank
 
     Screen {
         Bg(); Bg2()
@@ -61,7 +68,7 @@ fun SettingsScreen() {
 
         Body(navSpace = true) {
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                Eye("Settings"); Filler(); Tag("Rank D · Level 34")
+                Eye("Settings"); Filler(); Tag("Rank ${rank.letter} · Level ${sys.level}")
             }
 
             Gap(16)
@@ -123,7 +130,11 @@ fun SettingsScreen() {
                     Gap(3)
                 }
 
-                rows(tab).forEach { row -> SetRow(row) }
+                rows(tab, sys).forEach { row ->
+                    SetRow(row, isOn(row.title, sys)) { next ->
+                        scope.launch { Repo.update { toggled(it, row.title, next) } }
+                    }
+                }
 
                 if (tab == Tab.PRIVACY) {
                     Gap(3)
@@ -152,21 +163,46 @@ private enum class Tab(val label: String) {
     GENERAL("General"), SOUND("Sound"), AI("AI"), PRIVACY("Privacy"), DATA("Data")
 }
 
+// Three switches drive behaviour and so have named fields. The rest are preferences nothing reads yet and live
+// in `settings.switches`, keyed by their row title. Promote a key to a field when something depends on it.
+private const val DND = "Do Not Disturb in sessions"
+private const val ANALYTICS = "Usage analytics"
+private const val CRASH = "Crash reports"
+
+private fun isOn(title: String, sys: SystemState): Boolean = when (title) {
+    DND -> sys.settings.dnd
+    ANALYTICS -> sys.settings.analytics
+    CRASH -> sys.settings.crashReports
+    else -> sys.settings.switches[title] ?: DEFAULT_ON.contains(title)
+}
+
+private fun toggled(state: SystemState, title: String, next: Boolean): SystemState = when (title) {
+    DND -> state.copy(settings = state.settings.copy(dnd = next))
+    ANALYTICS -> state.copy(settings = state.settings.copy(analytics = next))
+    CRASH -> state.copy(settings = state.settings.copy(crashReports = next))
+    else -> state.copy(settings = state.settings.copy(switches = state.settings.switches + (title to next)))
+}
+
+/** Switches the design page shows already on, so a fresh install matches the reference screens. */
+private val DEFAULT_ON = setOf(
+    "Detect new apps", "Sound", "Fire on silent", "Daily quest generation", "Weekly post-mortem",
+    "Speak to the System", "Mood-aware load", "Gate naming",
+)
+
 /** A row is either a value or a switch. `kind` in the design's data is exactly that distinction. */
 private data class Setting(val title: String, val value: String, val detail: String, val switch: Boolean? = null)
 
 @Composable
-private fun SetRow(s: Setting) {
+private fun SetRow(s: Setting, on: Boolean, onToggle: (Boolean) -> Unit) {
     val p = LocalPalette.current
     val m = LocalMetrics.current
     val t = LocalType.current
-    var on by remember(s.title) { mutableStateOf(s.switch == true) }
     val haptics = rememberHaptics()
 
     val clickable = if (s.switch != null) {
         Modifier.clickable {
             haptics.tick()
-            on = !on
+            onToggle(!on)
         }
     } else {
         Modifier
@@ -209,16 +245,25 @@ private fun SetRow(s: Setting) {
     }
 }
 
-private fun rows(tab: Tab): List<Setting> = when (tab) {
+private fun rows(tab: Tab, sys: SystemState): List<Setting> = when (tab) {
     Tab.GENERAL -> listOf(
         Setting("Quest issued at", "00:01", "When the daily quest arrives"),
-        Setting("Night gate window", "00:30 – 06:00", "Adjustable 30 min either way"),
+        Setting(
+            "Night gate window",
+            "${sys.settings.nightGateStart} – ${sys.settings.nightGateEnd}",
+            "Adjustable 30 min either way",
+        ),
         Setting("Do Not Disturb in sessions", "", "Turns itself off when the session ends", switch = true),
         Setting("Let through", "Calls · starred", "Repeat callers always ring, whatever else is muted"),
         Setting("Rest day", "1 per week unused", "Waives threshold, keeps the streak"),
-        Setting("Scroll apps", "4 selected", "Instagram · Reddit · X · Shorts"),
+        Setting(
+            "Scroll apps",
+            "${sys.profile.watchedPackages.size} selected",
+            sys.profile.watchedPackages.joinToString(" · ").ifEmpty { "None chosen yet" },
+        ),
         Setting("Detect new apps", "", "Checks social, browser, VPN at every start", switch = true),
-        Setting("Widgets", "6 active", "Home screen and lock screen"),
+        // Four providers are registered, not six. widget/Widgets.kt is the count.
+        Setting("Widgets", "4 available", "Home screen and lock screen"),
         Setting("Language", "English", "System default"),
     )
     Tab.SOUND -> listOf(
@@ -247,13 +292,15 @@ private fun rows(tab: Tab): List<Setting> = when (tab) {
         Setting("Private check-in", "17:00 daily", "Reminder never names what it is for"),
         Setting("Guild visibility", "Rank and streak", "Never your private track"),
         Setting("League name", "Set by you", "Shown to 29 others"),
-        Setting("Share screen time", "", "Only aggregate aura leaves the device", switch = false),
+        // §10 has no "but the user chose to" exemption, so this is a statement of fact and not a switch. A
+        // toggle here would imply screen-time numbers can be made shareable, and they cannot.
+        Setting("Share screen time", "Never", "No card may carry a package name or a duration"),
         Setting("Usage analytics", "", "Which screens get opened. Never which apps", switch = true),
         Setting("Crash reports", "", "Stack traces only. No screen contents", switch = true),
         Setting("Private track is exempt", "Always", "Emits no event of any kind, on or off"),
     )
     Tab.DATA -> listOf(
-        Setting("Storage", "On device", "Room. Your history, app list and private track never leave"),
+        Setting("Storage", "On device", "One JSON document. History, app list and private track never leave"),
         Setting("What does leave", "3 things", "Guild identity, anonymous feature counts, crash traces"),
         Setting("Cloud sync", "Guild only", "Identity, friend pairs, live raids"),
         Setting("Waitlist email", "Not given", "Only if you asked to hear about a new gate"),

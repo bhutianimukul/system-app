@@ -36,9 +36,7 @@ import app.gakseong.ui.TopFade
 import app.gakseong.ui.Wordmark
 import app.gakseong.ui.XlNumber
 import app.gakseong.data.QuestInstance
-import app.gakseong.ui.LocalNav
 import app.gakseong.ui.LocalSystem
-import app.gakseong.ui.NAV_TABS
 import app.gakseong.ui.theme.LocalHunterClass
 import app.gakseong.ui.theme.LocalMetrics
 import app.gakseong.ui.theme.LocalPalette
@@ -60,7 +58,6 @@ fun HomeScreen() {
     val t = LocalType.current
     val hunter = LocalHunterClass.current
     val sys = LocalSystem.current
-    val nav = LocalNav.current
 
     val engine = sys.hunter.toEngine()
     val rank = engine.rank
@@ -167,7 +164,7 @@ fun HomeScreen() {
             }
         }
 
-        BottomNav(active = 0, onSelect = { nav(NAV_TABS[it]) })
+        BottomNav(active = 0)
     }
 }
 

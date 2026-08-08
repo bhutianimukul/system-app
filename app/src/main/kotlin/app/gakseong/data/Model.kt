@@ -106,6 +106,14 @@ data class Settings(
     val nightGateStart: String = "00:30",
     val nightGateEnd: String = "06:00",
     val whisper: Boolean = false,
+    val crashReports: Boolean = true,
+    /**
+     * The long tail of preference switches, keyed by their row title.
+     *
+     * ponytail: a map rather than fifteen more booleans. These are preferences nothing reads yet; the named
+     * fields above are the ones code branches on. Promote a key to a field the moment something depends on it.
+     */
+    val switches: Map<String, Boolean> = emptyMap(),
 )
 
 @Serializable

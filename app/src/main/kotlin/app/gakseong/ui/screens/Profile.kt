@@ -29,6 +29,8 @@ fun ProfileScreen() {
     val m = LocalMetrics.current
     val t = LocalType.current
     val hunter = LocalHunterClass.current
+    val sys = LocalSystem.current
+    val rank = sys.hunter.toEngine().rank
 
     Screen {
         Bg()
@@ -41,13 +43,13 @@ fun ProfileScreen() {
 
         Body(navSpace = true) {
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                Eye("Hunter Record"); Filler(); Tag("Level 34")
+                Eye("Hunter Record"); Filler(); Tag("Level ${sys.level}")
             }
             Gap(134.4)
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(m.d(11.2))) {
                 MaskedImage(R.drawable.em_d, width = 60, mask = Mask.CIRCLE)
                 Column {
-                    Text("SENTINEL", style = t.md.copy(fontSize = m.s(20.8), letterSpacing = 0.08.em))
+                    Text(rank.title.uppercase(), style = t.md.copy(fontSize = m.s(20.8), letterSpacing = 0.08.em))
                     Gap(3.5)
                     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(m.d(6.4))) {
                         Sig(size = 18)
