@@ -1,0 +1,71 @@
+# Strings a screen may legitimately hard-code. One exact literal per line, matched by equality against the
+# literal the audit extracts, never as a substring.
+#
+# An entry is either `literal` (allowed in any screen) or `File.kt|literal` (that screen only). File scoping
+# matters: "+450" is the spec's human-raid bonus in Raid.kt and a feed post's aura in Feed.kt.
+#
+# Two kinds live here and nothing else:
+#   1. fixed System script and fixed labels, which are copy and not state
+#   2. design and spec constants, identical on every device
+#
+# Anything that varies per hunter belongs in SystemState. `critic/pending.txt` holds literals that are real
+# state waiting on a later phase. Never add a line here to silence a finding you have not read.
+
+# ── format strings and interpolation, where the value is already state ────────
+expires %02d:%02d
+Week %02d
+${(fraction * 100).toInt()}%
+
+# ── fixed System script ───────────────────────────────────────────────────────
+a 15-minute job. Never a foreground service, because OEM battery managers kill those.
+is not screen time, or a 10 km evening would eat your daily budget.
+ends. Window closed 19:00 · re-checked every 15 minutes for 30. A verdict is never 
+Last 30 days, your phone
+Already picked from your own 30 days · tap to change
+45 MINUTES.\nBOTH OF YOU HOLD.
+
+# ── design constants: the same on every device ────────────────────────────────
+4 asks · ~90 seconds
+00:01
+Adjustable 30 min either way
+Last 28 days
+Objectives · 48h
+1080 × 1920
+60s
+Remind at 17:00
+reminder 17:00 daily
+17:00 daily
+
+# ── heatmap axis labels ───────────────────────────────────────────────────────
+Report.kt|00
+Report.kt|06
+Report.kt|12
+Report.kt|18
+Report.kt|23
+
+# ── spec constants from CLAUDE.md and DECISIONS.md ────────────────────────────
+# §Social: leagues of about thirty, so 29 others and the 6–25 / 26–30 division bands are the rule itself.
+Shown to 29 others
+30 hunters · same thresholds
+League.kt|6–25
+League.kt|26–30
+# §Social: referral pays +600 on the invitee's third cleared day.
+Refer.kt|+600
+Refer.kt|+600 aura
+# §Social: a raid bonus is +450 with a human and +180 with a shadow. The rule, not a sample.
+Raid.kt|+450
+Raid.kt|+450 proven · +180 on your word
+RaidHub.kt|+450
+RaidHub.kt|+180
+RaidHub.kt|+450 each
+RunRaid.kt|+450
+Invite.kt|+450
+# §Pact: three lengths, and the streak thresholds that grant shields.
+Staged.kt|21 days
+Staged.kt|45 days
+Staged.kt|75 days
+More.kt|7 · 30 · 90 day thresholds
+# §Onboarding: the three self-rating bands.
+Staged.kt|< 150
+Staged.kt|150 – 500
+Staged.kt|500 +

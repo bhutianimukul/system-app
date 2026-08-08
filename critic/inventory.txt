@@ -1,0 +1,44 @@
+# Every capability the spec promises, one per line, as: phase|name|file:symbol
+#
+# `exists` greps the file for the symbol. `wired` greps the rest of app/src/main and engine/ for the same
+# symbol, so a file that declares something nothing calls reads as exists-but-not-wired. That gap is the whole
+# reason this file exists.
+#
+# A `!` before the phase marks a declaration-only row: something with no external caller by design, such as a
+# corruption handler passed to a constructor. Those print `n/a` in the wired column rather than a misleading no.
+#
+# Spec: docs/superpowers/specs/2026-08-08-full-functionality-design.md
+
+03|State persisted to disk|app/src/main/kotlin/app/gakseong/data/Store.kt:systemStore
+!03|Corrupt state falls back to seed|app/src/main/kotlin/app/gakseong/data/Store.kt:ReplaceFileCorruptionHandler
+03|One observable state|app/src/main/kotlin/app/gakseong/data/Repo.kt:Repo
+03|Ambient state for screens|app/src/main/kotlin/app/gakseong/ui/Local.kt:LocalSystem
+03|Day rollover without an alarm|app/src/main/kotlin/app/gakseong/data/Model.kt:rolledTo
+03|Engine state survives serialization|app/src/main/kotlin/app/gakseong/data/Model.kt:HunterSnapshot
+03|Real back stack|app/src/main/kotlin/app/gakseong/ui/Nav.kt:NavHost
+03|Navigate from any screen|app/src/main/kotlin/app/gakseong/ui/Nav.kt:LocalNav
+03|Bottom nav navigates|app/src/main/kotlin/app/gakseong/ui/Kit.kt:NAV_TABS
+03|Buttons accept actions|app/src/main/kotlin/app/gakseong/ui/Kit.kt:onClick
+03|Class derived from intent|app/src/main/kotlin/app/gakseong/data/Intent.kt:hunterClassFor
+03|Onboarding accept gate writes the flag|app/src/main/kotlin/app/gakseong/ui/screens/Onboarding.kt:onboarded
+!03|Settings persist|app/src/main/kotlin/app/gakseong/ui/screens/Settings.kt:toggled
+03|Quest card aura goes through the engine|app/src/main/kotlin/app/gakseong/ui/screens/Home.kt:award
+03|Share card allowlist|app/src/main/kotlin/app/gakseong/ui/screens/Share.kt:CardFields
+04|Usage event fold|app/src/main/kotlin/app/gakseong/sense/Usage.kt:queryEvents
+04|Usage access is special access|app/src/main/kotlin/app/gakseong/sense/Usage.kt:AppOpsManager
+04|Health Connect provenance checked|app/src/main/kotlin/app/gakseong/sense/Health.kt:dataOrigin
+04|Reader time carved out of screen time|app/src/main/kotlin/app/gakseong/sense/Usage.kt:READER_CARVE_OUT
+05|Closed verifier set|app/src/main/kotlin/app/gakseong/quest/Verifier.kt:sealed
+05|Static quest bank|app/src/main/kotlin/app/gakseong/quest/Bank.kt:QuestTemplate
+05|Settle feeds the engine|app/src/main/kotlin/app/gakseong/quest/Settle.kt:settleDay
+05|Fifteen-minute job, no live watcher|app/src/main/kotlin/app/gakseong/work/SettleWorker.kt:PeriodicWorkRequest
+05|Widgets read real state|app/src/main/kotlin/app/gakseong/widget/Widgets.kt:Repo
+06|Focus foreground service|app/src/main/kotlin/app/gakseong/session/FocusService.kt:startForeground
+06|DND expires on its own|app/src/main/kotlin/app/gakseong/session/Dnd.kt:AutomaticZenRule
+06|Prior interruption filter restored|app/src/main/kotlin/app/gakseong/session/Dnd.kt:currentInterruptionFilter
+06|Speed bump only while a session lives|app/src/main/kotlin/app/gakseong/session/SpeedBump.kt:SYSTEM_ALERT_WINDOW
+07|Anonymous auth, no account|app/src/main/kotlin/app/gakseong/cloud/Auth.kt:signInAnonymously
+07|Referral pairing is create-only|firestore.rules:allow create
+07|Analytics refuses the private track|app/src/main/kotlin/app/gakseong/cloud/Analytics.kt:PRIVATE_TRACK_EXEMPT
+08|Key in the keystore|app/src/main/kotlin/app/gakseong/ai/Key.kt:EncryptedSharedPreferences
+08|Clamps enforced in code, not the prompt|app/src/main/kotlin/app/gakseong/ai/Generate.kt:clamp
