@@ -23,10 +23,12 @@ between them is where this kind of work rots.
 | 03 | Settings persist | yes | n/a |
 | 03 | Quest card aura goes through the engine | yes | yes |
 | 03 | Share card allowlist | yes | no |
-| 04 | Usage event fold | no | no |
-| 04 | Usage access is special access | no | no |
-| 04 | Health Connect provenance checked | no | no |
-| 04 | Reader time carved out of screen time | no | no |
+| 04 | Usage event fold | yes | no |
+| 04 | Usage access is special access | yes | no |
+| 04 | Health Connect provenance checked | yes | yes |
+| 04 | Reader time carved out of screen time | yes | no |
+| 04 | Unclosed sessions are capped | yes | no |
+| 04 | Reality screen reads the device | yes | yes |
 | 05 | Closed verifier set | no | no |
 | 05 | Static quest bank | no | no |
 | 05 | Settle feeds the engine | no | no |
@@ -47,13 +49,6 @@ between them is where this kind of work rots.
 Screen text that is real state but is waiting on a later phase. Tracked so it cannot be mistaken for
 finished work. Source: `critic/pending.txt`.
 
-- `Onboarding.kt|206`
-- `Onboarding.kt|8.6 days · 28% of your waking life`
-- `Onboarding.kt|80h`
-- `Onboarding.kt|39h`
-- `Onboarding.kt|26h`
-- `Onboarding.kt|17h`
-- `Onboarding.kt|44h`
 - `Onboarding.kt|2h 41m`
 - `Onboarding.kt|1h 18m`
 - `Onboarding.kt|52m`

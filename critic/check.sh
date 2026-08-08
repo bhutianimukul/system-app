@@ -3,7 +3,7 @@
 #
 #   1. the engine's own asserts, and that kotlinc still compiles engine/ alone
 #   2. JVM unit tests and the debug build
-#   3. every route launched on a device, logcat scanned for fatals
+#   3. every route launched on a device, cold each time, logcat scanned for fatals
 #   4. the placeholder audit: screen literals that look like state
 #   5. CRITIC.md regenerated
 #
@@ -60,8 +60,10 @@ else
   adb install -r app/build/outputs/apk/debug/app-debug.apk > /dev/null 2>&1
   adb logcat -c
   for s in "${ROUTES[@]}"; do
-    adb shell am start -n app.gakseong/.MainActivity --es screen "$s" > /dev/null 2>&1
-    sleep 0.6
+    # -S force-stops first. Without it `am start` re-delivers the intent to the running instance, onCreate
+    # never runs again, the route never changes, and the loop reports 48 clean screens having rendered one.
+    adb shell am start -S -n app.gakseong/.MainActivity --es screen "$s" > /dev/null 2>&1
+    sleep 1.1
   done
   CRASHES=$(adb logcat -d | grep -c "FATAL EXCEPTION")
   if [ "$CRASHES" -eq 0 ]; then

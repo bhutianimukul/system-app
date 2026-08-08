@@ -38,6 +38,22 @@ import app.gakseong.R
 import app.gakseong.data.Repo
 import androidx.compose.ui.platform.LocalContext
 import app.gakseong.sense.RETAINED_DAYS
+import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.health.connect.client.PermissionController
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import app.gakseong.sense.HEALTH_PERMISSIONS
+import app.gakseong.sense.HealthAvailability
+import app.gakseong.sense.hasHealthGrants
+import app.gakseong.sense.hasUsageAccess
+import app.gakseong.sense.healthAvailability
+import app.gakseong.sense.usageAccessIntent
 import app.gakseong.ui.*
 import app.gakseong.ui.theme.Bad
 import kotlinx.coroutines.launch
@@ -154,6 +170,35 @@ fun PermsScreen() {
     val m = LocalMetrics.current
     val t = LocalType.current
     val nav = LocalNav.current
+    val context = LocalContext.current
+
+    // Re-read on every resume: all three of these are granted in a screen the app does not own, so the only
+    // moment the answer can have changed is on the way back.
+    val lifecycle = LocalLifecycleOwner.current.lifecycle
+    var grants by remember { mutableStateOf(readGrants(context)) }
+    var resumes by remember { mutableIntStateOf(0) }
+    DisposableEffect(lifecycle) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                grants = readGrants(context).copy(health = grants.health)
+                resumes++
+            }
+        }
+        lifecycle.addObserver(observer)
+        onDispose { lifecycle.removeObserver(observer) }
+    }
+
+    // Refreshed on every resume and after the permission sheet closes, both of which bump `resumes`.
+    LaunchedEffect(resumes) { grants = grants.copy(health = hasHealthGrants(context)) }
+
+    val healthLauncher = rememberLauncherForActivityResult(
+        PermissionController.createRequestPermissionResultContract(),
+    ) { resumes++ }
+
+    val notificationLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission(),
+    ) { resumes++ }
+
     Screen {
         Bg()
         Bg2()
@@ -172,10 +217,26 @@ fun PermsScreen() {
                 Modifier.weight(1f).verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(m.d(7)),
             ) {
-                PermRow("◉", "Usage access", "Which apps, and for how long", "required")
-                PermRow("♡", "Health Connect", "Steps, sleep, workouts, HRV", "required")
-                PermRow("◈", "Notifications", "The daily quest at midnight", "required")
-                PermRow("⌖", "Location", "Only when you tap into a gate", "optional")
+                PermRow(
+                    "◉", "Usage access", "Which apps, and for how long", "required",
+                    granted = grants.usage,
+                ) { context.startActivity(usageAccessIntent()) }
+                PermRow(
+                    "♡", "Health Connect", "Steps, distance and sleep", "required",
+                    granted = grants.health,
+                    unavailable = grants.healthAvailability != HealthAvailability.AVAILABLE,
+                ) { healthLauncher.launch(HEALTH_PERMISSIONS) }
+                PermRow(
+                    "◈", "Notifications", "The daily quest at midnight", "required",
+                    granted = grants.notifications,
+                ) {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                        notificationLauncher.launch(android.Manifest.permission.POST_NOTIFICATIONS)
+                    }
+                }
+                // §Verifiers: passive geofencing needs a restricted permission, so location is asked for at the
+                // gate, on a tap, and never here.
+                PermRow("⌖", "Location", "Asked at the gate, not here", "optional", granted = false)
                 Gap(4)
                 Card(Modifier.fillMaxWidth(), dashed = true, padding = 13.6) {
                     Text(
@@ -417,11 +478,27 @@ private fun IconTile(glyph: String, size: Number = 34, radius: Number = 11) {
 }
 
 @Composable
-private fun PermRow(glyph: String, title: String, detail: String, requirement: String) {
+private fun PermRow(
+    glyph: String,
+    title: String,
+    detail: String,
+    requirement: String,
+    granted: Boolean = false,
+    unavailable: Boolean = false,
+    onRequest: (() -> Unit)? = null,
+) {
     val p = LocalPalette.current
     val m = LocalMetrics.current
     val t = LocalType.current
-    Card(Modifier.fillMaxWidth(), padding = 13.6) {
+    // A granted row is not tappable. Sending someone back into system Settings to re-grant what they already
+    // granted is the kind of loop that reads as the app not knowing its own state.
+    val action = if (granted || unavailable || onRequest == null) Modifier else Modifier.clickable(onClick = onRequest)
+    val trailing = when {
+        unavailable -> "unavailable"
+        granted -> "granted"
+        else -> requirement
+    }
+    Card(Modifier.fillMaxWidth().then(action), lit = granted, padding = 13.6) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(m.d(11.2))) {
             IconTile(glyph)
             Column(Modifier.weight(1f)) {
@@ -429,7 +506,16 @@ private fun PermRow(glyph: String, title: String, detail: String, requirement: S
                 Gap(3.2)
                 Tag(detail, t.key)
             }
-            Tag(requirement, t.key.copy(color = if (requirement == "required") p.hot else p.faint))
+            Tag(
+                trailing,
+                t.key.copy(
+                    color = when {
+                        granted -> app.gakseong.ui.theme.Ok
+                        trailing == "required" -> p.hot
+                        else -> p.faint
+                    },
+                ),
+            )
         }
     }
 }
@@ -517,3 +603,21 @@ private fun wakingLifeLine(hours: Double?, usage: app.gakseong.sense.UsageReadin
     hours == null -> "Usage access not granted · the System cannot see yet"
     else -> "%.1f days · %.0f%% of your waking life".format(hours / 24, hours / (RETAINED_DAYS * 16.0) * 100)
 }
+
+/** Every grant this screen reports, read together so the rows cannot disagree with each other. */
+private data class Grants(
+    val usage: Boolean,
+    val healthAvailability: HealthAvailability,
+    val notifications: Boolean,
+    /** Read separately: Health Connect's grant set is an IPC, so it cannot join the synchronous snapshot. */
+    val health: Boolean = false,
+)
+
+private fun readGrants(context: android.content.Context) = Grants(
+    usage = hasUsageAccess(context),
+    healthAvailability = healthAvailability(context),
+    notifications = Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU ||
+        androidx.core.content.ContextCompat.checkSelfPermission(
+            context, android.Manifest.permission.POST_NOTIFICATIONS,
+        ) == android.content.pm.PackageManager.PERMISSION_GRANTED,
+)
