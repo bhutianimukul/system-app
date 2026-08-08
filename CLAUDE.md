@@ -399,7 +399,9 @@ noise, which at 26% under an overlay blend is not visible.
 `screenshots/index.html` is a contact sheet of every built screen, captured from the debug APK on a Pixel 7
 emulator. Regenerate it after a batch rather than describing screens in prose.
 
-Forty built, all compiling and rendering with no runtime errors. Route with
+Forty-eight built, all compiling and rendering with no runtime errors. **Navigation is `navigation-compose` in
+`ui/Nav.kt`**, and the intent extra survives as a debug start-destination override so the contact sheet keeps
+working:
 `adb shell am start -n app.gakseong/.MainActivity --es screen <name> --es class <class>`.
 
 **Built:** `home` `focus` `ceremony` `raid` `raidhub` `runraid` `runsettle` `share` `arise` `league` `gate`
@@ -429,10 +431,41 @@ Three traps this cost:
 - **aapt2 in build-tools 35 rejects `&apos;` in a string resource** with "Invalid unicode escape sequence", and
   blames the merged `values.xml` rather than yours. Write the apostrophe literally.
 
-**What still does not exist, which is the larger half of the work:** `UsageStatsManager`, Health Connect, Room,
-`WorkManager`, Firebase, the foreground service for focus sessions, `AutomaticZenRule`, the quest bank, and any
-wiring at all between the phase-01 engine and either the screens or the widgets. The widget state is a
-placeholder data class.
+### Phase 03, the state spine — done
+
+Persistence, one observable state, navigation, and every screen reading state instead of literals.
+
+- **Storage is `DataStore<SystemState>` with `kotlinx.serialization`, not Room.** One JSON document. A year of
+  play is a few hundred small history rows, and Room's KSP codegen, DAOs and migrations buy date-range SQL this
+  volume does not need. `data/Store.kt` names the ceiling and records Room as the upgrade path.
+- **The engine keeps no `@Serializable`.** The plugin has to be applied to the declaring module, and
+  `kotlinc engine/*.kt` must keep working. `HunterSnapshot` in `data/Model.kt` is a five-field mirror.
+- **No ViewModels and no DI graph.** `Repo` is an object, and screens read `LocalSystem.current` beside
+  `LocalPalette`, `LocalMetrics`, `LocalType` and `LocalHunterClass`. Forty-eight screens would otherwise be
+  forty-eight near-empty ViewModel files.
+- **The day boundary is detected on read.** `SystemState.rolledTo(date)` clears today when the stored date is
+  not the current one. No alarm, no receiver, no scheduled work. Settling the day that ended is phase 05.
+- **The kit accepts actions now.** `BottomNav`, `Cta` and `Pill` took no callbacks at all, which is the real
+  reason every screen was static. `BottomNav` reads `LocalNav` itself, so no screen holds a navigator for it.
+
+### The critic
+
+`critic/check.sh` is the one command: engine asserts, build and JVM tests, all forty-eight routes on a device,
+the placeholder audit, and `CRITIC.md`. **Run it after every batch.**
+
+- **The placeholder audit compares exact literals, never substrings.** An earlier version filtered whole grep
+  lines with `grep -vF`, so a pending entry of `600` swallowed unrelated findings and it reported zero while 139
+  existed. Entries in `critic/allowlist.txt` and `critic/pending.txt` are `literal` or `File.kt|literal`.
+- **`check.sh` is bash and says so.** zsh does not word-split unquoted variables, so `for s in $ROUTES` runs the
+  loop once and reports a pass after testing one route. That happened here.
+- **Without a device it says the routes are UNVERIFIED**, which is not the same as passing.
+- `CRITIC.md` keeps `exists` and `wired` as separate columns, because a declared function and a called one are
+  different states. `critic/pending.txt` lists every literal still waiting on a later phase, so what is still
+  fake is answerable without reading code.
+
+**What still does not exist:** `UsageStatsManager`, Health Connect, `WorkManager`, Firebase, the foreground
+service for focus sessions, `AutomaticZenRule`, the quest bank, and the AI gate. The widget state is still a
+placeholder data class, and `SEED` carries five hand-written quests standing in for the phase-05 bank.
 
 **The chart kit is in `ui/Charts.kt`:** `AuraByDay`, `HoursHeatmap`, `DayCalendar`, `Legend`. `assess` needs it
 too, so use it rather than drawing new bars.
