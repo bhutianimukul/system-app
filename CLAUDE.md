@@ -458,12 +458,37 @@ the placeholder audit, and `CRITIC.md`. **Run it after every batch.**
   existed. Entries in `critic/allowlist.txt` and `critic/pending.txt` are `literal` or `File.kt|literal`.
 - **`check.sh` is bash and says so.** zsh does not word-split unquoted variables, so `for s in $ROUTES` runs the
   loop once and reports a pass after testing one route. That happened here.
+- **The route loop uses `am start -S`.** Without it `am start` re-delivers the intent to the running instance,
+  `onCreate` never runs again, the route never changes, and the loop reports forty-eight clean screens having
+  rendered one. `adb` prints `Activity not started, intent has been delivered to currently running top-most
+  instance` and the script was discarding it.
+- **Step 5 fails on invented people.** §Social forbids plausible human usernames, and the guild screen shipped
+  five of them with four matching feed posts. The check greps the name argument of `MemberRow`, `Post` and
+  `PartnerCard`. Note that `PartnerCard` takes a drawable first and the name second, so one regex across all
+  three reports the wrong string.
+
+**Every one of those was the critic itself being wrong.** A check that cannot fail is worse than no check, so
+each new step gets proven by planting the thing it is supposed to catch and watching it name it.
 - **Without a device it says the routes are UNVERIFIED**, which is not the same as passing.
 - `CRITIC.md` keeps `exists` and `wired` as separate columns, because a declared function and a called one are
   different states. `critic/pending.txt` lists every literal still waiting on a later phase, so what is still
   fake is answerable without reading code.
 
-**What still does not exist:** `UsageStatsManager`, Health Connect, `WorkManager`, Firebase, the foreground
+### Phase 04, sensors: usage and Health Connect done
+
+`sense/Fold.kt` and `sense/Provenance.kt` are pure and tested; `sense/Usage.kt` and `sense/Health.kt` are the
+thin Android halves. Usage access is special access, checked with `AppOpsManager` and requested through
+`Settings.ACTION_USAGE_ACCESS_SETTINGS`. Health Connect is read-only on three record types, and a record whose
+`dataOrigin` is this app is dropped, because a quest provable by the app that issued it is not proven.
+
+**An ungranted or failed read returns `Unavailable`, never zero.** A missing grant must never be mistaken for a
+clean day, and a Health Connect outage must never read as "you walked nothing".
+
+**One unbroken foreground session is capped at `MAX_SESSION_MS`.** Real streams drop `BACKGROUND` pairs and a
+device whose screen never sleeps emits no `SCREEN_NON_INTERACTIVE`, so an unclosed session otherwise runs across
+every idle gap. This produced 231 hours in a day on the emulator while nineteen unit tests were passing.
+
+**What still does not exist:** the Apps screen preselection from real usage, `WorkManager`, Firebase, the foreground
 service for focus sessions, `AutomaticZenRule`, the quest bank, and the AI gate. The widget state is still a
 placeholder data class, and `SEED` carries five hand-written quests standing in for the phase-05 bank.
 
