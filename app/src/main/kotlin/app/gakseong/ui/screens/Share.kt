@@ -23,6 +23,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import app.gakseong.R
+import app.gakseong.data.SystemState
 import app.gakseong.ui.Art
 import app.gakseong.ui.Aura
 import app.gakseong.ui.Bg
@@ -34,6 +35,7 @@ import app.gakseong.ui.Eye
 import app.gakseong.ui.Filler
 import app.gakseong.ui.Gap
 import app.gakseong.ui.Grain
+import app.gakseong.ui.LocalSystem
 import app.gakseong.ui.Pill
 import app.gakseong.ui.Screen
 import app.gakseong.ui.Shade
@@ -44,6 +46,7 @@ import app.gakseong.ui.theme.LocalMetrics
 import app.gakseong.ui.theme.LocalPalette
 import app.gakseong.ui.theme.LocalType
 import app.gakseong.ui.theme.Radius
+import gakseong.engine.Rank
 
 /** Which moment the card is for. §28 started with ascension; a raid clear is the other one worth posting. */
 enum class ShareMoment { ASCENSION, RAID }
@@ -61,6 +64,8 @@ fun ShareScreen(moment: ShareMoment = ShareMoment.ASCENSION) {
     val m = LocalMetrics.current
     val t = LocalType.current
     val hunter = LocalHunterClass.current
+    val sys = LocalSystem.current
+    val card = cardFields(sys, hunter.label, moment)
 
     Screen {
         Bg()
@@ -104,38 +109,27 @@ fun ShareScreen(moment: ShareMoment = ShareMoment.ASCENSION) {
                 ) {
                     PortraitChip(hunter.portrait, width = 46, height = 56)
                     Gap(9.6)
-                    if (moment == ShareMoment.ASCENSION) {
-                        Tag("${hunter.label} · 41 days held")
-                        Gap(4.8)
-                        Text(
-                            buildAnnotatedString {
-                                append("D · III → ")
-                                withStyle(SpanStyle(color = p.soft, fontWeight = FontWeight(900))) { append("C · I") }
-                            },
-                            style = t.md.copy(fontSize = m.s(21.6)),
-                        )
-                        Gap(4.8)
-                        Tag("Level 27")
-                        Gap(11.2)
-                        Text(
-                            "The gate did not open for you. You were simply strong enough to walk through it.",
-                            style = t.body.copy(fontSize = m.s(11.8), textAlign = TextAlign.Center),
-                            modifier = Modifier.width(m.d(190)),
-                        )
-                    } else {
-                        Tag("${hunter.label} · Rank D · III")
-                        Gap(4.8)
-                        Text("45:00 HELD", style = t.md.copy(fontSize = m.s(21.6)))
-                        Gap(4.8)
-                        // Never the partner's name: §28's allowlist has no room for a guild member.
-                        Tag("with one other hunter · +450")
-                        Gap(11.2)
-                        Text(
-                            "Neither of us broke. The System had nothing to take.",
-                            style = t.body.copy(fontSize = m.s(11.8), textAlign = TextAlign.Center),
-                            modifier = Modifier.width(m.d(190)),
-                        )
-                    }
+                    // Every line below reads a field of `card` and nothing else. Adding anything to this card
+                    // means adding a field to CardFields first, which is what makes §10 an allowlist.
+                    Tag("${card.hunterClass} · ${card.streakDays} days held")
+                    Gap(4.8)
+                    Text(
+                        buildAnnotatedString {
+                            append("${card.rankBefore} → ")
+                            withStyle(SpanStyle(color = p.soft, fontWeight = FontWeight(900))) {
+                                append(card.rankAfter)
+                            }
+                        },
+                        style = t.md.copy(fontSize = m.s(21.6)),
+                    )
+                    Gap(4.8)
+                    Tag("Level ${card.level}")
+                    Gap(11.2)
+                    Text(
+                        card.script,
+                        style = t.body.copy(fontSize = m.s(11.8), textAlign = TextAlign.Center),
+                        modifier = Modifier.width(m.d(190)),
+                    )
                     Gap(14.4)
                     Text("각성 GAKSEONG", style = t.wordmarkLatin.copy(fontSize = m.s(9.3), color = p.soft))
                     Gap(4)
@@ -167,4 +161,45 @@ fun ShareScreen(moment: ShareMoment = ShareMoment.ASCENSION) {
             Gap(17.6)
         }
     }
+}
+
+/**
+ * §10, as a type. Everything a share card may carry, and nothing else.
+ *
+ * This is an allowlist rather than a blocklist on purpose: putting anything new on the card means adding a
+ * field here first, so a package name, a duration or a screen-time number cannot arrive by an innocent edit.
+ * There is no "but the user chose to" exemption, and no share affordance exists anywhere in the private track.
+ *
+ * The enumerated list in CLAUDE.md is: class portrait, rank before and after, level, streak days, one line of
+ * fixed System script, the 각성 GAKSEONG wordmark, gakseong.app/s/<code>.
+ */
+private data class CardFields(
+    val hunterClass: String,
+    val rankBefore: String,
+    val rankAfter: String,
+    val level: Int,
+    val streakDays: Int,
+    val script: String,
+)
+
+// Fixed System script, one line per moment. Never generated, never per-user.
+private const val ASCENSION_SCRIPT =
+    "The gate did not open for you. You were simply strong enough to walk through it."
+private const val RAID_SCRIPT = "Neither of us broke. The System had nothing to take."
+
+/**
+ * ponytail: `rankBefore` is the last rank in history that differs from the current one. Until phase 05 writes
+ * settlements, history is empty and the card shows the tier below, which is what an ascension always is.
+ */
+private fun cardFields(sys: SystemState, hunterClass: String, moment: ShareMoment): CardFields {
+    val rank = sys.hunter.toEngine().rank
+    val before = Rank(maxOf(0, rank.ordinal - 1))
+    return CardFields(
+        hunterClass = hunterClass,
+        rankBefore = before.label,
+        rankAfter = rank.label,
+        level = sys.level,
+        streakDays = sys.hunter.streak,
+        script = if (moment == ShareMoment.ASCENSION) ASCENSION_SCRIPT else RAID_SCRIPT,
+    )
 }

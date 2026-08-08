@@ -138,11 +138,6 @@ Profile.kt| to 27,
 Profile.kt| to 13, 
 Settings.kt|3 active
 
-# ── the share card. §10 allowlist, wired when the ceremony composable is shared ─
-Share.kt|${hunter.label} · 41 days held
-Share.kt|${hunter.label} · Rank D · III
-Share.kt|D · III → 
-Share.kt|C · I
-Share.kt|Level 27
-Share.kt|45:00 HELD
-Share.kt|with one other hunter · +450
+# ── the share card ────────────────────────────────────────────────────────────
+# The card now renders only from CardFields. The referral code is the last literal on it.
+Share.kt|gakseong.app/s/7F2K9Q

@@ -22,7 +22,7 @@ between them is where this kind of work rots.
 | 03 | Onboarding accept gate writes the flag | yes | yes |
 | 03 | Settings persist | yes | n/a |
 | 03 | Quest card aura goes through the engine | yes | yes |
-| 03 | Share card allowlist | no | no |
+| 03 | Share card allowlist | yes | no |
 | 04 | Usage event fold | no | no |
 | 04 | Usage access is special access | no | no |
 | 04 | Health Connect provenance checked | no | no |
@@ -168,10 +168,4 @@ finished work. Source: `critic/pending.txt`.
 - `Profile.kt| to 27, `
 - `Profile.kt| to 13, `
 - `Settings.kt|3 active`
-- `Share.kt|${hunter.label} · 41 days held`
-- `Share.kt|${hunter.label} · Rank D · III`
-- `Share.kt|D · III → `
-- `Share.kt|C · I`
-- `Share.kt|Level 27`
-- `Share.kt|45:00 HELD`
-- `Share.kt|with one other hunter · +450`
+- `Share.kt|gakseong.app/s/7F2K9Q`
