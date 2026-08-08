@@ -36,9 +36,14 @@ between them is where this kind of work rots.
 | 05 | One settle pass, idempotent by date | yes | yes |
 | 05 | At most two declared quests a day | yes | no |
 | 05 | Widgets read real state | yes | yes |
-| 06 | Focus foreground service | no | no |
-| 06 | DND expires on its own | no | no |
-| 06 | Prior interruption filter restored | no | no |
+| 06 | Focus foreground service | yes | no |
+| 06 | DND expires on its own | yes | yes |
+| 06 | Prior interruption filter restored | yes | no |
+| 06 | Calls always ring | yes | no |
+| 06 | A crash cannot strand DND on | yes | yes |
+| 06 | DND cleared even if the app never reopens | yes | no |
+| 06 | A mis-tap does not cost the session | yes | no |
+| 06 | The dialer never breaks a session | yes | no |
 | 06 | Speed bump only while a session lives | no | no |
 | 07 | Guild shows nobody rather than inventing members | yes | no |
 | 07 | Raid partners are labelled shadow pacers | yes | yes |
@@ -110,11 +115,6 @@ finished work. Source: `critic/pending.txt`.
 - `Private.kt|+40 / day`
 - `Report.kt|Your successful ones average 2:40pm.`
 - `Report.kt|Your best three days all started with the phone-down quest before 10am.`
-- `Focus.kt|31:12`
-- `Focus.kt|of 45:00`
-- `Focus.kt|Forbidden for the next 28 minutes`
-- `Focus.kt|31 minutes remain. Proceeding ends your session.`
-- `Focus.kt|paused · 45 min`
 - `Raid.kt|18:44`
 - `Raid.kt|of 45:00 · both must hold`
 - `RunRaid.kt|18:00 — 19:00`

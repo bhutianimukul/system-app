@@ -1,5 +1,6 @@
 package app.gakseong.ui.screens
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -36,6 +37,7 @@ import app.gakseong.ui.TopFade
 import app.gakseong.ui.Wordmark
 import app.gakseong.ui.XlNumber
 import app.gakseong.data.QuestInstance
+import app.gakseong.ui.LocalNav
 import app.gakseong.ui.LocalSystem
 import app.gakseong.ui.theme.LocalHunterClass
 import app.gakseong.ui.theme.LocalMetrics
@@ -168,17 +170,30 @@ fun HomeScreen() {
     }
 }
 
-/** One quest instance as a card. The aura shown is the engine's answer, not the template's base. */
+/**
+ * One quest instance as a card. The aura shown is the engine's answer, not the template's base.
+ *
+ * A focus quest is the only one with somewhere to go: the others are proven by living, and a card that opened
+ * a screen for "have a meal with people" would be the app getting in the way of the thing it asked for.
+ */
 @Composable
-private fun QuestCard(q: QuestInstance, modifier: Modifier = Modifier) = QuestCard(
-    icon = q.icon,
-    title = q.title,
-    sub = q.sub,
-    value = "+${award(q.baseAura, Provability.valueOf(q.provability))}",
-    state = QuestState.valueOf(q.state),
-    wide = q.wide,
-    modifier = modifier,
-)
+private fun QuestCard(q: QuestInstance, modifier: Modifier = Modifier) {
+    val nav = LocalNav.current
+    val startable = q.id.startsWith("focus-") || q.id == "read-20"
+    QuestCard(
+        icon = q.icon,
+        title = q.title,
+        sub = q.sub,
+        value = "+${award(q.baseAura, Provability.valueOf(q.provability))}",
+        state = QuestState.valueOf(q.state),
+        wide = q.wide,
+        modifier = if (startable && q.state != "DONE") {
+            modifier.clickable { nav(if (q.id == "read-20") "read" else "focus") }
+        } else {
+            modifier
+        },
+    )
+}
 
 /** `expires 41:08`, and `expired` once the clock has run out rather than a negative count. */
 private fun expiryLabel(expiresAtEpochMs: Long): String {

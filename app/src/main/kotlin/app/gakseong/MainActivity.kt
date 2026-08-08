@@ -1,11 +1,13 @@
 package app.gakseong
 
+import android.media.AudioManager
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import app.gakseong.data.Repo
+import app.gakseong.session.FocusService
 import app.gakseong.ui.GakseongNav
 import app.gakseong.ui.theme.GakseongTheme
 import app.gakseong.ui.theme.HunterClass
@@ -40,5 +42,28 @@ class MainActivity : ComponentActivity() {
                 GakseongNav(start)
             }
         }
+    }
+
+    // A session breaks by being left, so the Activity is the thing that knows. Polling UsageStats for this
+    // would cost a query a second to learn what onStop already says for free.
+    override fun onStop() {
+        super.onStop()
+        FocusService.leftApp(if (onACall()) "com.android.dialer" else "left")
+    }
+
+    override fun onStart() {
+        super.onStart()
+        FocusService.returned()
+    }
+
+    /**
+     * True while a call is up.
+     *
+     * AudioManager's mode needs no permission at all, where TelephonyManager's call state needs READ_PHONE_STATE.
+     * §Verifiers already avoids READ_CALL_LOG for the same reason: ask for the least that answers the question.
+     */
+    private fun onACall(): Boolean {
+        val am = getSystemService(AudioManager::class.java) ?: return false
+        return am.mode == AudioManager.MODE_IN_CALL || am.mode == AudioManager.MODE_IN_COMMUNICATION
     }
 }

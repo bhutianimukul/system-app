@@ -94,6 +94,9 @@ SUSPECT=$(grep -rnoE '"[^"]*([0-9]{2,}|[EDCBAS] · (I|II|III))[^"]*"' \
               BEGIN { while ((getline l < known) > 0) seen[l] = 1 }
               {
                 lit = $2
+                # A literal that interpolates or formats is state-driven by construction: the number in it came
+                # from somewhere. Listing each one individually would be listing the absence of a problem.
+                if (lit ~ /\$\{/ || lit ~ /%[0-9.]*[dsf]/) next
                 n = split($1, path, "/"); split(path[n], loc, ":"); file = loc[1]
                 if (!(lit in seen) && !((file "|" lit) in seen)) print
               }

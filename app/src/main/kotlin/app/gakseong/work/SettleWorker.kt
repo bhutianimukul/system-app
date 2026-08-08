@@ -12,6 +12,8 @@ import app.gakseong.quest.tick
 import app.gakseong.sense.READER_CARVE_OUT
 import app.gakseong.sense.readHealth
 import app.gakseong.sense.readUsage
+import app.gakseong.session.FocusService
+import app.gakseong.session.heldMinutes
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
@@ -62,5 +64,6 @@ suspend fun gather(context: Context): Readings {
     return Readings(
         usage = readUsage(context, startOfDay.toEpochMilli(), now.toEpochMilli(), setOf(READER_CARVE_OUT)),
         health = readHealth(context, startOfDay, now),
+        focusMinutes = FocusService.state.value?.let { heldMinutes(it, now.toEpochMilli()) } ?: 0,
     )
 }

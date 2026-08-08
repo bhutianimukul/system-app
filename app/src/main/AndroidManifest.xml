@@ -23,6 +23,20 @@
     <uses-permission android:name="android.permission.health.READ_DISTANCE" />
     <uses-permission android:name="android.permission.health.READ_SLEEP" />
 
+    <!--
+      The focus session's foreground service. SPECIAL_USE because none of the standard types fit: this is not
+      media, not location, not a data sync. It is bounded by the session and shows a notification the whole time.
+    -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+    <!--
+      Do Not Disturb. Special access, granted through Settings.ACTION_NOTIFICATION_POLICY_ACCESS_SETTINGS rather
+      than a runtime dialog, and asked at the first session rather than at onboarding.
+    -->
+    <uses-permission android:name="android.permission.ACCESS_NOTIFICATION_POLICY" />
+
     <!-- Android 13 and below reach Health Connect as an installed app rather than a system module. -->
     <queries>
         <package android:name="com.google.android.apps.healthdata" />
@@ -63,6 +77,15 @@
                 <category android:name="android.intent.category.HEALTH_PERMISSIONS" />
             </intent-filter>
         </activity-alias>
+
+        <service
+            android:name=".session.FocusService"
+            android:exported="false"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="A bounded focus session the user started, showing its remaining time" />
+        </service>
 
         <receiver
             android:name=".widget.DailyQuestReceiver"

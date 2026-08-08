@@ -11,12 +11,12 @@
 # Anything that varies per hunter belongs in SystemState. `critic/pending.txt` holds literals that are real
 # state waiting on a later phase. Never add a line here to silence a finding you have not read.
 
-# ── format strings and interpolation, where the value is already state ────────
-expires %02d:%02d
-Week %02d
-${(fraction * 100).toInt()}%
-${minutes / 60}h
-${minutes}m
+# Interpolated and format strings are skipped by the audit itself: a literal containing ${...} or a printf
+# placeholder is state-driven by construction, and listing each would be listing the absence of a problem.
+
+# ── quest template ids. Code identifiers matched in a branch, never rendered ──
+Home.kt|read-20
+Home.kt|focus-
 
 # ── fixed System script ───────────────────────────────────────────────────────
 a 15-minute job. Never a foreground service, because OEM battery managers kill those.

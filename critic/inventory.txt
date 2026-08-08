@@ -40,6 +40,11 @@
 06|Focus foreground service|app/src/main/kotlin/app/gakseong/session/FocusService.kt:startForeground
 06|DND expires on its own|app/src/main/kotlin/app/gakseong/session/Dnd.kt:AutomaticZenRule
 06|Prior interruption filter restored|app/src/main/kotlin/app/gakseong/session/Dnd.kt:currentInterruptionFilter
+06|Calls always ring|app/src/main/kotlin/app/gakseong/session/Dnd.kt:allowRepeatCallers
+06|A crash cannot strand DND on|app/src/main/kotlin/app/gakseong/session/FocusService.kt:recoverFromCrash
+06|DND cleared even if the app never reopens|app/src/main/kotlin/app/gakseong/session/Dnd.kt:DndOffWorker
+06|A mis-tap does not cost the session|app/src/main/kotlin/app/gakseong/session/Session.kt:RETURN_GRACE_MS
+06|The dialer never breaks a session|app/src/main/kotlin/app/gakseong/session/Session.kt:ALWAYS_ALLOWED
 06|Speed bump only while a session lives|app/src/main/kotlin/app/gakseong/session/SpeedBump.kt:SYSTEM_ALERT_WINDOW
 07|Guild shows nobody rather than inventing members|app/src/main/kotlin/app/gakseong/ui/screens/Guild.kt:Not connected
 07|Raid partners are labelled shadow pacers|app/src/main/kotlin/app/gakseong/ui/screens/Raid.kt:pacer

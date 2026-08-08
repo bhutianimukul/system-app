@@ -68,11 +68,6 @@ Report.kt|Your successful ones average 2:40pm.
 Report.kt|Your best three days all started with the phone-down quest before 10am.
 
 # ── phase 06: the focus service owns the session clock ────────────────────────
-Focus.kt|31:12
-Focus.kt|of 45:00
-Focus.kt|Forbidden for the next 28 minutes
-Focus.kt|31 minutes remain. Proceeding ends your session.
-Focus.kt|paused · 45 min
 Raid.kt|18:44
 Raid.kt|of 45:00 · both must hold
 RunRaid.kt|18:00 — 19:00

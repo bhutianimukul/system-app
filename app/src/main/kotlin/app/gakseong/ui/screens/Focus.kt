@@ -27,6 +27,16 @@ import app.gakseong.ui.Bg2
 import app.gakseong.ui.Body
 import app.gakseong.ui.Card
 import app.gakseong.ui.Cta
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import app.gakseong.session.FocusService
+import app.gakseong.session.Status
+import app.gakseong.session.status
+import app.gakseong.ui.LocalNav
+import app.gakseong.ui.LocalSystem
+import kotlinx.coroutines.delay
 import app.gakseong.ui.Eye
 import app.gakseong.ui.Filler
 import app.gakseong.ui.Gap
@@ -50,7 +60,41 @@ fun FocusScreen() {
     val m = LocalMetrics.current
     val t = LocalType.current
     val haptics = rememberHaptics()
+    val context = LocalContext.current
+    val nav = LocalNav.current
+    val sys = LocalSystem.current
     var bumped by remember { mutableStateOf(false) }
+
+    val session by FocusService.state.collectAsStateWithLifecycle()
+    // The length comes from whichever focus quest the day drew, not from a literal.
+    val minutes = sys.today.quests.firstOrNull { it.id.startsWith("focus-") }
+        ?.let { Regex("""(\d+) min""").find(it.title)?.groupValues?.get(1)?.toIntOrNull() }
+        ?: 45
+
+    // A one-second tick so the ring moves. Cheap, and only while this screen is on top.
+    var now by remember { mutableLongStateOf(System.currentTimeMillis()) }
+    LaunchedEffect(session) {
+        while (session != null) {
+            now = System.currentTimeMillis()
+            delay(1_000)
+        }
+    }
+
+    // Opening this screen with nothing running starts the session. §22 asks for DND access here, at the first
+    // session, never at onboarding: an app that asks to silence your phone before you have used it once is one
+    // most people decline.
+    LaunchedEffect(Unit) { if (session == null) FocusService.start(context, minutes) }
+
+    val live = session?.let { status(it, now) }
+    val target = minutes * 60_000L
+    val remaining = when (live) {
+        is Status.Running -> live.remainingMs
+        is Status.Grace -> live.remainingMs
+        is Status.Complete -> 0L
+        else -> target
+    }
+    val progress = ((target - remaining).toFloat() / target).coerceIn(0f, 1f)
+    val forbidden = sys.profile.watchedPackages
 
     // A session is bounded by its own length. Leaving is what ends it, so back cannot be a silent exit: it
     // raises the speed bump the screen already carries, and only Proceed actually gives the session up.
@@ -74,14 +118,20 @@ fun FocusScreen() {
             Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
                 Eye("Focus Active")
                 Filler()
-                RingTimer(progress = 0.689f, time = "31:12", of = "of 45:00")
+                RingTimer(progress = progress, time = clock(remaining), of = "of ${clock(target)}")
                 Gap(20.8)
-                Tag("Forbidden for the next 28 minutes")
+                Tag(
+                    when (live) {
+                        is Status.Grace -> "Return within ${live.graceLeftMs / 1000}s"
+                        Status.Broken -> "The session broke"
+                        is Status.Complete -> "Held"
+                        else -> "Forbidden for the next ${remaining / 60_000} minutes"
+                    },
+                )
                 Gap(9.6)
                 Row(horizontalArrangement = Arrangement.spacedBy(m.d(8))) {
-                    Pill("Instagram")
-                    Pill("YouTube")
-                    Pill("Chrome")
+                    if (forbidden.isEmpty()) Pill("Nothing chosen yet")
+                    else forbidden.take(3).forEach { Pill(it) }
                 }
 
                 Gap(12.8)
@@ -98,7 +148,7 @@ fun FocusScreen() {
                     Card(Modifier.weight(1f).fillMaxHeight()) {
                         Tag("⏸ Screen-off credit", t.tag.copy(color = p.hot))
                         Gap(2.2)
-                        Tag("paused · 45 min", t.tag.copy(color = p.faint))
+                        Tag("paused · ${minutes} min", t.tag.copy(color = p.faint))
                     }
                 }
 
@@ -125,15 +175,34 @@ fun FocusScreen() {
                     Gap(6.4)
                     Text("The System does not permit this", style = t.md)
                     Gap(3.2)
-                    Text("31 minutes remain. Proceeding ends your session.", style = t.body.copy(fontSize = m.s(12.2)))
+                    Text(
+                        "${remaining / 60_000} minutes remain. Proceeding ends your session.",
+                        style = t.body.copy(fontSize = m.s(12.2)),
+                    )
                     Gap(13.6)
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(m.d(6.4))) {
-                        Cta("Return", modifier = Modifier.weight(1f).clickable { bumped = false })
-                        Cta("Proceed · lose the session", ghost = true, modifier = Modifier.weight(1f))
+                        Cta("Return", modifier = Modifier.weight(1f), onClick = { bumped = false })
+                        Cta(
+                            "Proceed · lose the session",
+                            ghost = true,
+                            modifier = Modifier.weight(1f),
+                            // Only this gives it up. Back raises the bump; nothing else ends a session early.
+                            onClick = {
+                                FocusService.stop(context, broken = true)
+                                bumped = false
+                                nav("home")
+                            },
+                        )
                     }
                 }
                 Gap(17.6)
             }
         }
     }
+}
+
+/** `31:12`. Minutes and seconds, never hours: no session in this app is that long. */
+private fun clock(ms: Long): String {
+    val total = (ms / 1000).coerceAtLeast(0)
+    return "%02d:%02d".format(total / 60, total % 60)
 }
