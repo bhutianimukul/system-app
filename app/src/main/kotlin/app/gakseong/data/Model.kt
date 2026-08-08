@@ -19,6 +19,8 @@ data class SystemState(
     val hunter: HunterSnapshot = HunterSnapshot(),
     /** §Economy: private, only rises. Absent from the engine because it gates nothing. */
     val level: Int = 1,
+    /** Every aura ever credited. Level is derived from it, so the two can never drift apart. */
+    val auraLifetime: Long = 0L,
     val today: Today = Today(),
     val profile: Profile = Profile(),
     val settings: Settings = Settings(),

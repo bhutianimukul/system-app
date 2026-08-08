@@ -1,0 +1,200 @@
+package app.gakseong.quest
+
+import app.gakseong.data.Bonus
+import app.gakseong.data.HunterSnapshot
+import app.gakseong.data.SystemState
+import app.gakseong.data.Today
+import app.gakseong.sense.HealthReading
+import app.gakseong.sense.UsageReading
+import gakseong.engine.Balance
+import gakseong.engine.Provability
+import gakseong.engine.Rank
+import gakseong.engine.award
+import gakseong.engine.bandFor
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotEquals
+import org.junit.Assert.assertTrue
+import org.junit.Test
+
+class SettleTest {
+
+    private val everything = Readings(
+        usage = UsageReading(0L, emptyMap(), 12 * 60 * 60_000L, emptySet(), available = true),
+        health = HealthReading(20_000, 20_000.0, 600, setOf("com.strava"), available = true),
+        readerMinutes = 120,
+        focusMinutes = 120,
+        declared = true,
+        callSeconds = 3600,
+        locationCheckedIn = true,
+    )
+
+    private fun stateOn(date: String, quests: List<app.gakseong.data.QuestInstance>) = SystemState(
+        hunter = HunterSnapshot(rankOrdinal = 0),
+        today = Today(date = date, quests = quests),
+    )
+
+    // ── the safety property ──────────────────────────────────────────────────
+
+    @Test
+    fun `a perfect day cannot exceed the daily cap in rank credit`() {
+        // §3: the cap is a safety property, not balance. It bounds how much the app can reward in one day, and
+        // there are fifteen-year-olds in a fitness-adjacent app.
+        val quests = BANK.map { it.instance(everything) }
+        val after = settle(stateOn("2026-08-08", quests), everything, "2026-08-09")
+        val cap = bandFor(Rank(0)).cap
+
+        assertTrue("every quest cleared", quests.all { it.state == "DONE" })
+        assertTrue("rank credit ${after.history.first().rankCredit} exceeds cap $cap",
+            after.history.first().rankCredit <= cap)
+    }
+
+    @Test
+    fun `everything above the ceiling becomes overflow and buys no standing`() {
+        val quests = BANK.map { it.instance(everything) }
+        val after = settle(stateOn("2026-08-08", quests), everything, "2026-08-09")
+        val row = after.history.first()
+        assertTrue("a full bank should overflow at E-III", row.overflow > 0)
+        assertEquals(row.aura, row.rankCredit + row.overflow)
+    }
+
+    @Test
+    fun `a bonus raises the ceiling and nothing else`() {
+        val quests = BANK.map { it.instance(everything) }
+        val plain = settle(stateOn("2026-08-08", quests), everything, "2026-08-09").history.first()
+        val bonused = settle(
+            stateOn("2026-08-08", quests).copy(
+                today = Today("2026-08-08", quests, bonus = Bonus("x", "y", 450, 0L)),
+            ),
+            everything, "2026-08-09",
+        ).history.first()
+
+        assertEquals("the aura earned is the same", plain.aura, bonused.aura)
+        assertTrue("the ceiling moved", bonused.rankCredit > plain.rankCredit)
+    }
+
+    // ── provability, applied exactly once ────────────────────────────────────
+
+    @Test
+    fun `aura is awarded through the engine, never at the base rate`() {
+        val declared = BANK.first { it.verifier == Verifier.Declared }
+        val total = auraSoFar(listOf(declared.instance(everything)), everything)
+        assertEquals(award(declared.baseAura, Provability.DECLARED), total)
+        assertNotEquals(declared.baseAura, total)
+    }
+
+    @Test
+    fun `a declared day pays roughly a third of a sensor day`() {
+        // §Economy: 120–180 against 400–450. Equal pay would make self-reporting the rational way to farm.
+        val declared = award(450, Provability.DECLARED)
+        val sensor = award(450, Provability.SENSOR)
+        assertTrue("$declared should be near a third of $sensor", declared < sensor / 2)
+    }
+
+    // ── idempotence, which is what makes a 15-minute worker safe ─────────────
+
+    @Test
+    fun `settling the same day twice changes nothing the second time`() {
+        val quests = BANK.take(3).map { it.instance(everything) }
+        val once = settle(stateOn("2026-08-08", quests), everything, "2026-08-09")
+        val twice = settle(once, everything, "2026-08-09")
+        assertEquals(once, twice)
+    }
+
+    @Test
+    fun `a day already in history is not settled again`() {
+        val quests = BANK.take(3).map { it.instance(everything) }
+        val once = settle(stateOn("2026-08-08", quests), everything, "2026-08-09")
+        // Rewind to the same open day and settle again: history must not gain a duplicate row.
+        val replayed = settle(once.copy(today = Today(date = "2026-08-08", quests = quests)), everything, "2026-08-09")
+        assertEquals(1, replayed.history.count { it.date == "2026-08-08" })
+    }
+
+    @Test
+    fun `settling before the day is over does nothing`() {
+        val s = stateOn("2026-08-08", BANK.take(2).map { it.instance(everything) })
+        assertEquals(s, settle(s, everything, "2026-08-08"))
+    }
+
+    // ── the miss path ────────────────────────────────────────────────────────
+
+    @Test
+    fun `a day with nothing cleared falls below the threshold and breaks the streak`() {
+        val nothing = Readings(usage = UsageReading(0L, emptyMap(), 0L, emptySet(), available = true))
+        val quests = listOf(BANK.first { it.id == "screen-off-45" }.instance(nothing))
+        val before = stateOn("2026-08-08", quests).copy(hunter = HunterSnapshot(rankOrdinal = 0, streak = 9))
+        val after = settle(before, nothing, "2026-08-09")
+
+        assertEquals(0, after.hunter.streak)
+        assertEquals("BELOW_THRESHOLD", after.history.first().outcome)
+    }
+
+    @Test
+    fun `a shield absorbs the miss and carries no penalty`() {
+        val nothing = Readings(usage = UsageReading(0L, emptyMap(), 0L, emptySet(), available = true))
+        val quests = listOf(BANK.first { it.id == "screen-off-45" }.instance(nothing))
+        val before = stateOn("2026-08-08", quests).copy(hunter = HunterSnapshot(rankOrdinal = 0, streak = 7, shields = 1))
+        val after = settle(before, nothing, "2026-08-09")
+
+        assertEquals(0, after.hunter.shields)
+        assertEquals(null, after.history.first().penalty)
+    }
+
+    // ── level ────────────────────────────────────────────────────────────────
+
+    @Test
+    fun `level only rises`() {
+        var s = stateOn("2026-08-08", BANK.map { it.instance(everything) })
+        val start = s.level
+        repeat(5) { day ->
+            s = settle(s, everything, "2026-08-${9 + day}")
+            assertTrue("level fell on day $day", s.level >= start)
+            s = s.copy(today = Today(date = "2026-08-${9 + day}", quests = BANK.map { it.instance(everything) }))
+        }
+        assertTrue("level should have risen", s.level > start)
+    }
+
+    @Test
+    fun `level is derived from lifetime aura so the two cannot drift`() {
+        val after = settle(stateOn("2026-08-08", BANK.map { it.instance(everything) }), everything, "2026-08-09")
+        assertEquals(1 + (after.auraLifetime / AURA_PER_LEVEL).toInt(), after.level)
+    }
+
+    // ── drawing ──────────────────────────────────────────────────────────────
+
+    @Test
+    fun `the same date draws the same quests`() {
+        assertEquals(draw("2026-08-08", everything), draw("2026-08-08", everything))
+        assertNotEquals(draw("2026-08-08", everything), draw("2026-08-09", everything))
+    }
+
+    @Test
+    fun `a verifier whose reading is unavailable is never drawn`() {
+        // No Health Connect grant means the objective is not offered, which is not the same as failing it.
+        val noHealth = everything.copy(health = HealthReading.Unavailable)
+        val drawn = draw("2026-08-08", noHealth)
+        assertTrue(
+            "a health quest was drawn without a grant",
+            drawn.none { it.verifier is Verifier.Steps || it.verifier is Verifier.Distance || it.verifier is Verifier.Sleep },
+        )
+    }
+
+    @Test
+    fun `no sensor grant at all still leaves a day worth playing`() {
+        // §8: a user with no key and no grants still gets quests. If this ever returns nothing, the build is wrong.
+        val bare = Readings()
+        assertTrue("declared quests must survive with no sensors", draw("2026-08-08", bare).isNotEmpty())
+    }
+
+    @Test
+    fun `at most one wide quest a day`() {
+        (1..28).forEach { d ->
+            val drawn = draw("2026-08-%02d".format(d), everything)
+            assertTrue("day $d drew ${drawn.count { it.wide }} wide", drawn.count { it.wide } <= 1)
+        }
+    }
+
+    @Test
+    fun `the debit the engine takes is the debit the balance names`() {
+        assertEquals(200, Balance.AURA_DEBIT)
+    }
+}

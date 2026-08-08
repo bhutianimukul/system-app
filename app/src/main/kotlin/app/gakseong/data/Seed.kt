@@ -15,6 +15,8 @@ package app.gakseong.data
 val SEED = SystemState(
     hunter = HunterSnapshot(rankOrdinal = 4, daysHeldAtTier = 3, streak = 14, shields = 1, consecutiveMisses = 0),
     level = 34,
+    // 34 levels at AURA_PER_LEVEL, so the seed's Level and its lifetime aura agree.
+    auraLifetime = 33 * 500L,
     today = Today(
         date = "",
         auraEarned = 640,
