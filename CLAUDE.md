@@ -489,9 +489,29 @@ clean day, and a Health Connect outage must never read as "you walked nothing".
 device whose screen never sleeps emits no `SCREEN_NON_INTERACTIVE`, so an unclosed session otherwise runs across
 every idle gap. This produced 231 hours in a day on the emulator while nineteen unit tests were passing.
 
-**What still does not exist:** the Apps screen preselection from real usage, `WorkManager`, Firebase, the foreground
-service for focus sessions, `AutomaticZenRule`, the quest bank, and the AI gate. The widget state is still a
-placeholder data class, and `SEED` carries five hand-written quests standing in for the phase-05 bank.
+### Phase 05, the loop: the engine is connected
+
+`quest/Verifier.kt` is the closed set, `quest/Bank.kt` the static templates, `quest/Settle.kt` the pipeline into
+`settleDay`, `quest/Tick.kt` one pure idempotent pass, `work/SettleWorker.kt` the fifteen-minute job. Widgets
+read `Repo.state`.
+
+- **Provability lives on the verifier, never on the template.** A bank entry cannot hand a declared quest a
+  sensor rate, so §6 is enforced by the type rather than by review.
+- **`Progress` carries both the label a card shows and the value that clears the quest.** Computed once, so what
+  the user reads cannot disagree with what settled.
+- **`tick` is idempotent by date.** That is what makes a fifteen-minute worker safe to run as often as it likes.
+- **The draw is seeded by the date.** A widget refresh, an app open and a worker run produce the same day.
+  Rerolling by pulling to refresh is not a feature.
+- **Two balance rules the first real device run exposed:** at most `MAX_DECLARED_PER_DAY` self-reported quests,
+  as a fixed share rather than a preference order, and one quest per kind of verifier. Drawing both a 45-minute
+  and a 90-minute screen-off block pays 850 aura for one unbroken block, because clearing the longer one clears
+  the shorter as a side effect.
+- **`Verifier.Declared` is one object shared by six unrelated activities**, so it is deduped by template id.
+  Deduping it by class collapses the entire declared bank into a single entry.
+
+**What still does not exist:** the Apps screen preselection from real usage, the yes/no answer UI for a declared
+quest at expiry, bonus spawning, Firebase, the foreground service for focus sessions, `AutomaticZenRule`,
+containment, and the AI gate.
 
 **The chart kit is in `ui/Charts.kt`:** `AuraByDay`, `HoursHeatmap`, `DayCalendar`, `Legend`. `assess` needs it
 too, so use it rather than drawing new bars.
