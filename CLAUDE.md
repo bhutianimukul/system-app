@@ -509,9 +509,31 @@ read `Repo.state`.
 - **`Verifier.Declared` is one object shared by six unrelated activities**, so it is deduped by template id.
   Deduping it by class collapses the entire declared bank into a single entry.
 
+### Phase 06, sessions: focus and DND done
+
+`session/Session.kt` is pure (the clock, the grace window, the break rule), `session/FocusService.kt` the
+foreground service, `session/Dnd.kt` the `AutomaticZenRule`.
+
+**Two DND bugs, both found on a device and both the same failure: a phone left silent.**
+
+- **Never gate `disableDnd` on remembered state.** A `dndOn` flag in a companion object resets when the process
+  dies, so after a crash the app forgot it had silenced the phone. `disableDnd` is safe to call when DND was
+  never on, so there is nothing worth remembering. `App.onCreate` also clears a stranded rule whenever a fresh
+  process finds no session running.
+- **`setAutomaticZenRuleState` is only honoured for a `Condition` whose id matches the rule's own
+  `conditionId`.** This app's conditionId carries the session end time, so a generic "off" condition was
+  silently ignored. The rule is removed instead, which is also the honest end state.
+- A `WorkManager` one-shot at the session's end covers the case where the app is never reopened.
+
+Verify with `adb shell settings get global zen_mode` around a start, a force-stop and a reopen. Asserting this
+in a unit test is not possible and asserting it in prose is not verification.
+
+**A call never breaks a session and never pauses its clock.** The Activity detects one through `AudioManager`'s
+mode, which needs no permission, rather than `TelephonyManager`'s call state, which needs `READ_PHONE_STATE`.
+
 **What still does not exist:** the Apps screen preselection from real usage, the yes/no answer UI for a declared
-quest at expiry, bonus spawning, Firebase, the foreground service for focus sessions, `AutomaticZenRule`,
-containment, and the AI gate.
+quest at expiry, bonus spawning, the speed bump overlay outside the app, containment, Firebase, and the AI
+gate.
 
 **The chart kit is in `ui/Charts.kt`:** `AuraByDay`, `HoursHeatmap`, `DayCalendar`, `Legend`. `assess` needs it
 too, so use it rather than drawing new bars.
