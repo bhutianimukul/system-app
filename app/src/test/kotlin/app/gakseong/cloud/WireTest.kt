@@ -148,3 +148,46 @@ class ReferralTest {
         assertEquals(1, REWARDED_PER_WEEK)
     }
 }
+
+/** Attribution, and the shapes Play actually hands over. */
+class InstallReferrerTest {
+
+    @Test
+    fun `a real play referrer string yields the code`() {
+        // What Play returns is a query string, not a URL.
+        assertEquals("7F2K9Q", codeFrom("utm_source=google-play&utm_medium=referral&gs=7F2K9Q"))
+        assertEquals("7F2K9Q", codeFrom("gs=7F2K9Q"))
+    }
+
+    @Test
+    fun `an app link carries the same code by a different route`() {
+        // If the invitee already has the app, the App Link delivers it and Play never sees it.
+        assertEquals("7F2K9Q", codeFrom("https://gakseong.app/s/7F2K9Q"))
+        assertEquals("7F2K9Q", codeFrom("gakseong.app/s/7F2K9Q?utm_source=whatsapp"))
+    }
+
+    @Test
+    fun `an organic install is not an error, it is nobody to credit`() {
+        listOf(
+            null, "",
+            "utm_source=google-play&utm_medium=organic",
+            "utm_source=(not%20set)&utm_medium=(not%20set)",
+        ).forEach { assertNull("$it should yield no code", codeFrom(it)) }
+    }
+
+    @Test
+    fun `a malformed code is not accepted`() {
+        // Too short to be one of ours, or too long to be anything but someone probing.
+        assertNull(codeFrom("gs=ab"))
+        assertNull(codeFrom("gs=" + "A".repeat(64)))
+        assertNull(codeFrom("gs=7F2K9Q!!--drop"))
+    }
+
+    @Test
+    fun `a code is never a name or an address`() {
+        // §Referral adds no email and no phone: it buys almost no fraud resistance and costs the whole
+        // no-account posture. Anything that looks like either is not a code.
+        assertNull(codeFrom("gs=mukul@example.com"))
+        assertNull(codeFrom("gs=+919876543210"))
+    }
+}

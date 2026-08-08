@@ -70,6 +70,22 @@
             </intent-filter>
 
             <!--
+              §Referral: App Links plus Install Referrer, because a plain deep link cannot survive the Play
+              round-trip and Firebase Dynamic Links is shut down. This half handles the invitee who already has
+              the app, where Play never sees the referrer at all.
+
+              autoVerify needs assetlinks.json at https://gakseong.app/.well-known/assetlinks.json carrying this
+              applicationId and the release SHA-256. Until that file is up, the link opens a chooser rather than
+              the app, which is a degraded invite rather than a broken one.
+            -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="https" android:host="gakseong.app" android:pathPrefix="/s/" />
+            </intent-filter>
+
+            <!--
               Health Connect requires a rationale destination, and refuses the permission flow without one. Both
               actions are declared because the name changed at API 34 and the old one is still used below it.
             -->

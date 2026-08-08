@@ -67,6 +67,9 @@ between them is where this kind of work rots.
 | 07 | A guild roster only ever gains you | yes | no |
 | 07 | Guilds are founded and read for real | yes | no |
 | 07 | Feed posts are an allowlist, not free text | yes | no |
+| 07 | Play Install Referrer read once | yes | no |
+| 07 | App Links carry the code too | yes | yes |
+| 07 | Attribution is attempted once ever | yes | yes |
 | 07 | Anonymous auth, no account | yes | no |
 | 07 | Referral pairing is create-only | yes | no |
 | 07 | Analytics refuses the private track | yes | no |

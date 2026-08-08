@@ -6,8 +6,13 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import app.gakseong.cloud.codeFrom
+import app.gakseong.cloud.pair
 import app.gakseong.data.Repo
 import app.gakseong.session.FocusService
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import app.gakseong.ui.GakseongNav
 import app.gakseong.ui.theme.GakseongTheme
 import app.gakseong.ui.theme.HunterClass
@@ -26,6 +31,21 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         // Art bleeds under the status bar exactly as the design page shows it, so the app draws edge to edge.
         enableEdgeToEdge()
+
+        // §Referral: an App Link carries the code directly when the invitee already has the app, so Play never
+        // sees it. Same code, different route, and the pairing rule allows create only either way.
+        intent?.data?.toString()?.let { link ->
+            codeFrom(link)?.let { code ->
+                CoroutineScope(Dispatchers.IO).launch {
+                    val uid = Repo.state.value.uid
+                    if (uid.isNotBlank() && Repo.state.value.referredBy.isBlank()) {
+                        if (pair(this@MainActivity, code, uid, Repo.today())) {
+                            Repo.update { it.copy(referredBy = code, attributionAttempted = true) }
+                        }
+                    }
+                }
+            }
+        }
 
         val start = intent?.getStringExtra("screen")
             ?: if (Repo.state.value.onboarded) "home" else "welcome"

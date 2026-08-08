@@ -68,6 +68,9 @@
 07|A guild roster only ever gains you|firestore.rules:resource.data.members.concat
 07|Guilds are founded and read for real|app/src/main/kotlin/app/gakseong/cloud/Guild.kt:createGuild
 07|Feed posts are an allowlist, not free text|app/src/main/kotlin/app/gakseong/cloud/Guild.kt:PostKind
+07|Play Install Referrer read once|app/src/main/kotlin/app/gakseong/cloud/Install.kt:readReferrer
+07|App Links carry the code too|app/src/main/AndroidManifest.xml:gakseong.app
+07|Attribution is attempted once ever|app/src/main/kotlin/app/gakseong/cloud/Install.kt:attribute
 07|Anonymous auth, no account|app/src/main/kotlin/app/gakseong/cloud/Firebase.kt:signInAnonymously
 07|Referral pairing is create-only|firestore.rules:allow update, delete: if false
 07|Analytics refuses the private track|app/src/main/kotlin/app/gakseong/cloud/Wire.kt:PRIVATE_TRACK_EXEMPT

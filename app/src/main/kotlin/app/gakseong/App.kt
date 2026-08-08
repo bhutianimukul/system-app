@@ -4,6 +4,7 @@ import android.app.Application
 import app.gakseong.data.Repo
 import app.gakseong.quest.tick
 import app.gakseong.cloud.Event
+import app.gakseong.cloud.attribute
 import app.gakseong.cloud.installAppCheck
 import app.gakseong.cloud.log
 import app.gakseong.cloud.signIn
@@ -34,6 +35,14 @@ class App : Application() {
             // ladder is local, and the cloud only carries guild identity.
             val uid = signIn(this@App)
             if (uid != null) Repo.update { it.copy(uid = uid) }
+
+            // §Referral: Play hands over the referrer once, on first launch. Attempted after sign-in because
+            // the pairing is keyed by this install's own UID, and once ever because the rule allows create only.
+            val state = Repo.state.value
+            if (uid != null && !state.attributionAttempted) {
+                val code = attribute(this@App, uid, Repo.today(), state.referredBy.isNotBlank())
+                Repo.update { it.copy(attributionAttempted = true, referredBy = code ?: it.referredBy) }
+            }
             log(this@App, Event.APP_OPENED)
 
             // Gathered before the update, because the block DataStore hands back must not suspend: it can be

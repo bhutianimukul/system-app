@@ -1,0 +1,14 @@
+[
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "app.gakeseong",
+      "sha256_cert_fingerprints": [
+        "63:5A:BF:4C:59:AF:F6:39:9B:AD:D3:30:42:B4:33:79:21:6A:E9:61:56:00:5F:45:AF:B4:CE:8A:0E:2C:16:09"
+      ]
+    }
+  }
+]

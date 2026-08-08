@@ -33,6 +33,15 @@ data class SystemState(
      * Not a name, not an address, and it rotates on reinstall, which the three-day gate exists to survive.
      */
     val uid: String = "",
+    /**
+     * The inviter's opaque code, once this install has been attributed. Empty for an organic install.
+     *
+     * §Referral: one credit per invitee UID, ever. The create-only security rule is the real enforcement; this
+     * stops the app asking Play for a referrer it has already used.
+     */
+    val referredBy: String = "",
+    /** Whether attribution has been attempted at all. An organic install has tried and found nobody. */
+    val attributionAttempted: Boolean = false,
 )
 
 /** The engine's [HunterState] as five integers. [Rank] serializes as its ordinal, so its `require` still guards. */
