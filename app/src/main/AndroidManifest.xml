@@ -98,6 +98,23 @@
                 android:value="A bounded focus session the user started, showing its remaining time" />
         </service>
 
+        <!--
+          Containment. Off by default, earned by repeated failure, and granted in the system's own accessibility
+          screen. §Verifiers: disclosed at onboarding, requested at the trigger, never on day one.
+        -->
+        <service
+            android:name=".session.ContainmentService"
+            android:exported="false"
+            android:label="Containment"
+            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
+            <intent-filter>
+                <action android:name="android.accessibilityservice.AccessibilityService" />
+            </intent-filter>
+            <meta-data
+                android:name="android.accessibilityservice"
+                android:resource="@xml/containment_service" />
+        </service>
+
         <receiver
             android:name=".widget.DailyQuestReceiver"
             android:exported="false"

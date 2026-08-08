@@ -1,4 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="gak_widget_description">Your quests, your aura, and whether the threshold is behind you.</string>
+    <!--
+      Shown in the accessibility settings screen, which is where somebody decides whether to trust this. It
+      says what the service does and what it does not, because the system dialog above it will only say the app
+      "can view your screen".
+    -->
+    <string name="containment_description">Containment. The System closes an app you asked it to keep you out of, after you have missed a week of thresholds. It reads which app is in front and nothing else: no text, no fields, no screen contents. Turn it off here at any time.</string>
 </resources>

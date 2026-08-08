@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  The narrowest configuration that can answer "which app just came to the front".
+
+  No canRetrieveWindowContent, so the service cannot read text, fields or anything on screen. An accessibility
+  service is the broadest permission Android has, and this one exists for a single yes/no, so it asks for the
+  single capability that answers it and nothing else. §Verifiers: opt-in, earned by repeated failure, disclosed
+  at onboarding and requested at the trigger.
+-->
+<accessibility-service xmlns:android="http://schemas.android.com/apk/res/android"
+    android:accessibilityEventTypes="typeWindowStateChanged"
+    android:accessibilityFeedbackType="feedbackGeneric"
+    android:notificationTimeout="100"
+    android:description="@string/containment_description" />

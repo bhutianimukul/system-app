@@ -3,6 +3,7 @@ package app.gakseong.ui
 import app.gakseong.ui.screens.LADDER
 import gakseong.engine.Balance
 import gakseong.engine.Penalty
+import app.gakseong.session.containmentEarned
 import gakseong.engine.penaltyFor
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
@@ -45,6 +46,37 @@ class BreakLadderTest {
     fun `only one penalty is ever live`() {
         (0..9).forEach { misses ->
             assertEquals("at $misses misses", if (penaltyFor(misses) == null) 0 else 1, LADDER.count { it.first == misses })
+        }
+    }
+}
+
+/**
+ * Containment is the last thing the sequence does, and only the last thing.
+ *
+ * §Punishment: streak, then aura, then warning, then demotion and containment, spread across a week. Real
+ * blocking arriving before that would make it the app's first move rather than its last.
+ */
+class ContainmentEarnedTest {
+
+    @Test
+    fun `containment is not earned before the end of the sequence`() {
+        (0..6).forEach {
+            assertEquals("day $it must not authorise containment", false, containmentEarned(it))
+        }
+    }
+
+    @Test
+    fun `containment is earned on the day the demotion lands`() {
+        assertEquals(true, containmentEarned(7))
+        assertEquals(Penalty.DEMOTION, penaltyFor(7))
+    }
+
+    @Test
+    fun `the sequence restarts, so containment is authorised once per run and not daily`() {
+        // settleDay resets consecutiveMisses on demotion, so day 8 of a run cannot exist.
+        (8..14).forEach {
+            assertEquals("misses cannot legitimately reach $it", null, penaltyFor(it))
+            assertEquals(false, containmentEarned(it))
         }
     }
 }

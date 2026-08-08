@@ -55,6 +55,9 @@
 06|The speed bump always shows the way out|app/src/main/kotlin/app/gakseong/session/SpeedBump.kt:lose the session
 06|The night gate is measured over its own window|app/src/main/kotlin/app/gakseong/session/NightGate.kt:gateWindow
 06|A gate is judged once, after it closes|app/src/main/kotlin/app/gakseong/quest/Verifier.kt:NightGate
+06|Containment is off by default|app/src/main/res/xml/containment_service.xml:typeWindowStateChanged
+06|Containment is earned, never given|app/src/main/kotlin/app/gakseong/session/Containment.kt:containmentEarned
+06|Containment reads no screen contents|app/src/main/kotlin/app/gakseong/session/Containment.kt:ContainmentService
 07|Guild shows nobody rather than inventing members|app/src/main/kotlin/app/gakseong/ui/screens/Guild.kt:Not connected
 07|Raid partners are labelled shadow pacers|app/src/main/kotlin/app/gakseong/ui/screens/Raid.kt:pacer
 07|The ladder is real, padded with labelled pacers|app/src/main/kotlin/app/gakseong/cloud/Ladder.kt:fun pacers

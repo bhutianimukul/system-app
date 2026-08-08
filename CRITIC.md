@@ -54,6 +54,9 @@ between them is where this kind of work rots.
 | 06 | The speed bump always shows the way out | yes | yes |
 | 06 | The night gate is measured over its own window | yes | yes |
 | 06 | A gate is judged once, after it closes | yes | yes |
+| 06 | Containment is off by default | yes | no |
+| 06 | Containment is earned, never given | yes | no |
+| 06 | Containment reads no screen contents | yes | no |
 | 07 | Guild shows nobody rather than inventing members | yes | no |
 | 07 | Raid partners are labelled shadow pacers | yes | yes |
 | 07 | The ladder is real, padded with labelled pacers | yes | no |
