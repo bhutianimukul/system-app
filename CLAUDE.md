@@ -431,7 +431,7 @@ Three traps this cost:
 - **aapt2 in build-tools 35 rejects `&apos;` in a string resource** with "Invalid unicode escape sequence", and
   blames the merged `values.xml` rather than yours. Write the apostrophe literally.
 
-### Phase 03, the state spine — done
+### Phase 03, the state spine: done
 
 Persistence, one observable state, navigation, and every screen reading state instead of literals.
 
