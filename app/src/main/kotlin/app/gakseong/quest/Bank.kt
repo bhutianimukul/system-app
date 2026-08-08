@@ -42,9 +42,11 @@ val BANK: List<QuestTemplate> = listOf(
     QuestTemplate("steps-2000", "⚡", "2,000\nsteps", 300, Verifier.Steps(2000)),
     QuestTemplate("walk-1500", "◈", "Walk or run\n1.5 km", 400, Verifier.Distance(1500)),
     QuestTemplate("sleep-390", "☾", "Sleep 6h 30m", 450, Verifier.Sleep(390), wide = true),
+    // The window is the user's setting; 330 minutes is what the default 00:30 to 06:00 comes to. §Onboarding
+    // stages raising the band, and the gate's own window is adjustable thirty minutes either way.
     QuestTemplate(
         "night-gate", "☾", "Night gate · 00:30 to 06:00", 450,
-        Verifier.ScreenOffBlock(330), wide = true,
+        Verifier.NightGate(330), wide = true,
     ),
 
     // ── app-initiated ────────────────────────────────────────────────────────

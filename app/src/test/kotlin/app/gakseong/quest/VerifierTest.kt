@@ -147,3 +147,47 @@ class VerifierTest {
         assertEquals(41L, p.current)
     }
 }
+
+/** The night gate, which is checked once after its window closes and never during. */
+class NightGateVerifierTest {
+
+    private val granted = Readings(
+        usage = UsageReading(0L, emptyMap(), 0L, emptySet(), available = true),
+    )
+
+    @Test
+    fun `an open window is pending, not failed`() {
+        // §Verifiers: checked once after it closes. A query at 02:00 can only say "so far", and a gate that
+        // reported halfway through would teach the user that leaving it early is free.
+        val p = Verifier.NightGate(330).evaluate(granted.copy(nightGateMinutes = null))
+        assertFalse(p.cleared)
+        assertEquals("Pending · tonight", p.label)
+    }
+
+    @Test
+    fun `a held gate clears`() {
+        assertTrue(Verifier.NightGate(330).evaluate(granted.copy(nightGateMinutes = 330)).cleared)
+        assertTrue(Verifier.NightGate(330).evaluate(granted.copy(nightGateMinutes = 400)).cleared)
+    }
+
+    @Test
+    fun `a broken gate says when it broke rather than just failing`() {
+        // Every penalty screen shows the road back, and a gate is no different: knowing it went at 04:10 is
+        // what makes tomorrow's attempt different from tonight's.
+        val p = Verifier.NightGate(330).evaluate(granted.copy(nightGateMinutes = 250))
+        assertFalse(p.cleared)
+        assertEquals("Broken after 4h 10m", p.label)
+    }
+
+    @Test
+    fun `no usage grant is unavailable rather than broken`() {
+        val p = Verifier.NightGate(330).evaluate(Readings(nightGateMinutes = 100))
+        assertFalse(p.available)
+        assertFalse(p.cleared)
+    }
+
+    @Test
+    fun `the gate is sensor proven, so it can reach the top`() {
+        assertEquals(Provability.SENSOR, Verifier.NightGate(330).provability)
+    }
+}

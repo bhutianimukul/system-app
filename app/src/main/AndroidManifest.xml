@@ -41,6 +41,13 @@
     -->
     <uses-permission android:name="android.permission.ACCESS_NOTIFICATION_POLICY" />
 
+    <!--
+      The speed bump. A single user toggle granted through Settings, and the app only draws it while a focus
+      session's foreground service is alive. §Verifiers: this is a bump, not containment; real blocking needs
+      an AccessibilityService and stays opt-in, earned by repeated failure.
+    -->
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+
     <!-- Android 13 and below reach Health Connect as an installed app rather than a system module. -->
     <queries>
         <package android:name="com.google.android.apps.healthdata" />

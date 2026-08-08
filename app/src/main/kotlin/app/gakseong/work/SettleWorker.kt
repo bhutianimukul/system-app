@@ -19,6 +19,8 @@ import app.gakseong.sense.readerCarveOut
 import app.gakseong.sense.readHealth
 import app.gakseong.sense.readUsage
 import app.gakseong.session.FocusService
+import app.gakseong.session.gateClosed
+import app.gakseong.session.gateWindow
 import app.gakseong.session.heldMinutes
 import java.time.Instant
 import java.time.LocalDate
@@ -74,10 +76,25 @@ suspend fun gather(context: Context): Readings {
     val startOfDay = LocalDate.now(zone).atStartOfDay(zone).toInstant()
     val now = Instant.now()
 
+    val settings = Repo.state.value.settings
+    val nowMinutes = java.time.LocalTime.now(zone).let { it.hour * 60 + it.minute }
+
+    // The gate is read over its own window and only once that window has closed. A query at 02:00 can say
+    // nothing except "so far", and a gate that reports halfway through teaches the user that leaving it early
+    // costs nothing.
+    val gate = gateWindow(startOfDay.toEpochMilli(), settings.nightGateStart, settings.nightGateEnd)
+        ?.takeIf { gateClosed(nowMinutes, settings.nightGateStart, settings.nightGateEnd) }
+        ?.let { window ->
+            readUsage(context, window.first, window.last)
+                .takeIf { it.available }
+                ?.let { (it.longestScreenOffMs / 60_000).toInt() }
+        }
+
     return Readings(
         usage = readUsage(context, startOfDay.toEpochMilli(), now.toEpochMilli(), setOf(readerCarveOut(context))),
         health = readHealth(context, startOfDay, now),
         focusMinutes = FocusService.state.value?.let { heldMinutes(it, now.toEpochMilli()) } ?: 0,
+        nightGateMinutes = gate,
     )
 }
 

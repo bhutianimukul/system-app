@@ -123,3 +123,16 @@ class SessionTest {
         assertEquals(0L, (s as Status.Running).heldMs)
     }
 }
+
+/**
+ * The speed bump's conditions are checked on a device, not here.
+ *
+ * `canBump` reads Settings.canDrawOverlays, which needs a real Context, and the condition that actually matters
+ * is that a foreground service is alive. An assert over a hand-written list of the rule's own words would pass
+ * whatever the code did, which is the kind of check that is worse than none.
+ *
+ * Verify with:
+ *   adb shell appops set app.gakeseong SYSTEM_ALERT_WINDOW allow
+ *   start a session, leave the app, and watch for the overlay
+ *   adb shell dumpsys window | grep -i gakeseong
+ */

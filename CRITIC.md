@@ -50,7 +50,10 @@ between them is where this kind of work rots.
 | 06 | DND cleared even if the app never reopens | yes | no |
 | 06 | A mis-tap does not cost the session | yes | no |
 | 06 | The dialer never breaks a session | yes | no |
-| 06 | Speed bump only while a session lives | no | no |
+| 06 | Speed bump only while a session lives | yes | no |
+| 06 | The speed bump always shows the way out | yes | yes |
+| 06 | The night gate is measured over its own window | yes | yes |
+| 06 | A gate is judged once, after it closes | yes | yes |
 | 07 | Guild shows nobody rather than inventing members | yes | no |
 | 07 | Raid partners are labelled shadow pacers | yes | yes |
 | 07 | The ladder is real, padded with labelled pacers | yes | no |

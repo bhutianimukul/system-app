@@ -27,6 +27,7 @@ class SettleTest {
         declared = BANK.map { it.id }.associateWith { true },
         callSeconds = 3600,
         locationCheckedIn = true,
+        nightGateMinutes = 8 * 60,
     )
 
     private fun stateOn(date: String, quests: List<app.gakseong.data.QuestInstance>) = SystemState(

@@ -19,6 +19,15 @@ data class Readings(
     /** Minutes held in a focus session. Owned by the phase-06 service, never by the template. */
     val focusMinutes: Int = 0,
     /**
+     * The longest unbroken screen-off block **inside the night gate window**, and whether that window has
+     * closed yet.
+     *
+     * Separate from [usage] because the gate is measured over its own window, which crosses midnight and so is
+     * not the day the rest of the readings cover. Null means the window is still open: §Verifiers checks the
+     * gate once after it closes, because a query at 02:00 can only ever say "so far".
+     */
+    val nightGateMinutes: Int? = null,
+    /**
      * The yes/no answers, keyed by quest id. A missing key means never answered, which is not a yes.
      *
      * Keyed rather than a single flag because a day can draw two declared quests, and one answer clearing both
@@ -182,6 +191,31 @@ sealed class Verifier {
                     true -> "Confirmed"
                     false -> "Not done"
                     null -> "Answer when it expires"
+                },
+            )
+        }
+    }
+
+    /**
+     * The night gate. A [ScreenOffBlock] over its own window rather than over the day.
+     *
+     * Pending while the window is open, which is deliberate. A gate that reported halfway through would teach
+     * the user that leaving it early is free, and the whole point is that it is checked once, after.
+     */
+    data class NightGate(val minMinutes: Int) : Verifier() {
+        override val provability = Provability.SENSOR
+        override fun evaluate(r: Readings): Progress {
+            val held = r.nightGateMinutes
+            return Progress(
+                cleared = held != null && held >= minMinutes,
+                current = (held ?: 0).toLong(),
+                target = minMinutes.toLong(),
+                available = r.usage.available,
+                label = when {
+                    !r.usage.available -> "Usage access needed"
+                    held == null -> "Pending · tonight"
+                    held >= minMinutes -> "Held"
+                    else -> "Broken after ${held / 60}h ${held % 60}m"
                 },
             )
         }
