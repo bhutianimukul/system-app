@@ -89,6 +89,8 @@ dependencies {
     // round-trip and Firebase Dynamic Links is shut down.
     implementation("com.android.installreferrer:installreferrer:2.2")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.9.0")
+    // §AI gate: the key lives in the Android keystore. Never logged, never in analytics.
+    implementation("androidx.security:security-crypto:1.1.0-alpha06")
 
     debugImplementation("androidx.compose.ui:ui-tooling")
 

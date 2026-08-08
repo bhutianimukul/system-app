@@ -34,6 +34,18 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import app.gakseong.R
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.window.Dialog
+import app.gakseong.ai.clearKey
+import app.gakseong.ai.hasKey
+import app.gakseong.ai.looksLikeKey
+import app.gakseong.ai.writeKey
+import app.gakseong.ui.theme.Warn
 import app.gakseong.ui.*
 import app.gakseong.ui.theme.Bad
 import app.gakseong.ui.theme.LocalMetrics
@@ -51,6 +63,12 @@ fun AiGateScreen() {
     val p = LocalPalette.current
     val m = LocalMetrics.current
     val t = LocalType.current
+    val context = LocalContext.current
+    val nav = LocalNav.current
+
+    var awake by remember { mutableStateOf(hasKey(context)) }
+    var pasting by remember { mutableStateOf(false) }
+
     Screen {
         Bg(); Bg2()
         Aura(0.80f, 0.20f, top = 0.08f, left = 0.10f, alpha = 0.34f)
@@ -59,7 +77,9 @@ fun AiGateScreen() {
         Grain(); TopFade()
         Body {
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                Eye("Dormant", color = p.soft); Filler(); Tag("optional, always")
+                Eye(if (awake) "Awake" else "Dormant", color = if (awake) p.hot else p.soft)
+                Filler()
+                Tag("optional, always")
             }
 
             Gap(14.4)
@@ -76,25 +96,38 @@ fun AiGateScreen() {
                 Tag("blurred sample · the System has the data, not the voice", t.key.copy(color = p.faint))
                 Gap(9.6)
                 Row(horizontalArrangement = Arrangement.spacedBy(m.d(5.4))) {
-                    Pill("Awaken it", on = true); Pill("Not now")
+                    Pill(
+                        if (awake) "Awake" else "Awaken it",
+                        on = true,
+                        modifier = Modifier.clickable { if (!awake) pasting = true },
+                    )
+                    // §AI gate: `Not now` must be a real answer. It costs nothing and does not re-ask.
+                    Pill("Not now", modifier = Modifier.clickable { nav("home") })
                 }
             }
 
             Gap(17.6)
-            Text("THE SYSTEM READS.\nIT DOES NOT YET SPEAK.", style = t.display(24))
+            Text(
+                if (awake) "THE SYSTEM READS.\nAND NOW IT SPEAKS." else "THE SYSTEM READS.\nIT DOES NOT YET SPEAK.",
+                style = t.display(24),
+            )
             Gap(9.6)
-            Tag("Paste a free Gemini key and five things wake up")
+            Tag(
+                if (awake) "Five things woke up · remove the key any time in Settings"
+                else "Paste a free Gemini key and five things wake up",
+            )
 
             Gap(16)
             Column(
                 Modifier.weight(1f).verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(m.d(6.4)),
             ) {
-                Locked("Generated quests", "The static bank still runs without a key")
-                Locked("The weekly post-mortem", "Numbers work; the verdict is the locked part")
-                Locked("Chat", "Speak to the System, ten messages a day")
-                Locked("Reader passage selection", "Chosen against your own record")
-                Locked("Title generation", "Names for what you have held")
+                // The five §AI gate names. The daily quest is not among them and never locks.
+                Locked("Generated quests", "The static bank still runs without a key", awake)
+                Locked("The weekly post-mortem", "Numbers work; the verdict is the locked part", awake)
+                Locked("Chat", "Speak to the System, ten messages a day", awake)
+                Locked("Reader passage selection", "Chosen against your own record", awake)
+                Locked("Title generation", "Names for what you have held", awake)
                 Gap(4)
                 SystemWindow {
                     Tag("Three steps, no card", t.tag.copy(color = p.hot))
@@ -115,10 +148,110 @@ fun AiGateScreen() {
                 }
                 Gap(4)
             }
-            Cta("Awaken the System")
+            Cta(
+                if (awake) "Forget the key" else "Awaken the System",
+                bad = awake,
+                onClick = {
+                    if (awake) { clearKey(context); awake = false } else pasting = true
+                },
+            )
             Gap(7.2)
-            Cta("Not now", ghost = true)
+            // Dismissing costs nothing and does not re-ask on a schedule.
+            Cta("Not now", ghost = true, onClick = { nav("home") })
             Gap(17.6)
+        }
+
+        if (pasting) {
+            PasteKey(
+                onPaste = { key ->
+                    writeKey(context, key)
+                    awake = true
+                    pasting = false
+                },
+                onDismiss = { pasting = false },
+            )
+        }
+    }
+}
+
+/**
+ * Three steps and no card. §AI gate: pasting a key reads as unlocking the real version, where a form labelled
+ * "configure API access" reads as homework.
+ *
+ * The free-tier warning is above the field rather than below it, because it is something to know before you
+ * paste rather than after.
+ */
+@Composable
+private fun PasteKey(onPaste: (String) -> Unit, onDismiss: () -> Unit) {
+    val p = LocalPalette.current
+    val m = LocalMetrics.current
+    val t = LocalType.current
+    var typed by remember { mutableStateOf("") }
+    val valid = looksLikeKey(typed)
+
+    Dialog(onDismissRequest = onDismiss) {
+        SystemWindow(Modifier.fillMaxWidth()) {
+            Tag("Awaken the System", t.tag.copy(color = p.hot))
+            Gap(6.4)
+            Text("The System reads.\nIt does not yet speak.", style = t.md.copy(fontSize = m.s(17.6)))
+            Gap(8)
+            Text(
+                "aistudio.google.com → create a key → paste it. Free, and it needs no billing.",
+                style = t.body.copy(fontSize = m.s(12.2)),
+            )
+            Gap(8)
+            Card(Modifier.fillMaxWidth(), accent = Warn, padding = 11.2) {
+                Tag("Before you paste", t.tag.copy(color = Warn))
+                Gap(3.2)
+                Text(
+                    "Google may use free-tier traffic to improve their models. A paid key is excluded. The " +
+                        "private track never touches AI on either tier.",
+                    style = t.body.copy(fontSize = m.s(11.8)),
+                )
+            }
+            Gap(9.6)
+            BasicTextField(
+                value = typed,
+                onValueChange = { typed = it },
+                singleLine = true,
+                textStyle = t.monoSmall.copy(color = p.ink, fontSize = m.s(12.8)),
+                cursorBrush = SolidColor(p.hot),
+                decorationBox = { field ->
+                    Box(
+                        Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(m.d(10)))
+                            .background(Color.White.pct(0.05f))
+                            .border(1.dp, if (valid) p.hot else p.line2, RoundedCornerShape(m.d(10)))
+                            .padding(horizontal = m.d(11.2), vertical = m.d(11.2)),
+                    ) {
+                        if (typed.isEmpty()) Tag("AIza…", t.key.copy(color = p.faint))
+                        field()
+                    }
+                },
+                modifier = Modifier.fillMaxWidth(),
+            )
+            Gap(6.4)
+            // The shape is checked, not the key. A wrong-but-well-formed key fails at the first request, which
+            // is where the real answer comes from.
+            Tag(
+                when {
+                    typed.isBlank() -> "Stored in the Android keystore · never logged, never sent anywhere else"
+                    valid -> "That looks like a key"
+                    else -> "A Gemini key starts with AIza and is 39 characters"
+                },
+                t.key.copy(color = if (typed.isNotBlank() && !valid) Warn else p.faint),
+            )
+            Gap(13.6)
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(m.d(6.4))) {
+                Cta(
+                    "Awaken",
+                    ghost = !valid,
+                    modifier = Modifier.weight(1f),
+                    onClick = if (valid) ({ onPaste(typed) }) else null,
+                )
+                Cta("Not now", ghost = true, modifier = Modifier.weight(1f), onClick = onDismiss)
+            }
         }
     }
 }
@@ -566,18 +699,18 @@ fun StoreScreen() {
 // ── shared ────────────────────────────────────────────────────────────────────
 
 @Composable
-private fun Locked(title: String, detail: String) {
+private fun Locked(title: String, detail: String, awake: Boolean = false) {
     val p = LocalPalette.current
     val m = LocalMetrics.current
     val t = LocalType.current
-    Card(Modifier.fillMaxWidth(), padding = 11.5) {
+    Card(Modifier.fillMaxWidth(), lit = awake, padding = 11.5) {
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f)) {
-                Text(title, style = t.questTitle.copy(fontSize = m.s(12.8), color = p.dim))
+                Text(title, style = t.questTitle.copy(fontSize = m.s(12.8), color = if (awake) p.ink else p.dim))
                 Gap(1.9)
                 Tag(detail, t.key)
             }
-            Tag("locked", t.key.copy(color = p.faint))
+            Tag(if (awake) "awake" else "locked", t.key.copy(color = if (awake) Ok else p.faint))
         }
     }
 }

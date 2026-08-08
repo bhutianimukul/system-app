@@ -27,6 +27,8 @@ Already picked from your own 30 days · tap to change
 45 MINUTES.\nBOTH OF YOU HOLD.
 
 # ── design constants: the same on every device ────────────────────────────────
+# A Gemini key's shape is Google's, not this app's state.
+A Gemini key starts with AIza and is 39 characters
 4 asks · ~90 seconds
 00:01
 Adjustable 30 min either way

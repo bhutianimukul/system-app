@@ -57,8 +57,12 @@ between them is where this kind of work rots.
 | 07 | Release needs three days in fourteen | yes | no |
 | 07 | App Check, so only real instances write | yes | yes |
 | 07 | The cloud degrades to local-only | yes | no |
-| 08 | Key in the keystore | no | no |
-| 08 | Clamps enforced in code, not the prompt | no | no |
+| 08 | Key in the keystore | yes | no |
+| 08 | Forgetting the key is a real answer | yes | yes |
+| 08 | The daily quest never locks | yes | no |
+| 08 | The model has no field for aura | yes | no |
+| 08 | A verifier outside the set is refused | yes | no |
+| 08 | Clamps enforced in code, not the prompt | yes | no |
 
 ## Deferred literals
 

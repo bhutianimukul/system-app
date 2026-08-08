@@ -59,4 +59,8 @@
 07|App Check, so only real instances write|app/src/main/kotlin/app/gakseong/cloud/Firebase.kt:installAppCheck
 07|The cloud degrades to local-only|app/src/main/kotlin/app/gakseong/cloud/Firebase.kt:cloudAvailable
 08|Key in the keystore|app/src/main/kotlin/app/gakseong/ai/Key.kt:EncryptedSharedPreferences
-08|Clamps enforced in code, not the prompt|app/src/main/kotlin/app/gakseong/ai/Generate.kt:clamp
+08|Forgetting the key is a real answer|app/src/main/kotlin/app/gakseong/ai/Key.kt:clearKey
+08|The daily quest never locks|app/src/main/kotlin/app/gakseong/ai/Key.kt:DAILY_QUEST_NEVER_LOCKS
+08|The model has no field for aura|app/src/main/kotlin/app/gakseong/ai/Generate.kt:BASE_AURA_BY_KIND
+08|A verifier outside the set is refused|app/src/main/kotlin/app/gakseong/ai/Generate.kt:ALLOWED_VERIFIERS
+08|Clamps enforced in code, not the prompt|app/src/main/kotlin/app/gakseong/ai/Generate.kt:object Clamp
