@@ -65,6 +65,15 @@ val BANK: List<QuestTemplate> = listOf(
 const val QUESTS_PER_DAY = 5
 
 /**
+ * At most two self-reported quests a day.
+ *
+ * §Economy: an honest player using only declared quests still climbs, but nobody reaches S-rank without doing
+ * things that can be checked. Without this the shuffle happily deals four declared out of five, and a day that
+ * can be cleared entirely by saying so is not a day the ladder can trust.
+ */
+const val MAX_DECLARED_PER_DAY = 2
+
+/**
  * Draw today's quests.
  *
  * Seeded by [date] so the same day produces the same quests across a widget refresh, an app open and a worker
@@ -77,10 +86,28 @@ fun draw(date: String, readings: Readings, count: Int = QUESTS_PER_DAY): List<Qu
     val eligible = BANK.filter { it.verifier.evaluate(readings).available }
     if (eligible.isEmpty()) return emptyList()
 
-    // One wide quest at most: two full-width cards on Home reads as a list rather than a board.
     val random = Random(date.hashCode())
+    // One quest per kind of verifier a day. Two ScreenOffBlocks in the same day pay twice for one unbroken
+    // block: clearing 90 minutes clears 45 as a side effect, and the day quietly awards 850 for one behaviour.
+    //
+    // Declared is keyed by id instead, because it is a single object shared by six unrelated activities. A meal
+    // with people and thirty minutes with your parents are not the same quest, and deduping them by class
+    // silently collapses the whole declared bank into one entry.
     val shuffled = eligible.shuffled(random)
-    val wide = shuffled.firstOrNull { it.wide }
-    val narrow = shuffled.filterNot { it.wide }.take(count - if (wide != null) 1 else 0)
-    return (narrow + listOfNotNull(wide)).take(count)
+        .distinctBy { if (it.verifier is Verifier.Declared) it.id else it.verifier::class.simpleName }
+
+    // A fixed share each, not a preference order. Filling with provable first would mean declared quests never
+    // appear at all once enough sensors are granted, and those are the ones that matter most: meditation, a
+    // meal with people, thirty minutes with your parents. The phone can see none of them.
+    val provable = shuffled.filter { it.verifier !is Verifier.Declared }
+    val declared = shuffled.filter { it.verifier is Verifier.Declared }
+    val wantDeclared = minOf(MAX_DECLARED_PER_DAY, declared.size)
+    val picked = provable.take(count - wantDeclared) + declared.take(wantDeclared)
+
+    // Whichever pool ran short, the other one fills the day rather than leaving it under-length.
+    val filled = (picked + provable + declared).distinct().take(count)
+
+    // One wide quest at most: two full-width cards on Home reads as a list rather than a board.
+    val wide = filled.filter { it.wide }
+    return (filled.filterNot { it.wide } + wide.take(1)).take(count)
 }

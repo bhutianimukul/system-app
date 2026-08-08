@@ -69,6 +69,7 @@ dependencies {
     implementation("androidx.navigation:navigation-compose:2.8.5")
     implementation("androidx.health.connect:connect-client:1.1.0-alpha07")
     implementation("androidx.lifecycle:lifecycle-runtime-compose:2.8.7")
+    implementation("androidx.work:work-runtime-ktx:2.10.0")
 
     debugImplementation("androidx.compose.ui:ui-tooling")
 

@@ -198,3 +198,73 @@ class SettleTest {
         assertEquals(200, Balance.AURA_DEBIT)
     }
 }
+
+/** The balance rule the first real device run exposed: the shuffle dealt four declared quests out of five. */
+class DrawBalanceTest {
+
+    private val sensorsOn = Readings(
+        usage = UsageReading(0L, emptyMap(), 0L, emptySet(), available = true),
+        health = HealthReading(0, 0.0, 0, emptySet(), available = true),
+    )
+
+    @Test
+    fun `no more than two declared quests on any day of a month`() {
+        (1..31).forEach { d ->
+            val drawn = draw("2026-08-%02d".format(d), sensorsOn)
+            val declared = drawn.count { it.verifier is Verifier.Declared }
+            assertTrue("day $d drew $declared declared", declared <= MAX_DECLARED_PER_DAY)
+        }
+    }
+
+    @Test
+    fun `most of a day is provable when the sensors are granted`() {
+        (1..31).forEach { d ->
+            val drawn = draw("2026-08-%02d".format(d), sensorsOn)
+            val provable = drawn.count { it.verifier !is Verifier.Declared }
+            assertTrue("day $d had only $provable provable", provable >= drawn.size - MAX_DECLARED_PER_DAY)
+        }
+    }
+
+    @Test
+    fun `the cap relaxes rather than leaving the day empty`() {
+        // With nothing granted, declared is all there is. A day with nothing in it is worse than a soft cap.
+        val drawn = draw("2026-08-08", Readings())
+        assertTrue("a bare device still gets a day", drawn.isNotEmpty())
+    }
+
+    @Test
+    fun `declared quests actually appear when the sensors are granted`() {
+        // The cap is a share, not a preference order. Filling with provable first would silently drop the
+        // quests §Economy calls the ones that matter most.
+        (1..31).forEach { d ->
+            val drawn = draw("2026-08-%02d".format(d), sensorsOn)
+            assertTrue("day $d drew no declared quest", drawn.any { it.verifier is Verifier.Declared })
+        }
+    }
+
+    @Test
+    fun `one quest per kind of verifier, so one action is never paid twice`() {
+        // Clearing a 90-minute screen-off block clears a 45-minute one as a side effect. Drawing both pays 850
+        // aura for a single unbroken block.
+        //
+        // Declared is keyed by id, matching the draw: it is one object shared by six unrelated activities, and
+        // a meal with people is not the same quest as thirty minutes with your parents.
+        (1..31).forEach { d ->
+            val drawn = draw("2026-08-%02d".format(d), sensorsOn)
+            val kinds = drawn.map { if (it.verifier is Verifier.Declared) it.id else it.verifier::class.simpleName }
+            assertEquals("day $d drew a duplicate verifier kind", kinds.size, kinds.distinct().size)
+        }
+
+        // And the thing the rule exists for, stated directly.
+        (1..31).forEach { d ->
+            val drawn = draw("2026-08-%02d".format(d), sensorsOn)
+            assertTrue("day $d drew two screen-off blocks", drawn.count { it.verifier is Verifier.ScreenOffBlock } <= 1)
+            assertTrue("day $d drew two screen budgets", drawn.count { it.verifier is Verifier.TotalScreenTime } <= 1)
+        }
+    }
+
+    @Test
+    fun `a day is still five quests`() {
+        assertEquals(QUESTS_PER_DAY, draw("2026-08-08", sensorsOn).size)
+    }
+}

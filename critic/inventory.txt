@@ -34,6 +34,8 @@
 05|Static quest bank|app/src/main/kotlin/app/gakseong/quest/Bank.kt:QuestTemplate
 05|Settle feeds the engine|app/src/main/kotlin/app/gakseong/quest/Settle.kt:settleDay
 05|Fifteen-minute job, no live watcher|app/src/main/kotlin/app/gakseong/work/SettleWorker.kt:PeriodicWorkRequest
+05|One settle pass, idempotent by date|app/src/main/kotlin/app/gakseong/quest/Tick.kt:fun tick
+05|At most two declared quests a day|app/src/main/kotlin/app/gakseong/quest/Bank.kt:MAX_DECLARED_PER_DAY
 05|Widgets read real state|app/src/main/kotlin/app/gakseong/widget/Widgets.kt:Repo
 06|Focus foreground service|app/src/main/kotlin/app/gakseong/session/FocusService.kt:startForeground
 06|DND expires on its own|app/src/main/kotlin/app/gakseong/session/Dnd.kt:AutomaticZenRule

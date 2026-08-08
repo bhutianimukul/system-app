@@ -26,14 +26,16 @@ between them is where this kind of work rots.
 | 04 | Usage event fold | yes | no |
 | 04 | Usage access is special access | yes | no |
 | 04 | Health Connect provenance checked | yes | yes |
-| 04 | Reader time carved out of screen time | yes | no |
+| 04 | Reader time carved out of screen time | yes | yes |
 | 04 | Unclosed sessions are capped | yes | no |
 | 04 | Reality screen reads the device | yes | yes |
-| 05 | Closed verifier set | no | no |
-| 05 | Static quest bank | no | no |
-| 05 | Settle feeds the engine | no | no |
-| 05 | Fifteen-minute job, no live watcher | no | no |
-| 05 | Widgets read real state | no | no |
+| 05 | Closed verifier set | yes | yes |
+| 05 | Static quest bank | yes | yes |
+| 05 | Settle feeds the engine | yes | yes |
+| 05 | Fifteen-minute job, no live watcher | yes | no |
+| 05 | One settle pass, idempotent by date | yes | yes |
+| 05 | At most two declared quests a day | yes | no |
+| 05 | Widgets read real state | yes | yes |
 | 06 | Focus foreground service | no | no |
 | 06 | DND expires on its own | no | no |
 | 06 | Prior interruption filter restored | no | no |

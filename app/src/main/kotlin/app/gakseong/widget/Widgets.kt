@@ -5,6 +5,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.glance.GlanceId
+import app.gakseong.data.Repo
+import app.gakseong.data.SystemState
+import gakseong.engine.Rank
+import gakseong.engine.bandFor
 import androidx.glance.GlanceModifier
 import androidx.glance.GlanceTheme
 import androidx.glance.ImageProvider
@@ -53,19 +57,45 @@ private val Hot = Color(0xFFFF48D0)
 private val Soft = Color(0xFFFFAEEC)
 private val Ok = Color(0xFF4AE3A0)
 
-/** Placeholder state. Wiring this to Room and the phase-01 engine is the next phase, not this one. */
+/**
+ * What a widget draws, read out of the one store the app already has.
+ *
+ * A widget runs in the same process as the Activity, so `Repo.state.value` is the same state the screens show.
+ * The defaults exist only for the Glance preview; a live widget always gets [from].
+ */
 private data class WidgetState(
-    val rank: String = "D · III",
-    val auraToday: Int = 640,
-    val toNextTier: Int = 560,
-    val questsDone: Int = 3,
-    val questsTotal: Int = 5,
-    val thresholdCleared: Boolean = true,
-    val streakDays: Int = 14,
-    val shields: Int = 2,
+    val rank: String = "E · III",
+    val auraToday: Int = 0,
+    val toNextTier: Int = 0,
+    val questsDone: Int = 0,
+    val questsTotal: Int = 0,
+    val thresholdCleared: Boolean = false,
+    val streakDays: Int = 0,
+    val shields: Int = 0,
     val nightGate: String = "00:30 — 06:00",
     val nightGatePending: Boolean = true,
-)
+) {
+    companion object {
+        fun from(state: SystemState): WidgetState {
+            val engine = state.hunter.toEngine()
+            val band = bandFor(engine.rank)
+            val next = if (engine.rank.ordinal < Rank.MAX) Rank(engine.rank.ordinal + 1) else engine.rank
+            val nightGateQuest = state.today.quests.firstOrNull { it.id == "night-gate" }
+            return WidgetState(
+                rank = engine.rank.label,
+                auraToday = state.today.auraEarned,
+                toNextTier = (bandFor(next).threshold - state.today.auraEarned).coerceAtLeast(0),
+                questsDone = state.today.quests.count { it.state == "DONE" },
+                questsTotal = state.today.quests.size,
+                thresholdCleared = state.today.auraEarned >= band.threshold,
+                streakDays = state.hunter.streak,
+                shields = state.hunter.shields,
+                nightGate = "${state.settings.nightGateStart} — ${state.settings.nightGateEnd}",
+                nightGatePending = nightGateQuest?.state != "DONE",
+            )
+        }
+    }
+}
 
 private val label = TextStyle(color = androidx.glance.unit.ColorProvider(Faint), fontSize = 9.sp)
 private val value = TextStyle(color = androidx.glance.unit.ColorProvider(Ink), fontSize = 15.sp, fontWeight = FontWeight.Bold)
@@ -98,7 +128,7 @@ private fun Eyebrow(text: String, trailing: String? = null) {
 class DailyQuestWidget : GlanceAppWidget() {
     override val sizeMode = SizeMode.Exact
     override suspend fun provideGlance(context: Context, id: GlanceId) = provideContent {
-        val s = WidgetState()
+        val s = WidgetState.from(Repo.state.value)
         GlanceTheme { Shell {
             // fillMaxSize on the column left dead space under the content in a 4x2 cell. The widget states its
             // height from what it contains and lets the launcher's cell be whatever it is.
@@ -144,7 +174,7 @@ class DailyQuestWidget : GlanceAppWidget() {
 class AuraWidget : GlanceAppWidget() {
     override val sizeMode = SizeMode.Exact
     override suspend fun provideGlance(context: Context, id: GlanceId) = provideContent {
-        val s = WidgetState()
+        val s = WidgetState.from(Repo.state.value)
         GlanceTheme { Shell {
             Column(GlanceModifier.fillMaxSize(), verticalAlignment = Alignment.CenterVertically) {
                 Text("AURA TODAY", style = label)
@@ -161,7 +191,7 @@ class AuraWidget : GlanceAppWidget() {
 class NightGateWidget : GlanceAppWidget() {
     override val sizeMode = SizeMode.Exact
     override suspend fun provideGlance(context: Context, id: GlanceId) = provideContent {
-        val s = WidgetState()
+        val s = WidgetState.from(Repo.state.value)
         GlanceTheme { Shell {
             Row(GlanceModifier.fillMaxSize(), verticalAlignment = Alignment.CenterVertically) {
                 Text("☾", style = value.copy(fontSize = 17.sp, color = androidx.glance.unit.ColorProvider(Soft)))
@@ -186,7 +216,7 @@ class NightGateWidget : GlanceAppWidget() {
 class StreakWidget : GlanceAppWidget() {
     override val sizeMode = SizeMode.Exact
     override suspend fun provideGlance(context: Context, id: GlanceId) = provideContent {
-        val s = WidgetState()
+        val s = WidgetState.from(Repo.state.value)
         GlanceTheme { Shell {
             Row(GlanceModifier.fillMaxSize(), verticalAlignment = Alignment.CenterVertically) {
                 Text("${s.streakDays}d", style = value.copy(fontSize = 22.sp))
