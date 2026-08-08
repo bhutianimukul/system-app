@@ -26,6 +26,13 @@ data class SystemState(
     val settings: Settings = Settings(),
     val history: List<DaySettlement> = emptyList(),
     val onboarded: Boolean = false,
+    /**
+     * The Firebase Anonymous Auth UID, once there is one. Empty while the app is local-only.
+     *
+     * §Referral: the invitee's own UID is their identity, and the inviter's opaque code is derived from theirs.
+     * Not a name, not an address, and it rotates on reinstall, which the three-day gate exists to survive.
+     */
+    val uid: String = "",
 )
 
 /** The engine's [HunterState] as five integers. [Rank] serializes as its ordinal, so its `require` still guards. */

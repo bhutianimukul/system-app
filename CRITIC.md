@@ -50,9 +50,13 @@ between them is where this kind of work rots.
 | 06 | Speed bump only while a session lives | no | no |
 | 07 | Guild shows nobody rather than inventing members | yes | no |
 | 07 | Raid partners are labelled shadow pacers | yes | yes |
-| 07 | Anonymous auth, no account | no | no |
-| 07 | Referral pairing is create-only | no | no |
-| 07 | Analytics refuses the private track | no | no |
+| 07 | Anonymous auth, no account | yes | no |
+| 07 | Referral pairing is create-only | yes | no |
+| 07 | Analytics refuses the private track | yes | no |
+| 07 | A package name can never reach the wire | yes | no |
+| 07 | Release needs three days in fourteen | yes | no |
+| 07 | App Check, so only real instances write | yes | yes |
+| 07 | The cloud degrades to local-only | yes | no |
 | 08 | Key in the keystore | no | no |
 | 08 | Clamps enforced in code, not the prompt | no | no |
 

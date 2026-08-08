@@ -51,8 +51,12 @@
 06|Speed bump only while a session lives|app/src/main/kotlin/app/gakseong/session/SpeedBump.kt:SYSTEM_ALERT_WINDOW
 07|Guild shows nobody rather than inventing members|app/src/main/kotlin/app/gakseong/ui/screens/Guild.kt:Not connected
 07|Raid partners are labelled shadow pacers|app/src/main/kotlin/app/gakseong/ui/screens/Raid.kt:pacer
-07|Anonymous auth, no account|app/src/main/kotlin/app/gakseong/cloud/Auth.kt:signInAnonymously
-07|Referral pairing is create-only|firestore.rules:allow create
-07|Analytics refuses the private track|app/src/main/kotlin/app/gakseong/cloud/Analytics.kt:PRIVATE_TRACK_EXEMPT
+07|Anonymous auth, no account|app/src/main/kotlin/app/gakseong/cloud/Firebase.kt:signInAnonymously
+07|Referral pairing is create-only|firestore.rules:allow update, delete: if false
+07|Analytics refuses the private track|app/src/main/kotlin/app/gakseong/cloud/Wire.kt:PRIVATE_TRACK_EXEMPT
+07|A package name can never reach the wire|app/src/main/kotlin/app/gakseong/cloud/Wire.kt:PACKAGE_SHAPED
+07|Release needs three days in fourteen|app/src/main/kotlin/app/gakseong/cloud/Referral.kt:fun released
+07|App Check, so only real instances write|app/src/main/kotlin/app/gakseong/cloud/Firebase.kt:installAppCheck
+07|The cloud degrades to local-only|app/src/main/kotlin/app/gakseong/cloud/Firebase.kt:cloudAvailable
 08|Key in the keystore|app/src/main/kotlin/app/gakseong/ai/Key.kt:EncryptedSharedPreferences
 08|Clamps enforced in code, not the prompt|app/src/main/kotlin/app/gakseong/ai/Generate.kt:clamp

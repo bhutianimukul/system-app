@@ -3,6 +3,7 @@ plugins {
     id("org.jetbrains.kotlin.android")
     id("org.jetbrains.kotlin.plugin.compose")
     id("org.jetbrains.kotlin.plugin.serialization")
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -75,6 +76,19 @@ dependencies {
     implementation("androidx.health.connect:connect-client:1.1.0-alpha07")
     implementation("androidx.lifecycle:lifecycle-runtime-compose:2.8.7")
     implementation("androidx.work:work-runtime-ktx:2.10.0")
+
+    // §Stack: Firebase Anonymous Auth, Firestore, FCM. No server code.
+    implementation(platform("com.google.firebase:firebase-bom:33.7.0"))
+    implementation("com.google.firebase:firebase-auth")
+    implementation("com.google.firebase:firebase-firestore")
+    implementation("com.google.firebase:firebase-analytics")
+    implementation("com.google.firebase:firebase-messaging")
+    // §Referral: only genuine app instances may write, and creates are rate-limited per inviter in rules.
+    implementation("com.google.firebase:firebase-appcheck-playintegrity")
+    // Play hands the referrer string over once, on first launch. A plain deep link cannot survive the Play
+    // round-trip and Firebase Dynamic Links is shut down.
+    implementation("com.android.installreferrer:installreferrer:2.2")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.9.0")
 
     debugImplementation("androidx.compose.ui:ui-tooling")
 

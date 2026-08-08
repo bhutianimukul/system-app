@@ -1,0 +1,60 @@
+rules_version = '2';
+
+// §Social and §Referral. Three things leave the device and nothing else, so these rules are written to make
+// the fourth impossible rather than merely discouraged.
+//
+// The project also serves com.gakeseong, and a Firestore ruleset is project-wide. Every collection here is
+// namespaced under /gakseong so the two cannot collide.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isSelf(uid) {
+      return signedIn() && request.auth.uid == uid;
+    }
+
+    match /gakseong/referrals/{inviteeUid} {
+      // §Referral: create only, never update. One credit per invitee UID, ever.
+      //
+      // The invitee writes their own pairing and can never write anyone else's, so nobody can attribute an
+      // install they did not cause. Nothing may change it afterwards, including them.
+      allow create: if isSelf(inviteeUid)
+                    && request.resource.data.state == 'pending'
+                    && request.resource.data.keys().hasOnly(['inviterCode', 'installedOn', 'state']);
+      allow read:   if isSelf(inviteeUid);
+      allow update, delete: if false;
+    }
+
+    match /gakseong/guilds/{guildId} {
+      // §Social: guilds are invite only and twenty at most. Membership is readable by members; the roster is
+      // written by the server, never by a member, so nobody can add themselves to a guild they were not asked
+      // into or inflate a ladder by writing rows.
+      allow read: if signedIn() && request.auth.uid in resource.data.members;
+      allow write: if false;
+
+      match /feed/{postId} {
+        // §Social: guild-scoped, twenty posts a day, and a member may only ever post as themselves.
+        allow read: if signedIn() && request.auth.uid in get(/databases/$(database)/documents/gakseong/guilds/$(guildId)).data.members;
+        allow create: if isSelf(request.resource.data.authorUid);
+        allow update, delete: if false;
+      }
+    }
+
+    match /gakseong/leagues/{leagueId}/standings/{uid} {
+      // A hunter writes their own aura total and nobody else's. §Social: the ladder is the one thing in this
+      // app that has to be trustworthy.
+      allow read: if signedIn();
+      allow write: if isSelf(uid)
+                   && request.resource.data.keys().hasOnly(['aura', 'rank', 'updatedAt']);
+    }
+
+    // Anything not named above is closed. A collection that appears without a rule is a mistake, and the
+    // default here makes it a visible one rather than an open door.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
