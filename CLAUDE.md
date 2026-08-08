@@ -531,9 +531,61 @@ in a unit test is not possible and asserting it in prose is not verification.
 **A call never breaks a session and never pauses its clock.** The Activity detects one through `AudioManager`'s
 mode, which needs no permission, rather than `TelephonyManager`'s call state, which needs `READ_PHONE_STATE`.
 
-**What still does not exist:** the Apps screen preselection from real usage, the yes/no answer UI for a declared
-quest at expiry, bonus spawning, the speed bump overlay outside the app, containment, Firebase, and the AI
-gate.
+### Phase 06, sessions: done
+
+`session/Session.kt` is pure (the clock, the grace window, the break rule), `session/FocusService.kt` the
+foreground service, `session/Dnd.kt` the `AutomaticZenRule`, `session/NightGate.kt` the window arithmetic,
+`session/SpeedBump.kt` the overlay.
+
+**Two DND bugs, both found on a device and both the same failure: a phone left silent.**
+
+- **Never gate `disableDnd` on remembered state.** A flag in a companion object resets when the process dies, so
+  after a crash the app forgot it had silenced the phone. `App.onCreate` clears a stranded rule whenever a fresh
+  process finds no session running.
+- **`setAutomaticZenRuleState` is only honoured for a `Condition` whose id matches the rule's own
+  `conditionId`.** This app's carries the session end time, so a generic "off" was silently ignored. The rule is
+  removed instead. Verify with `adb shell settings get global zen_mode` around a start, a force-stop and a reopen.
+
+**A window that crosses midnight needs its own branch.** `23:00` to `06:00` subtracted naively is minus 1020,
+which any `held >= target` check reads as instantly satisfied, so the night gate would clear itself every night.
+Equal times are 1440 under the same branch, not zero. Both are in `NightGateTest`.
+
+**A gate is judged once, after its window closes.** A query at 02:00 can only say "so far", and a gate that
+reports halfway through teaches the user that leaving it early is free.
+
+**The speed bump needs a live foreground service, not just the toggle and the grant.** An app that can draw over
+others whenever it likes is a different thing from one that can do it for a session the user started.
+
+### Phase 07, cloud: auth, ladder and rules live
+
+Firebase Anonymous Auth, Firestore, App Check, and `firestore.rules` deployed with the locally installed
+`firebase-tools` rather than pasted into a console.
+
+- **`cloud/Wire.kt` is §10 as a closed set.** Events and dimensions are both enums, so there is no
+  `logEvent(String, Bundle)` anywhere and a screen cannot invent a field. §9 needs no runtime check because no
+  event names the private track and no caller sits inside it.
+- **A package-shaped value needs one dot, not two.** The first regex required two or more, which let
+  `com.whatsapp`, `in.mohalla` and `app.gakeseong` straight through to Google's logs.
+- **A Firestore match path with the wrong segment count matches a collection, not a document, and denies
+  silently.** It looks exactly like having no rules at all. Every path in `firestore.rules` carries a comment
+  naming the code that writes it.
+- **The cloud never blocks a screen.** Firestore retries a denied write indefinitely and `get()` never gives up,
+  so `CLOUD_TIMEOUT_MS` bounds it and the app carries on locally.
+- **Pacers are paced against the division's own band.** A fixed ladder from 400 upward put every real hunter
+  below all twenty-nine of them, and a row you can never reach is a wall.
+
+### Phase 08, the AI gate: done
+
+- **The model has no field for aura and never will.** `ai/Generate.kt` maps a verifier kind to a payout through
+  a table in code. A test asserts no field named aura, point or reward appears on the generation type.
+- **Clamps are applied after generation, never in the prompt.** A prompt is a request.
+- **`APP_BUDGET` and `APP_ABSENT` are not generatable.** Both need package names, and a model choosing which app
+  to forbid decides something the user already decided at onboarding.
+- **The key travels in a header, not a query string.** URLs reach logs and crash traces.
+- The daily quest never locks. Verified with a key present: five quests from the static bank, unchanged.
+
+**What still does not exist:** containment behind an `AccessibilityService`, the guild and feed screens on
+Firestore, and the Play Install Referrer wiring. `critic/pending.txt` lists every literal still waiting.
 
 **The chart kit is in `ui/Charts.kt`:** `AuraByDay`, `HoursHeatmap`, `DayCalendar`, `Legend`. `assess` needs it
 too, so use it rather than drawing new bars.
