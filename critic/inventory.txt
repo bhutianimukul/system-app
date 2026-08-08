@@ -30,6 +30,9 @@
 04|Reader time carved out of screen time|app/src/main/kotlin/app/gakseong/sense/Usage.kt:READER_CARVE_OUT
 04|Unclosed sessions are capped|app/src/main/kotlin/app/gakseong/sense/Fold.kt:MAX_SESSION_MS
 04|Reality screen reads the device|app/src/main/kotlin/app/gakseong/ui/Sensors.kt:rememberUsage
+04|Apps preselected from the user's own days|app/src/main/kotlin/app/gakseong/ui/screens/Onboarding.kt:SYSTEM_PACKAGES
+08|One plain POST, no SDK|app/src/main/kotlin/app/gakseong/ai/Gemini.kt:HttpURLConnection
+08|The key travels in a header, not a URL|app/src/main/kotlin/app/gakseong/ai/Gemini.kt:x-goog-api-key
 05|Closed verifier set|app/src/main/kotlin/app/gakseong/quest/Verifier.kt:sealed
 05|Static quest bank|app/src/main/kotlin/app/gakseong/quest/Bank.kt:QuestTemplate
 05|Settle feeds the engine|app/src/main/kotlin/app/gakseong/quest/Settle.kt:settleDay

@@ -339,15 +339,26 @@ fun AppsScreen() {
     val m = LocalMetrics.current
     val t = LocalType.current
     val nav = LocalNav.current
+    val context = LocalContext.current
     val scope = rememberCoroutineScope()
 
-    // ponytail: the names and the per-day figures are placeholders until phase 04 reads the user's own 30 days
-    // out of UsageStatsManager. The selection itself is real, and what it writes never leaves the device (§10).
-    val candidates = listOf(
-        "Instagram" to "2h 41m", "YouTube Shorts" to "1h 18m", "Reddit" to "52m", "X" to "34m",
-        "Snapchat" to "22m", "Swiggy" to "9m", "WhatsApp" to "1h 04m",
-    )
-    var picked by remember { mutableStateOf(setOf("Instagram", "YouTube Shorts", "Reddit", "X", "Snapchat")) }
+    // §Onboarding: five already selected from the user's own 30 days. A confirm, not a choose.
+    val usage by rememberUsage(RETAINED_DAYS)
+    val candidates = remember(usage) {
+        usage?.perPackageMs.orEmpty()
+            .entries
+            .filterNot { it.key == context.packageName || it.key in SYSTEM_PACKAGES }
+            // Under a minute a day is not where anybody's hours went, and a list of them makes the screen's
+            // whole claim look silly.
+            .filter { it.value / RETAINED_DAYS >= 60_000L }
+            .sortedByDescending { it.value }
+            .take(12)
+            .map { it.key to it.value }
+    }
+
+    // The top five are ticked before the user arrives. Their own data chose them, which is the entire argument
+    // the screen makes, and nothing about that list leaves the phone (§10).
+    var picked by remember(candidates) { mutableStateOf(candidates.take(5).map { it.first }.toSet()) }
 
     Screen {
         Bg()
@@ -358,9 +369,27 @@ fun AppsScreen() {
         Body {
             AskHeader("Ask 3 of 4", "Confirm")
             Gap(22.4)
-            Text("THESE FIVE\nTOOK YOUR HOURS.", style = t.display(27.2))
+            // The headline counts what is actually there. It read "THESE FIVE" over a single row on a phone
+            // with one heavy app, which is the same lie the intent and confirm counters used to tell.
+            Text(
+                when {
+                    usage == null -> "READING WHAT\nYOUR PHONE KEPT."
+                    usage?.available != true -> "THE SYSTEM\nCANNOT SEE YET."
+                    candidates.isEmpty() -> "NOTHING TOOK\nYOUR HOURS YET."
+                    candidates.size == 1 -> "THIS ONE\nTOOK YOUR HOURS."
+                    else -> "THESE ${spelled(minOf(candidates.size, 5))}\nTOOK YOUR HOURS."
+                },
+                style = t.display(27.2),
+            )
             Gap(11.2)
-            Tag("Already picked from your own 30 days · tap to change")
+            Tag(
+                when {
+                    usage == null -> "Thirty days is what Android kept"
+                    usage?.available != true -> "Grant usage access and the System will read it"
+                    candidates.isEmpty() -> "The System found nothing worth naming on this phone"
+                    else -> "Already picked from your own 30 days · tap to change"
+                },
+            )
 
             Gap(14.4)
             Card(Modifier.fillMaxWidth(), dashed = true, padding = 12.8) {
@@ -376,9 +405,22 @@ fun AppsScreen() {
                 Modifier.weight(1f).verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(m.d(6.4)),
             ) {
-                candidates.forEach { (name, perDay) ->
-                    AppRow(name, perDay, name in picked) {
-                        picked = if (name in picked) picked - name else picked + name
+                if (candidates.isEmpty()) {
+                    // Three states, not two. A read still running, a refused grant, and a phone where nothing
+                    // crossed the bar are different facts, and the headline above already picked one of them.
+                    Tag(
+                        when {
+                            usage == null -> "Reading your own thirty days"
+                            usage?.available != true -> "No usage access granted yet"
+                            else -> "Nothing here averaged even a minute a day"
+                        },
+                        t.key,
+                    )
+                } else {
+                    candidates.forEach { (pkg, ms) ->
+                        AppRow(appLabel(context, pkg), perDayLabel(ms), pkg in picked) {
+                            picked = if (pkg in picked) picked - pkg else picked + pkg
+                        }
                     }
                 }
             }
@@ -621,3 +663,33 @@ private fun readGrants(context: android.content.Context) = Grants(
             context, android.Manifest.permission.POST_NOTIFICATIONS,
         ) == android.content.pm.PackageManager.PERMISSION_GRANTED,
 )
+
+/**
+ * Packages that are never a scroll app, so the confirm list is the user's own choices and not their phone's.
+ *
+ * The launcher and the system UI are always near the top of a usage list, and offering to police them would be
+ * the screen failing to understand its own question.
+ */
+private val SYSTEM_PACKAGES = setOf(
+    "com.android.systemui",
+    "com.google.android.apps.nexuslauncher",
+    "com.android.launcher3",
+    "com.google.android.googlequicksearchbox",
+    "com.android.settings",
+    "com.google.android.permissioncontroller",
+    "com.google.android.gms",
+)
+
+/** `2h 41m / day`, averaged over the window Android actually kept. */
+private fun perDayLabel(totalMs: Long): String {
+    val minutes = totalMs / 60_000 / RETAINED_DAYS
+    return if (minutes >= 60) "${minutes / 60}h ${minutes % 60}m" else "${minutes}m"
+}
+
+/** Small numbers as words, because "THESE 3 TOOK YOUR HOURS" reads like a receipt. */
+private fun spelled(n: Int) = when (n) {
+    2 -> "TWO"
+    3 -> "THREE"
+    4 -> "FOUR"
+    else -> "FIVE"
+}

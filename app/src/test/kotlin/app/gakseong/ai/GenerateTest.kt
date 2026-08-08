@@ -154,3 +154,29 @@ class KeyTest {
         assertTrue("a user with no key must still get quests", day.isNotEmpty())
     }
 }
+
+/** The prompt and the request, checked for the things that must never be in them. */
+class PromptTest {
+
+    @Test
+    fun `no key means locked, not failed`() = kotlinx.coroutines.runBlocking {
+        // §AI gate: the feature is locked, the app is not. A blank key is not an error to show anybody.
+        assertTrue(generateQuest("", "a quiet week") is AiResult.Locked)
+    }
+
+    @Test
+    fun `the model is never offered a verifier that names an app`() {
+        assertFalse(ALLOWED_VERIFIERS.any { it.contains("APP") })
+    }
+
+    @Test
+    fun `every verifier the model is offered can actually be built`() {
+        // The first draft offered two it could not build, and every generation naming one was silently dropped.
+        ALLOWED_VERIFIERS.forEach {
+            assertNotNull(
+                "$it is offered but cannot be built",
+                toTemplate(Generated(verifier = it, minutes = 30, steps = 5000, metres = 2000, title = "x"), "gen"),
+            )
+        }
+    }
+}

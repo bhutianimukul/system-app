@@ -92,6 +92,8 @@ dependencies {
     // §AI gate: the key lives in the Android keystore. Never logged, never in analytics.
     implementation("androidx.security:security-crypto:1.1.0-alpha06")
 
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.9.0")
+
     debugImplementation("androidx.compose.ui:ui-tooling")
 
     testImplementation("junit:junit:4.13.2")

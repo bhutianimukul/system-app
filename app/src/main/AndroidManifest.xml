@@ -2,6 +2,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <!-- Firebase, and the one AI endpoint. Nothing else this app does needs the network. -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
     <!-- Haptics. Composition primitives fire even when the phone is on silent, which is the point. -->
     <uses-permission android:name="android.permission.VIBRATE" />
 

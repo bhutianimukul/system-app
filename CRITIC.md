@@ -29,6 +29,9 @@ between them is where this kind of work rots.
 | 04 | Reader time carved out of screen time | no | no |
 | 04 | Unclosed sessions are capped | yes | no |
 | 04 | Reality screen reads the device | yes | yes |
+| 04 | Apps preselected from the user's own days | yes | no |
+| 08 | One plain POST, no SDK | yes | no |
+| 08 | The key travels in a header, not a URL | yes | no |
 | 05 | Closed verifier set | yes | yes |
 | 05 | Static quest bank | yes | yes |
 | 05 | Settle feeds the engine | yes | yes |
@@ -61,7 +64,7 @@ between them is where this kind of work rots.
 | 08 | Forgetting the key is a real answer | yes | yes |
 | 08 | The daily quest never locks | yes | no |
 | 08 | The model has no field for aura | yes | no |
-| 08 | A verifier outside the set is refused | yes | no |
+| 08 | A verifier outside the set is refused | yes | yes |
 | 08 | Clamps enforced in code, not the prompt | yes | no |
 
 ## Deferred literals
@@ -69,12 +72,6 @@ between them is where this kind of work rots.
 Screen text that is real state but is waiting on a later phase. Tracked so it cannot be mistaken for
 finished work. Source: `critic/pending.txt`.
 
-- `Onboarding.kt|2h 41m`
-- `Onboarding.kt|1h 18m`
-- `Onboarding.kt|52m`
-- `Onboarding.kt|34m`
-- `Onboarding.kt|22m`
-- `Onboarding.kt|1h 04m`
 - `Onboarding2.kt|Your 206 hours`
 - `Profile.kt|6h 51m avg`
 - `Profile.kt|5h 42m avg`
