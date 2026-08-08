@@ -2,6 +2,8 @@ package app.gakseong.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
@@ -505,7 +507,13 @@ fun Card(
 
 /** `.cta` — one filled accent button per screen, and never two. */
 @Composable
-fun Cta(text: String, ghost: Boolean = false, bad: Boolean = false, modifier: Modifier = Modifier) {
+fun Cta(
+    text: String,
+    ghost: Boolean = false,
+    bad: Boolean = false,
+    modifier: Modifier = Modifier,
+    onClick: (() -> Unit)? = null,
+) {
     val p = LocalPalette.current
     val m = LocalMetrics.current
     val t = LocalType.current
@@ -518,6 +526,7 @@ fun Cta(text: String, ghost: Boolean = false, bad: Boolean = false, modifier: Mo
         modifier
             .fillMaxWidth()
             .clip(CircleShape)
+            .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier)
             .background(fill)
             .then(if (ghost) Modifier.border(1.dp, p.line2, CircleShape) else Modifier)
             .padding(vertical = m.d(13.6)),
@@ -534,12 +543,12 @@ fun Cta(text: String, ghost: Boolean = false, bad: Boolean = false, modifier: Mo
 }
 
 @Composable
-fun Pill(text: String, on: Boolean = false) {
+fun Pill(text: String, on: Boolean = false, modifier: Modifier = Modifier) {
     val p = LocalPalette.current
     val m = LocalMetrics.current
     val t = LocalType.current
     Box(
-        Modifier
+        modifier
             .clip(CircleShape)
             .background(if (on) p.hot.mix(Color(0xFF12162B), 0.30f) else p.pill)
             .border(1.dp, if (on) p.hot.pct(0.62f) else p.line2, CircleShape)
@@ -705,7 +714,7 @@ fun Meter(fill: Float, marker: Float? = null, height: Number = 10) {
  * the active tab gets a glow and an indicator, and the icons are larger. Everything still comes from the palette.
  */
 @Composable
-fun BoxScope.BottomNav(active: Int) {
+fun BoxScope.BottomNav(active: Int, onSelect: (Int) -> Unit = {}) {
     val p = LocalPalette.current
     val m = LocalMetrics.current
     val t = LocalType.current
@@ -739,6 +748,13 @@ fun BoxScope.BottomNav(active: Int) {
                 val on = i == active
                 val mid = i == 2
                 Column(
+                    // The bar draws its own active glow, and a default ripple over that gradient reads as a
+                    // smudge, so the indication is suppressed rather than styled.
+                    Modifier.clickable(
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = null,
+                        onClick = { onSelect(i) },
+                    ),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.spacedBy(m.d(3.2)),
                 ) {

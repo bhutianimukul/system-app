@@ -25,8 +25,10 @@ import androidx.compose.ui.unit.dp
 // `@keyframes pgIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}` at
 // `.4s cubic-bezier(.16,1,.3,1)`, so those exact numbers are what a screen change uses here.
 
-private val PgIn = CubicBezierEasing(0.16f, 1f, 0.3f, 1f)
-private const val PG_IN_MS = 400
+// Internal rather than private: `ui/Nav.kt` drives the NavHost with these same numbers, and two copies of a
+// curve is two chances for the app to animate differently from the design page.
+internal val PgIn = CubicBezierEasing(0.16f, 1f, 0.3f, 1f)
+internal const val PG_IN_MS = 400
 
 /**
  * True when the reader has turned animations off. Checked rather than assumed, because a splash or transition
