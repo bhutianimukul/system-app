@@ -14,7 +14,21 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
+import app.gakseong.cloud.createGuild
+import app.gakseong.data.Repo
+import kotlinx.coroutines.launch
 import app.gakseong.R
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.produceState
+import androidx.compose.ui.platform.LocalContext
+import app.gakseong.cloud.GUILD_MAX
+import app.gakseong.cloud.Guild
+import app.gakseong.cloud.handleFor
+import app.gakseong.cloud.readGuild
 import app.gakseong.ui.*
 import app.gakseong.ui.theme.LocalMetrics
 import app.gakseong.ui.theme.LocalPalette
@@ -29,6 +43,13 @@ fun GuildScreen() {
     val t = LocalType.current
     val sys = LocalSystem.current
     val rank = sys.hunter.toEngine().rank
+    val context = LocalContext.current
+
+    val scope = rememberCoroutineScope()
+    var refresh by remember { mutableIntStateOf(0) }
+    val guild by produceState<Guild?>(initialValue = null, sys.uid, refresh) {
+        value = readGuild(context, sys.uid)
+    }
 
     Screen {
         Bg()
@@ -41,15 +62,15 @@ fun GuildScreen() {
 
         Body(navSpace = true) {
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                Eye("Guild"); Filler(); Tag("Not connected")
+                Eye("Guild"); Filler(); Tag(guild?.let { "${it.members.size} of $GUILD_MAX" } ?: "No guild")
             }
             Gap(19.2)
-            Text("No guild yet", style = t.md.copy(fontSize = m.s(21.6)))
+            Text(guild?.name ?: "No guild yet", style = t.md.copy(fontSize = m.s(21.6)))
             Gap(8)
-            Tag("Guilds arrive when the System reaches the network")
+            Tag(guild?.let { "Founded ${it.foundedOn} · invite only" } ?: "Twenty at most · invite only")
 
             Gap(17.6)
-            Card(Modifier.fillMaxWidth(), dashed = true, padding = 13.6) {
+            if (guild == null) Card(Modifier.fillMaxWidth(), dashed = true, padding = 13.6) {
                 Tag("Why this is empty", t.tag.copy(color = p.hot))
                 Gap(4.2)
                 Text(
@@ -65,11 +86,28 @@ fun GuildScreen() {
                 Modifier.weight(1f).verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(m.d(5.4)),
             ) {
-                // Your own row is real today. Everyone else's arrives from Firestore in phase 07.
                 MemberRow("You", rank.label, sys.today.auraEarned.toString(), you = true)
+                // Everyone else by handle. §Social forbids plausible human usernames, and a guild feed is
+                // exactly where a fabricated member would be noticed.
+                guild?.members.orEmpty().filterNot { it == sys.uid }.forEach { member ->
+                    MemberRow(handleFor(member, rank.letter), rank.label, "—")
+                }
                 Gap(11.2)
             }
+
+            if (guild == null) {
+                // §Social: the id is the invite code, so founding one is the whole of joining one. No friend
+                // list, no pairing step, no code to type beyond the link itself.
+                Cta("Found a guild", onClick = {
+                    scope.launch {
+                        createGuild(context, "Shadow Wardens", sys.uid, Repo.today())
+                        refresh++
+                    }
+                })
+                Gap(17.6)
+            }
         }
+
         BottomNav(active = 3)
     }
 }

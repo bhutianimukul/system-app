@@ -65,6 +65,9 @@
 07|Handles are opaque, never names|app/src/main/kotlin/app/gakseong/cloud/Ladder.kt:handleFor
 07|The cloud never blocks a screen|app/src/main/kotlin/app/gakseong/cloud/Ladder.kt:CLOUD_TIMEOUT_MS
 08|A generated quest joins the day|app/src/main/kotlin/app/gakseong/work/SettleWorker.kt:generateOne
+07|A guild roster only ever gains you|firestore.rules:resource.data.members.concat
+07|Guilds are founded and read for real|app/src/main/kotlin/app/gakseong/cloud/Guild.kt:createGuild
+07|Feed posts are an allowlist, not free text|app/src/main/kotlin/app/gakseong/cloud/Guild.kt:PostKind
 07|Anonymous auth, no account|app/src/main/kotlin/app/gakseong/cloud/Firebase.kt:signInAnonymously
 07|Referral pairing is create-only|firestore.rules:allow update, delete: if false
 07|Analytics refuses the private track|app/src/main/kotlin/app/gakseong/cloud/Wire.kt:PRIVATE_TRACK_EXEMPT

@@ -51,10 +51,33 @@ service cloud.firestore {
     }
 
     match /gakseong/guilds/rows/{guildId} {
-      // §Social: guilds are invite only and twenty at most. The roster is written by the server, never by a
-      // member, so nobody can add themselves to a guild or inflate a ladder by writing rows.
-      allow read: if signedIn() && request.auth.uid in resource.data.members;
-      allow write: if false;
+      // §Social: invite only, twenty at most.
+      //
+      // §Stack says no server code, so a roster has to be made unforgeable by a rule alone. The rule allows
+      // exactly one shape of update: the members list gains your own uid and nothing else changes. You can
+      // therefore add yourself and never anybody else, and never remove anyone, which is all a Cloud Function
+      // would have enforced anyway.
+      //
+      // Read is open to signed-in users on purpose: the id is the invite code, so somebody holding it is
+      // somebody who was invited. Guarding read by membership would make it impossible to look at a guild
+      // before joining it, which is the one moment the id exists for.
+      allow read: if signedIn();
+
+      allow create: if signedIn()
+                    && request.resource.data.members == [request.auth.uid]
+                    && request.resource.data.keys().hasOnly(['name', 'members', 'foundedOn'])
+                    && request.resource.data.name is string
+                    && request.resource.data.name.size() <= 24;
+
+      allow update: if signedIn()
+                    // Only the roster may move, and only by gaining you.
+                    && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['members'])
+                    && request.resource.data.members == resource.data.members.concat([request.auth.uid])
+                    && !(request.auth.uid in resource.data.members)
+                    && request.resource.data.members.size() <= 20;
+
+      // A guild that can be deleted is a guild whose feed can be erased from under its members.
+      allow delete: if false;
     }
 
     match /gakseong/guilds/rows/{guildId}/feed/{postId} {
@@ -62,7 +85,18 @@ service cloud.firestore {
       allow read: if signedIn()
                   && request.auth.uid in
                      get(/databases/$(database)/documents/gakseong/guilds/rows/$(guildId)).data.members;
-      allow create: if isSelf(request.resource.data.authorUid);
+
+      // A member posts as themselves, from the allowlisted set of phrases in cloud/Guild.kt's PostKind. §10
+      // reaches here too: a feed post goes to other people, so it may never carry a package name, a duration or
+      // a screen-time number. Nothing in a post is free text, which is also why this feed needs no moderation
+      // queue and no reporting flow, both of which are Play requirements the moment UGC exists.
+      allow create: if isSelf(request.resource.data.authorUid)
+                    && request.auth.uid in
+                       get(/databases/$(database)/documents/gakseong/guilds/rows/$(guildId)).data.members
+                    && request.resource.data.keys().hasOnly(['authorUid', 'text', 'aura', 'at'])
+                    && request.resource.data.text.size() <= 40;
+
+      // Written once and never edited. A feed nobody can rewrite is a record rather than a wall.
       allow update, delete: if false;
     }
 

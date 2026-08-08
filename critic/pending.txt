@@ -69,7 +69,6 @@ RunRaid.kt|5.02 km
 RunRaid.kt|◷ pacer · 6:00/km
 RunRaid.kt|6:00/km · never breaks
 
-Feed.kt|14 / 20 today
 
 # ── phase 07: Firestore supplies the ladder, the guild, the feed and the store ─
 League.kt|2d 04h

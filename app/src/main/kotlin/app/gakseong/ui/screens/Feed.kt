@@ -11,6 +11,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import app.gakseong.R
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.produceState
+import androidx.compose.ui.platform.LocalContext
+import app.gakseong.cloud.FEED_PER_DAY
+import app.gakseong.cloud.Post
+import app.gakseong.cloud.readFeed
+import app.gakseong.cloud.readGuild
 import app.gakseong.ui.*
 import app.gakseong.ui.theme.LocalMetrics
 import app.gakseong.ui.theme.LocalPalette
@@ -25,6 +32,15 @@ fun FeedScreen() {
     val p = LocalPalette.current
     val m = LocalMetrics.current
     val t = LocalType.current
+
+    val sys = LocalSystem.current
+    val context = LocalContext.current
+    val rank = sys.hunter.toEngine().rank
+
+    val posts by produceState<List<Post>?>(initialValue = null, sys.uid) {
+        val guild = readGuild(context, sys.uid)
+        value = guild?.let { readFeed(context, it.id, sys.uid, rank.letter) } ?: emptyList()
+    }
 
     Screen {
         Bg()
@@ -49,13 +65,14 @@ fun FeedScreen() {
                 Modifier.weight(1f).verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(m.d(5.4)),
             ) {
-                // Guild-scoped, and there is no guild until phase 07. Nothing is invented to fill it.
-                Card(Modifier.fillMaxWidth(), dashed = true, padding = 13.6) {
-                    Tag("Nothing here yet", t.tag.copy(color = p.hot))
+                // Guild-scoped and nothing else. It stays empty rather than showing posts nobody wrote.
+                posts.orEmpty().forEach { Post(it.authorHandle, it.text, it.aura?.let { a -> "+$a" }, it.at) }
+                if (posts.orEmpty().isEmpty()) Card(Modifier.fillMaxWidth(), dashed = true, padding = 13.6) {
+                    Tag(if (posts == null) "Reading the feed" else "Nothing here yet", t.tag.copy(color = p.hot))
                     Gap(4.2)
                     Text(
-                        "The feed is your guild's and no one else's. It fills when there is a guild, and stays " +
-                            "empty rather than showing posts nobody wrote.",
+                        "The feed is your guild's and no one else's. It fills when somebody in it does " +
+                            "something, and stays empty rather than showing posts nobody wrote.",
                         style = t.body.copy(fontSize = m.s(12.2)),
                     )
                 }

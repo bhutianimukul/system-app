@@ -57,13 +57,16 @@ between them is where this kind of work rots.
 | 06 | Containment is off by default | yes | no |
 | 06 | Containment is earned, never given | yes | no |
 | 06 | Containment reads no screen contents | yes | no |
-| 07 | Guild shows nobody rather than inventing members | yes | no |
+| 07 | Guild shows nobody rather than inventing members | no | no |
 | 07 | Raid partners are labelled shadow pacers | yes | yes |
 | 07 | The ladder is real, padded with labelled pacers | yes | no |
 | 07 | Pacers are never counted as members | yes | yes |
-| 07 | Handles are opaque, never names | yes | no |
-| 07 | The cloud never blocks a screen | yes | no |
+| 07 | Handles are opaque, never names | yes | yes |
+| 07 | The cloud never blocks a screen | yes | yes |
 | 08 | A generated quest joins the day | yes | no |
+| 07 | A guild roster only ever gains you | yes | no |
+| 07 | Guilds are founded and read for real | yes | no |
+| 07 | Feed posts are an allowlist, not free text | yes | no |
 | 07 | Anonymous auth, no account | yes | no |
 | 07 | Referral pairing is create-only | yes | no |
 | 07 | Analytics refuses the private track | yes | no |
@@ -140,7 +143,6 @@ finished work. Source: `critic/pending.txt`.
 - `RunRaid.kt|5.02 km`
 - `RunRaid.kt|◷ pacer · 6:00/km`
 - `RunRaid.kt|6:00/km · never breaks`
-- `Feed.kt|14 / 20 today`
 - `League.kt|2d 04h`
 - `League.kt|7,120`
 - `League.kt|7,004`
