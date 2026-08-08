@@ -467,12 +467,13 @@ the placeholder audit, and `CRITIC.md`. **Run it after every batch.**
   `PartnerCard`. Note that `PartnerCard` takes a drawable first and the name second, so one regex across all
   three reports the wrong string.
 
-**Every one of those was the critic itself being wrong.** A check that cannot fail is worse than no check, so
-each new step gets proven by planting the thing it is supposed to catch and watching it name it.
 - **Without a device it says the routes are UNVERIFIED**, which is not the same as passing.
 - `CRITIC.md` keeps `exists` and `wired` as separate columns, because a declared function and a called one are
   different states. `critic/pending.txt` lists every literal still waiting on a later phase, so what is still
   fake is answerable without reading code.
+
+**Every one of those was the critic itself being wrong.** A check that cannot fail is worse than no check, so
+each new step gets proven by planting the thing it is supposed to catch and watching it name it.
 
 ### Phase 04, sensors: usage and Health Connect done
 
