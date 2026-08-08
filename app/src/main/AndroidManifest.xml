@@ -1,8 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <!-- Haptics. Composition primitives fire even when the phone is on silent, which is the point. -->
     <uses-permission android:name="android.permission.VIBRATE" />
+
+    <!--
+      Special access, not a runtime permission. Declaring it makes the app appear in the system's usage-access
+      list; the grant itself only happens in Settings, via Settings.ACTION_USAGE_ACCESS_SETTINGS. Asked at the
+      first quest that needs it, never at onboarding.
+    -->
+    <uses-permission
+        android:name="android.permission.PACKAGE_USAGE_STATS"
+        tools:ignore="ProtectedPermissions" />
 
     <application
         android:name=".App"

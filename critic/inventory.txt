@@ -24,10 +24,12 @@
 !03|Settings persist|app/src/main/kotlin/app/gakseong/ui/screens/Settings.kt:toggled
 03|Quest card aura goes through the engine|app/src/main/kotlin/app/gakseong/ui/screens/Home.kt:award
 03|Share card allowlist|app/src/main/kotlin/app/gakseong/ui/screens/Share.kt:CardFields
-04|Usage event fold|app/src/main/kotlin/app/gakseong/sense/Usage.kt:queryEvents
+04|Usage event fold|app/src/main/kotlin/app/gakseong/sense/Fold.kt:fun fold
 04|Usage access is special access|app/src/main/kotlin/app/gakseong/sense/Usage.kt:AppOpsManager
 04|Health Connect provenance checked|app/src/main/kotlin/app/gakseong/sense/Health.kt:dataOrigin
 04|Reader time carved out of screen time|app/src/main/kotlin/app/gakseong/sense/Usage.kt:READER_CARVE_OUT
+04|Unclosed sessions are capped|app/src/main/kotlin/app/gakseong/sense/Fold.kt:MAX_SESSION_MS
+04|Reality screen reads the device|app/src/main/kotlin/app/gakseong/ui/Sensors.kt:rememberUsage
 05|Closed verifier set|app/src/main/kotlin/app/gakseong/quest/Verifier.kt:sealed
 05|Static quest bank|app/src/main/kotlin/app/gakseong/quest/Bank.kt:QuestTemplate
 05|Settle feeds the engine|app/src/main/kotlin/app/gakseong/quest/Settle.kt:settleDay

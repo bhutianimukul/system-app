@@ -6,13 +6,6 @@
 # Delete a line the moment its screen reads the real value. A line that survives its phase is a bug.
 
 # ── phase 04: UsageStatsManager and Health Connect read these off the device ──
-Onboarding.kt|206
-Onboarding.kt|8.6 days · 28% of your waking life
-Onboarding.kt|80h
-Onboarding.kt|39h
-Onboarding.kt|26h
-Onboarding.kt|17h
-Onboarding.kt|44h
 Onboarding.kt|2h 41m
 Onboarding.kt|1h 18m
 Onboarding.kt|52m

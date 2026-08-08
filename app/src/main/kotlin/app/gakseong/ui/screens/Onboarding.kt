@@ -36,6 +36,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import app.gakseong.R
 import app.gakseong.data.Repo
+import androidx.compose.ui.platform.LocalContext
+import app.gakseong.sense.RETAINED_DAYS
 import app.gakseong.ui.*
 import app.gakseong.ui.theme.Bad
 import kotlinx.coroutines.launch
@@ -203,6 +205,14 @@ fun RealityScreen() {
     val m = LocalMetrics.current
     val t = LocalType.current
     val nav = LocalNav.current
+    val context = LocalContext.current
+    val usage by rememberUsage(RETAINED_DAYS)
+
+    // Thirty days is what Android kept. The System did not compute this, which is the whole point of the screen.
+    val hours = usage?.takeIf { it.available }?.let { (it.totalForegroundMs / 3_600_000.0) }
+    val top = usage?.perPackageMs.orEmpty().entries.sortedByDescending { it.value }.take(4)
+    val restMs = usage?.perPackageMs.orEmpty().entries.sortedByDescending { it.value }.drop(4).sumOf { it.value }
+
     Screen {
         Bg()
         Bg2()
@@ -214,11 +224,11 @@ fun RealityScreen() {
             Gap(20.8)
             Tag("Last 30 days, your phone", t.tag.copy(letterSpacing = 0.32.em))
             Gap(8)
-            XlNumber("206", designPx = 70.4)
+            XlNumber(hours?.let { "%.0f".format(it) } ?: "—", designPx = 70.4)
             Gap(1.6)
             Text("HOURS AWAKE\nON A SCREEN", style = t.display(25.6))
             Gap(8.8)
-            Tag("8.6 days · 28% of your waking life", t.tag.copy(color = p.soft, letterSpacing = 0.16.em))
+            Tag(wakingLifeLine(hours, usage), t.tag.copy(color = p.soft, letterSpacing = 0.16.em))
 
             Gap(19.2)
             Column(
@@ -229,11 +239,18 @@ fun RealityScreen() {
                     Tag("Where it went", t.tag.copy(color = p.hot))
                     Gap(10.4)
                     Column(verticalArrangement = Arrangement.spacedBy(m.d(9.6))) {
-                        WhereRow("◉", "Instagram", "80h")
-                        WhereRow("▶", "YouTube", "39h")
-                        WhereRow("◈", "Reddit", "26h")
-                        WhereRow("✕", "X", "17h")
-                        WhereRow("·", "Everything else", "44h")
+                        if (top.isEmpty()) {
+                            // A zero list would read as a clean month. Say which of the two it actually is.
+                            Tag(
+                                if (usage == null) "Reading your record" else "No usage access granted",
+                                t.key,
+                            )
+                        } else {
+                            top.forEach { (pkg, ms) ->
+                                WhereRow("◉", appLabel(context, pkg), hoursLabel(ms))
+                            }
+                            if (restMs > 0) WhereRow("·", "Everything else", hoursLabel(restMs))
+                        }
                     }
                 }
                 Card(Modifier.fillMaxWidth(), padding = 13.6) {
@@ -481,4 +498,22 @@ private fun TermRow(glyph: String, title: String, detail: String) {
             }
         }
     }
+}
+
+/** `80h`, or `52m` when an app did not reach an hour. Never sent anywhere: §10 is about the wire. */
+private fun hoursLabel(ms: Long): String {
+    val minutes = ms / 60_000
+    return if (minutes >= 60) "${minutes / 60}h" else "${minutes}m"
+}
+
+/**
+ * `8.6 days · 28% of your waking life`, against a sixteen-hour waking day.
+ *
+ * Says which kind of nothing it is when there is no number: a read still in flight and a refused grant look
+ * identical as a blank, and only one of them is the user's choice.
+ */
+private fun wakingLifeLine(hours: Double?, usage: app.gakseong.sense.UsageReading?): String = when {
+    hours == null && usage == null -> "Reading what your phone already kept"
+    hours == null -> "Usage access not granted · the System cannot see yet"
+    else -> "%.1f days · %.0f%% of your waking life".format(hours / 24, hours / (RETAINED_DAYS * 16.0) * 100)
 }
