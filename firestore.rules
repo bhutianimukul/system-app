@@ -1,10 +1,15 @@
 rules_version = '2';
 
-// §Social and §Referral. Three things leave the device and nothing else, so these rules are written to make
-// the fourth impossible rather than merely discouraged.
+// §Social and §Referral. Three things leave the device and nothing else, so these rules are written to make the
+// fourth impossible rather than merely discouraged.
 //
-// The project also serves com.gakeseong, and a Firestore ruleset is project-wide. Every collection here is
-// namespaced under /gakseong so the two cannot collide.
+// **Every path here is six segments and was checked against the code that writes it.** Firestore alternates
+// collection/document, so `/gakseong/leagues/{id}/standings/{uid}` matches a collection rather than a document
+// and silently denies the write the app actually makes. The first draft did exactly that, and the failure looks
+// identical to having no rules at all: PERMISSION_DENIED, with nothing saying the rule never matched.
+//
+// The project also serves com.gakeseong and a ruleset is project-wide, so everything is namespaced under
+// /gakseong.
 service cloud.firestore {
   match /databases/{database}/documents {
 
@@ -16,7 +21,8 @@ service cloud.firestore {
       return signedIn() && request.auth.uid == uid;
     }
 
-    match /gakseong/referrals/{inviteeUid} {
+    // cloud/Firebase.kt: collection("gakseong").document("referrals").collection("rows").document(inviteeUid)
+    match /gakseong/referrals/rows/{inviteeUid} {
       // §Referral: create only, never update. One credit per invitee UID, ever.
       //
       // The invitee writes their own pairing and can never write anyone else's, so nobody can attribute an
@@ -28,31 +34,40 @@ service cloud.firestore {
       allow update, delete: if false;
     }
 
-    match /gakseong/guilds/{guildId} {
-      // §Social: guilds are invite only and twenty at most. Membership is readable by members; the roster is
-      // written by the server, never by a member, so nobody can add themselves to a guild they were not asked
-      // into or inflate a ladder by writing rows.
+    // cloud/Ladder.kt: collection("gakseong").document("leagues").collection(letter)
+    //                    .document("standings").collection("rows").document(uid)
+    match /gakseong/leagues/{league}/standings/rows/{uid} {
+      // A hunter writes their own aura total and nobody else's. §Social: the ladder is the one thing in this
+      // app that has to be trustworthy, so a row nobody can forge is the whole point.
+      allow read: if signedIn();
+      allow create, update: if isSelf(uid)
+                            && request.resource.data.keys().hasOnly(['aura', 'rank', 'updatedAt'])
+                            && request.resource.data.aura is int
+                            && request.resource.data.aura >= 0
+                            // No day can legitimately exceed this, and a ladder is only worth reading if the
+                            // numbers on it are possible. §3's daily cap is the reason such a bound exists.
+                            && request.resource.data.aura <= 5000;
+      allow delete: if false;
+    }
+
+    match /gakseong/guilds/rows/{guildId} {
+      // §Social: guilds are invite only and twenty at most. The roster is written by the server, never by a
+      // member, so nobody can add themselves to a guild or inflate a ladder by writing rows.
       allow read: if signedIn() && request.auth.uid in resource.data.members;
       allow write: if false;
-
-      match /feed/{postId} {
-        // §Social: guild-scoped, twenty posts a day, and a member may only ever post as themselves.
-        allow read: if signedIn() && request.auth.uid in get(/databases/$(database)/documents/gakseong/guilds/$(guildId)).data.members;
-        allow create: if isSelf(request.resource.data.authorUid);
-        allow update, delete: if false;
-      }
     }
 
-    match /gakseong/leagues/{leagueId}/standings/{uid} {
-      // A hunter writes their own aura total and nobody else's. §Social: the ladder is the one thing in this
-      // app that has to be trustworthy.
-      allow read: if signedIn();
-      allow write: if isSelf(uid)
-                   && request.resource.data.keys().hasOnly(['aura', 'rank', 'updatedAt']);
+    match /gakseong/guilds/rows/{guildId}/feed/{postId} {
+      // §Social: guild-scoped, twenty a day, and a member may only ever post as themselves.
+      allow read: if signedIn()
+                  && request.auth.uid in
+                     get(/databases/$(database)/documents/gakseong/guilds/rows/$(guildId)).data.members;
+      allow create: if isSelf(request.resource.data.authorUid);
+      allow update, delete: if false;
     }
 
-    // Anything not named above is closed. A collection that appears without a rule is a mistake, and the
-    // default here makes it a visible one rather than an open door.
+    // Anything not named above is closed. A collection that appears without a rule is a mistake, and this
+    // default makes it a visible one rather than an open door.
     match /{document=**} {
       allow read, write: if false;
     }

@@ -103,7 +103,10 @@ fun db(context: Context): FirebaseFirestore? =
 suspend fun pair(context: Context, inviterCode: String, inviteeUid: String, installedOn: String): Boolean {
     val store = db(context) ?: return false
     return runCatching {
-        store.collection("referrals").document(inviteeUid).set(
+        // Namespaced like every other collection: a Firestore ruleset is project-wide, and this
+        // project also serves com.gakeseong.
+        store.collection("gakseong").document("referrals")
+            .collection("rows").document(inviteeUid).set(
             mapOf(
                 "inviterCode" to inviterCode,
                 "installedOn" to installedOn,
